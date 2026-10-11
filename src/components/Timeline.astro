@@ -1,0 +1,85 @@
+---
+/**
+ * Timeline: inline SVG of one device's sequence of runs: an axis with a tick per event, the event's
+ * name above it and one to three short lines under it, and an optional span under the axis that
+ * joins two events with a sentence (the same identifier at both ends, for example). Same
+ * conventions as DataFlow: mono text, ink lines, the half-barb head on the axis, two drawings
+ * (wide from 40rem, tall below) shown by the .flow CSS. No red: a sequence accuses no one.
+ *
+ * Props:
+ *   points  [{ title, lines?: string[] }], in order. Keep titles under 15 characters and lines
+ *           under 17 in the wide drawing (six points share 760 units).
+ *   span    { from, to, label }: zero-based indexes of two points and the sentence that joins them;
+ *           as string[] it is one line in the wide drawing and one line each in the tall one
+ *   label   override the generated aria-label
+ */
+interface Point { title: string; lines?: string[] }
+interface Props { points: Point[]; span?: { from: number; to: number; label: string | string[] }; label?: string }
+const { points, span, label } = Astro.props;
+const HEAD = 8;
+const barb = (h: number) => `M0,${h} L-11,-5 L-8,-${h} L-8,${h} Z`;
+const spanLines = span ? ([] as string[]).concat(span.label) : [];
+const spanText = spanLines.join(' ');
+const aria = label ?? `Sequence: ${points.map((p) => p.title + (p.lines?.length ? ` (${p.lines.join(', ')})` : '')).join('; ')}.${span ? ` ${spanText}` : ''}`;
+const maxLines = Math.max(0, ...points.map((p) => p.lines?.length ?? 0));
+
+/* Wide: the axis runs left to right at y = AX; titles above, lines below, the span under them. */
+const W = 760;
+const AX = 60;
+const L = 40;
+const R = 700;
+const step = points.length > 1 ? (R - L) / (points.length - 1) : 0;
+const px = (i: number) => +(L + i * step).toFixed(1);
+const linesBottom = AX + 22 + maxLines * 16;
+const spanY = linesBottom + 22;
+const wideH = span ? spanY + 34 : linesBottom + 12;
+
+/* Tall: the axis runs top to bottom at x = TAX; each point a block to its right; the span a bracket
+   on the left with its sentence at the foot. */
+const TW = 380;
+const TAX = 28;
+const block = (p: Point) => 30 + (p.lines?.length ?? 0) * 16 + 12;
+const tops = points.reduce<number[]>((acc, _p, i) => { acc.push(i ? acc[i - 1] + block(points[i - 1]) : 28); return acc; }, []);
+const axisEnd = tops[tops.length - 1] + block(points[points.length - 1]) - 4;
+const tallH = axisEnd + (span ? 30 + spanLines.length * 16 : 12);
+---
+<div class="flow">
+  <svg class="flow-wide" viewBox={`0 0 ${W} ${wideH}`} role="img" aria-label={aria} fill="currentColor">
+    <path d={`M${L - 20},${AX} L${R + 30 - HEAD},${AX}`} fill="none" stroke="currentColor" stroke-width="1.5" />
+    <path d={barb(0.75)} transform={`translate(${R + 30},${AX})`} />
+    {points.map((p, i) => (
+      <g>
+        <line x1={px(i)} y1={AX - 6} x2={px(i)} y2={AX + 6} stroke="currentColor" stroke-width="1.5" />
+        <text x={px(i)} y={AX - 16} font-size="13" font-weight="600" text-anchor="middle">{p.title}</text>
+        {(p.lines ?? []).map((t, k) => <text x={px(i)} y={AX + 24 + k * 16} font-size="12" text-anchor="middle" class="svg-sub">{t}</text>)}
+      </g>
+    ))}
+    {span && (
+      <g>
+        <line x1={px(span.from)} y1={spanY - 6} x2={px(span.from)} y2={spanY} stroke="currentColor" stroke-width="1" />
+        <line x1={px(span.from)} y1={spanY} x2={px(span.to)} y2={spanY} stroke="currentColor" stroke-width="1" />
+        <line x1={px(span.to)} y1={spanY - 6} x2={px(span.to)} y2={spanY} stroke="currentColor" stroke-width="1" />
+        <text x={(px(span.from) + px(span.to)) / 2} y={spanY + 18} font-size="12" text-anchor="middle">{spanText}</text>
+      </g>
+    )}
+  </svg>
+  <svg class="flow-tall" viewBox={`0 0 ${TW} ${tallH}`} role="img" aria-label={aria} fill="currentColor">
+    <path d={`M${TAX},12 L${TAX},${axisEnd - HEAD}`} fill="none" stroke="currentColor" stroke-width="1.5" />
+    <path d={barb(0.75)} transform={`translate(${TAX},${axisEnd}) rotate(90)`} />
+    {points.map((p, i) => (
+      <g>
+        <line x1={TAX - 6} y1={tops[i]} x2={TAX + 6} y2={tops[i]} stroke="currentColor" stroke-width="1.5" />
+        <text x={TAX + 18} y={tops[i] + 4} font-size="13" font-weight="600">{p.title}</text>
+        {(p.lines ?? []).map((t, k) => <text x={TAX + 18} y={tops[i] + 22 + k * 16} font-size="12" class="svg-sub">{t}</text>)}
+      </g>
+    ))}
+    {span && (
+      <g>
+        <line x1="10" y1={tops[span.from]} x2="16" y2={tops[span.from]} stroke="currentColor" stroke-width="1" />
+        <line x1="10" y1={tops[span.from]} x2="10" y2={tops[span.to]} stroke="currentColor" stroke-width="1" />
+        <line x1="10" y1={tops[span.to]} x2="16" y2={tops[span.to]} stroke="currentColor" stroke-width="1" />
+        {spanLines.map((s, k) => <text x="10" y={axisEnd + 30 + k * 16} font-size="12">{s}</text>)}
+      </g>
+    )}
+  </svg>
+</div>

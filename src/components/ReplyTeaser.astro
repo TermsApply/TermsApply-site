@@ -1,0 +1,28 @@
+---
+/**
+ * ReplyTeaser: the "Company reply" block on a story, after the body, when the file has a
+ * `reply`: the first words of the reply (about 40) in mono, because they are the company's, the
+ * source line, and a link to the Reply page where it is printed in full facing our note.
+ *
+ * Props:
+ *   reply        { date, channel, from, text } (schema `reply`)
+ *   serviceName  the company
+ *   href         the Reply page, /<collection>/<slug>/reply/
+ */
+import { replyExcerpt } from '../lib/cases';
+import { iso } from '../lib/format';
+
+interface Props {
+  reply: { date: Date; channel: string; from: string; text: string };
+  serviceName: string;
+  href: string;
+}
+const { reply, serviceName, href } = Astro.props;
+const ex = replyExcerpt(reply.text, 40);
+---
+<section class="reply-teaser" aria-labelledby="reply-h">
+  <h2 id="reply-h" class="label">Company reply</h2>
+  <blockquote class="reply-teaser__q"><p>"{ex.text}"</p></blockquote>
+  <p class="reply-teaser__src"><cite>{reply.from}, {serviceName}</cite> / by {reply.channel} / <time datetime={iso(reply.date)}>{iso(reply.date)}</time></p>
+  <p class="reply-teaser__go"><a class="go" href={href}><span class="go__w">{ex.trimmed ? 'Read the reply in full' : 'The reply, with our note'}</span><span class="go__ar" aria-hidden="true">{' '}→</span></a></p>
+</section>

@@ -1,0 +1,13 @@
+---
+/**
+ * Inline: a plain-text field written by us (an observed line, a note, a dek), printed with every
+ * `backticked` name set as <code>: the names of fields, parameters and identifiers seen in an app's
+ * traffic ("The app sent `demandScore` to …"). Nothing else is interpreted. Text that is theirs
+ * (policy quotes, a company's reply) never goes through it. Where the same text is used as plain
+ * text (meta description, share card, revision log alt), `plain()` in src/lib/format.ts drops the
+ * backticks instead.
+ */
+interface Props { text: string }
+const parts = Astro.props.text.split(/`([^`\n]+)`/);
+---
+{parts.map((p, i) => (i % 2 ? <code class="tick">{p}</code> : p))}

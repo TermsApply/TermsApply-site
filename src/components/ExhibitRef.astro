@@ -1,0 +1,32 @@
+---
+/**
+ * ExhibitRef: the story's pointer to an exhibit on the file's evidence page (round 4: the story,
+ * the evidence and the history are three addresses under one file). A mono link,
+ * "Exhibit 1 / <label> →", to /publications/<slug>/evidence/#exh-1. The arrow is Plex Mono's own
+ * U+2192 (the arrow-only subset in public/fonts/), set outside the underline and hidden from screen
+ * readers, so the link is named "Exhibit 1 / <label>".
+ *
+ * On its own line in an MDX story body it is a ruled row in the text column (where the exhibit
+ * used to sit); inside a sentence it is an ordinary inline link. The story page fails the build if
+ * the evidence file has no Exhibit with this number.
+ *
+ * Props:
+ *   n      exhibit number, as in the evidence file's <Exhibit n={…}>
+ *   label  optional short description after the number ("requests from one note edit")
+ *   file   optional investigation slug; defaults to the one in the page's own URL
+ *
+ * In MDX (no import needed on a story):  <ExhibitRef n={1} label="requests from one note edit" />
+ */
+import { exhibitId, fileHref } from '../lib/cases';
+
+interface Props {
+  n: number | string;
+  label?: string;
+  file?: string;
+}
+const { n, label, file } = Astro.props;
+const slug = file ?? Astro.url.pathname.match(/^\/publications\/([^/]+)/)?.[1];
+if (!slug) throw new Error(`ExhibitRef n=${n}: no investigation slug (pass file="…" outside /publications/<slug>/)`);
+const href = `${fileHref('investigations', slug, 'evidence')}#${exhibitId(n)}`;
+---
+<a class="exh-ref go" href={href}><span class="go__w"><b>Exhibit {n}</b>{label && <> / {label}</>}</span><span class="go__ar" aria-hidden="true">{'\u00a0'}→</span></a>

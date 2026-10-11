@@ -1,0 +1,10 @@
+---
+/**
+ * NoBreak: renders text with hyphenated compounds ("end-to-end", "opt-in") kept on one line,
+ * so headlines never break as "end- / to-end". Use for h1s and other display text.
+ * Props: text
+ */
+interface Props { text: string }
+const parts = Astro.props.text.split(/(\p{L}+(?:-\p{L}+)+)/u);
+---
+{parts.map((p, i) => (i % 2 ? <span class="nw">{p}</span> : p))}

@@ -1,0 +1,62 @@
+---
+/**
+ * Policy archive: every version of every policy document we have archived, grouped by service
+ * (A to Z), each service's documents newest first, as ArchiveRows. Opens with the FileHeader bar
+ * like every index. Each row links to the version's page, /archive/<service>/<document>/<version>/,
+ * where the full text is printed in mono with its metadata and offered as the raw .txt; the build
+ * checks every file's SHA-256 against the one on record (src/lib/archive.ts). PAGE_SIZE versions to
+ * a page (/archive/, /archive/page/2/ …), in archive order, grouped by service on each page (a
+ * service may continue on the next page); counts over the whole archive; the Pager at the foot.
+ */
+import Base from '../../layouts/Base.astro';
+import FileHeader from '../../components/FileHeader.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import ArchiveRows from '../../components/ArchiveRows.astro';
+import Pager from '../../components/Pager.astro';
+import { getPolicies, groupPolicies, type ArchivedPolicy } from '../../lib/archive';
+import { indexRef, paginatePaths, withPageNote, type IndexPage, type Part } from '../../lib/cases';
+
+export async function getStaticPaths() {
+  const all = await getPolicies();
+  return paginatePaths(all, '/archive/').map((p) => ({ ...p, props: { ...p.props, all } }));
+}
+
+const { page, all: policies } = Astro.props as { page: IndexPage<ArchivedPolicy>; all: ArchivedPolicy[] };
+const allServices = groupPolicies(policies);
+const services = groupPolicies(page.data);
+const newest = policies.map((p) => p.retrieved).sort((a, b) => b.valueOf() - a.valueOf())[0];
+const side: Part = [
+  ...(newest ? ['NEWEST ', newest, ' / '] : []),
+  `${allServices.length} ${allServices.length === 1 ? 'SERVICE' : 'SERVICES'}`,
+];
+const description =
+  'Every version of the policies we quote, kept in full as we retrieved them, with the date, the source and a SHA-256 checksum.';
+---
+<Base title={page.current > 1 ? `Policy archive, page ${page.current}` : 'Policy archive'} description={description} prev={page.prevUrl} next={page.nextUrl} fileRef={indexRef('Archive', policies.length, 'version', 'versions')} og={{ verso: 'Policy archive', versoLabel: 'Archive', mark: false }}>
+  <div class="wrap">
+    <FileHeader ref={indexRef('Archive', policies.length, 'version', 'versions')} side={withPageNote(side, page)} fields={[]} />
+    <div class="page-head page-head--filed">
+      <h1>Policy archive</h1>
+      <p class="dek">Every version of the policies we quote, kept in full as we retrieved them, with the date, the source and a <span class="nw">SHA-256</span> checksum.</p>
+    </div>
+
+    <div class="mh-intro arch-intro">
+      <p>
+        Each document is shown as retrieved on the date given. Each version is printed here in full,
+        exactly as the company published it, and offered as the plain-text file we saved. The
+        checksum next to it is the SHA-256 of that file: anyone can download it, compute the
+        checksum, and confirm that the text we quote is the text we hold.
+      </p>
+    </div>
+
+    {services.length > 0 ? services.map((s) => (
+      <section class="section" aria-labelledby={`a-${s.id}`}>
+        <SectionHead title={s.name} id={`a-${s.id}`} href={`/archive/${s.id}/`} linkText={`${s.name} on file →`} />
+        {s.documents.map((doc) => (
+          <ArchiveRows items={doc.versions} label={`${s.name} ${doc.name}, newest version first`} />
+        ))}
+      </section>
+    )) : <p class="empty">Nothing archived yet.</p>}
+    <Pager page={page} label="Policy archive, pages" />
+  </div>
+</Base>

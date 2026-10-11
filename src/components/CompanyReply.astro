@@ -1,0 +1,77 @@
+---
+/**
+ * CompanyReply: the Reply page's pair, built on <Spread>. Left page: the company's reply, in full and
+ * verbatim, in mono (their words): paragraphs as they were sent, line breaks kept, nothing else
+ * interpreted; under it the source line (who, how, when) and the attachment, when there is one.
+ * Right page: our note, in serif: what we asked and when, then `replyNote`, our one paragraph on
+ * what the reply does and does not address. The asterisk sits in the gutter: the reply answers a
+ * finding, and this is where the two accounts part. Red is never used for a refusal. Further
+ * messages (`reply.followUps`) follow the first on the left page, each in full under its own
+ * date line ("Further message / by <channel> / <date>").
+ *
+ * Props:
+ *   reply        { date, channel, from, text, attachment?, followUps? } (schema `reply` in src/content.config.ts)
+ *   serviceName  the company, for the source line and our note
+ *   asked        the date the findings were sent (companyAsked), when on file
+ *   note         replyNote, our comment (optional)
+ *   status       'declined' | 'replied': "Declined" files say so in our note, in ink
+ */
+import Inline from './Inline.astro';
+import Spread from './Spread.astro';
+import { iso, long } from '../lib/format';
+import { replyParagraphs, workingDaysBetween } from '../lib/cases';
+
+type FollowUp = { date: Date; channel?: string; from?: string; text: string };
+interface Props {
+  reply: { date: Date; channel: string; from: string; text: string; attachment?: string; followUps?: FollowUp[] };
+  serviceName: string;
+  asked?: Date;
+  note?: string;
+  status?: 'declined' | 'replied' | 'none';
+}
+const { reply, serviceName, asked, note, status = 'replied' } = Astro.props;
+const paras = replyParagraphs(reply.text);
+const more = (reply.followUps ?? []).map((m) => ({
+  ...m,
+  channel: m.channel ?? reply.channel,
+  from: m.from ?? reply.from,
+  paras: replyParagraphs(m.text),
+}));
+// Working days from the request to the reply, counting the day the reply came.
+const days = asked ? workingDaysBetween(asked, new Date(reply.date.valueOf() + 86_400_000)) : undefined;
+const attachmentName = reply.attachment?.split('/').filter(Boolean).at(-1);
+const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
+const ordinal = (n: number) => ORD[n - 1] ?? `${n}th`;
+---
+<Spread as="section" class="reply" size="body" label={`${serviceName}’s reply, and our note`} labels={['Their reply', 'Our note']} refs={[`${reply.channel}, ${iso(reply.date)}`, undefined]}>
+  <blockquote slot="verso" class="spread__q reply__text">
+    {paras.map((lines) => <p>{lines.map((l, i) => <>{i > 0 && <br />}{l}</>)}</p>)}
+    {more.map((m) => (
+      <>
+        <p class="reply__msg label">Further message{m.from !== reply.from && <> from {m.from}</>}&nbsp;/ by {m.channel}&nbsp;/ <time datetime={iso(m.date)}>{iso(m.date)}</time></p>
+        {m.paras.map((lines) => <p>{lines.map((l, i) => <>{i > 0 && <br />}{l}</>)}</p>)}
+      </>
+    ))}
+  </blockquote>
+  <Fragment slot="source">
+    <p><cite>{reply.from}, {serviceName}</cite>&nbsp;/ by {reply.channel}&nbsp;/ <time datetime={iso(reply.date)}>{iso(reply.date)}</time></p>
+    <p>Printed in full, as received{more.length > 0 && <>, with {more.length === 1 ? 'one further message' : `${more.length} further messages`}</>}.</p>
+    {reply.attachment && <p>Attachment: <a href={reply.attachment}>{attachmentName}</a></p>}
+  </Fragment>
+  <div slot="recto" class="reply__ours">
+    <h2 class="label">What we asked</h2>
+    <p>
+      {asked
+        ? <>We sent our findings to {serviceName} in writing on <time datetime={iso(asked)}>{long(asked)}</time>, with the evidence and our questions, and gave the company at least five working days to answer.</>
+        : <>We sent our findings to {serviceName} in writing, with the evidence and our questions.</>}
+      {days !== undefined && days > 0 && <>{' '}The reply came on the {ordinal(days)} working day after that.</>}
+      {status === 'declined' && ' The company declined to comment.'}
+    </p>
+    {note && (
+      <>
+        <h2 class="label">What it does and does not address</h2>
+        <p><Inline text={note} /></p>
+      </>
+    )}
+  </div>
+</Spread>

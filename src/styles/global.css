@@ -1,0 +1,1173 @@
+/* termsapply: "Dossier" (design/explorations/variant-b, approved 7 Oct 2026), set as facing pages
+   (round 3, direction A: design/explorations/round3/start-a.html).
+   Mono is theirs (quotes, clauses, versions, dates, logs) and structure (labels, nav): IBM Plex Mono.
+   Serif is ours (findings, prose, headlines): Literata. No exceptions.
+   Light theme only, always: the tokens on :root, no dark variant. */
+
+/* ---------- Arrow glyphs ----------
+   No @fontsource subset of IBM Plex Mono carries U+2192 (design/explorations/arrows.html, Part B),
+   so "All files →" fell back to the reader's system monospace. These faces carry Plex Mono's own
+   U+2190 and U+2192 and nothing else: pyftsubset of Plex Mono, under the SIL Open Font License.
+   "Plex" is a Reserved Font Name (OFL 1.1 condition 3), so the subset, being a Modified Version,
+   is renamed "termsapply Arrows" in the file and here (design/audit/FONTS-LICENCE.md). It heads
+   the --mono stack; the unicode-range keeps the browser from fetching it for anything but the two
+   arrows, and every other character (↑ and ↓ included) falls through to "IBM Plex Mono".
+   One face per weight the site sets mono in. Licence: /fonts/LICENSE-ibm-plex-mono.txt. */
+@font-face {
+  font-family: "termsapply Arrows"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/fonts/termsapply-arrows-400.woff2") format("woff2");
+  unicode-range: U+2190, U+2192;
+}
+@font-face {
+  font-family: "termsapply Arrows"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("/fonts/termsapply-arrows-500.woff2") format("woff2");
+  unicode-range: U+2190, U+2192;
+}
+@font-face {
+  font-family: "termsapply Arrows"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("/fonts/termsapply-arrows-600.woff2") format("woff2");
+  unicode-range: U+2190, U+2192;
+}
+
+/* ---------- IBM Plex Mono ----------
+   IBM's own unmodified web subsets, vendored byte-for-byte from npm @ibm/plex-mono 2.5.0
+   (fonts/split/woff2/) into public/fonts/plex/. The package itself is not a dependency: its
+   postinstall runs IBM Telemetry, which has no place in this project's installs.
+   IBM, which holds the Reserved Font Name "Plex", cut and named these subsets itself, so they ship
+   under their own name unchanged (design/audit/FONTS-LICENCE.md, "Follow-up"). Never edit, re-cut or
+   re-subset them here: a modified Plex must be renamed (see "termsapply Arrows" above).
+   The unicode-ranges are IBM's, copied verbatim from the package's fonts/split/woff2/*.css at 2.5.0; they are
+   disjoint and match each file's cmap, so a browser fetches a subset only for text that needs it
+   (today: Latin1 everywhere; Pi only for characters the Arrows faces do not carry).
+   IBM's files carry the OpenType "zero" feature that Google's build lacks, so `slashed-zero` would
+   now turn every mono 0 slashed; the approved design was only ever seen with Plex's dotted 0, so
+   no rule asks for it. Add `slashed-zero` back to font-variant-numeric to opt in on purpose.
+   Not IBM's CSS: it adds local() sources (a reader's installed Plex would replace ours), a .woff
+   twin and a full-font face per weight, and its default.css has no 500.
+   Weights: the site sets mono in 400, 500 and 600, upright only. Served from /fonts/plex/ with the
+   long cache rule in public/_headers. Licence: /fonts/LICENSE-ibm-plex-mono.txt. */
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Regular-Latin1.woff2") format("woff2");
+  unicode-range: U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Regular-Pi.woff2") format("woff2");
+  unicode-range: U+03C0, U+0E3F, U+2000-200D, U+2010-2012, U+2015, U+2028-2029, U+202F, U+2032-2033, U+203E, U+205F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+2215, U+2219-221A, U+221E, U+222B, U+2236, U+2248, U+2260, U+2264-2265, U+2400-2421, U+2500-259F, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+3000, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Regular-Latin2.woff2") format("woff2");
+  unicode-range: U+0100-0101, U+0104-0130, U+0132-0151, U+0154-017F, U+018F, U+0192, U+01A0-01A1, U+01AF-01B0, U+01FA-01FF, U+0218-021B, U+0237, U+0259, U+1E80-1E85, U+1E9E, U+20A1, U+20A4, U+20A6, U+20A8-20AA, U+20AD-20AE, U+20B1-20B2, U+20B4-20B5, U+20B8-20BA, U+20BD, U+20BF;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Regular-Latin3.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+01CD-01DC, U+1E0C-1E0D, U+1E12-1E13, U+1E24-1E25, U+1E36-1E37, U+1E3C-1E3D, U+1E40-1E47, U+1E4A-1E4B, U+1E62-1E63, U+1E6C-1E6D, U+1E70-1E71, U+1E92-1E93, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Regular-Cyrillic.woff2") format("woff2");
+  unicode-range: U+0400-045F, U+0462-0463, U+046A-046B, U+0472-0475, U+0490-04C2, U+04CF-04D9, U+04DC-04E9, U+04EE-04F9, U+0524-0525;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Medium-Latin1.woff2") format("woff2");
+  unicode-range: U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Medium-Pi.woff2") format("woff2");
+  unicode-range: U+03C0, U+0E3F, U+2000-200D, U+2010-2012, U+2015, U+2028-2029, U+202F, U+2032-2033, U+203E, U+205F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+2215, U+2219-221A, U+221E, U+222B, U+2236, U+2248, U+2260, U+2264-2265, U+2400-2421, U+2500-259F, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+3000, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Medium-Latin2.woff2") format("woff2");
+  unicode-range: U+0100-0101, U+0104-0130, U+0132-0151, U+0154-017F, U+018F, U+0192, U+01A0-01A1, U+01AF-01B0, U+01FA-01FF, U+0218-021B, U+0237, U+0259, U+1E80-1E85, U+1E9E, U+20A1, U+20A4, U+20A6, U+20A8-20AA, U+20AD-20AE, U+20B1-20B2, U+20B4-20B5, U+20B8-20BA, U+20BD, U+20BF;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Medium-Latin3.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+01CD-01DC, U+1E0C-1E0D, U+1E12-1E13, U+1E24-1E25, U+1E36-1E37, U+1E3C-1E3D, U+1E40-1E47, U+1E4A-1E4B, U+1E62-1E63, U+1E6C-1E6D, U+1E70-1E71, U+1E92-1E93, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-Medium-Cyrillic.woff2") format("woff2");
+  unicode-range: U+0400-045F, U+0462-0463, U+046A-046B, U+0472-0475, U+0490-04C2, U+04CF-04D9, U+04DC-04E9, U+04EE-04F9, U+0524-0525;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-SemiBold-Latin1.woff2") format("woff2");
+  unicode-range: U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-SemiBold-Pi.woff2") format("woff2");
+  unicode-range: U+03C0, U+0E3F, U+2000-200D, U+2010-2012, U+2015, U+2028-2029, U+202F, U+2032-2033, U+203E, U+205F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+2215, U+2219-221A, U+221E, U+222B, U+2236, U+2248, U+2260, U+2264-2265, U+2400-2421, U+2500-259F, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+3000, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-SemiBold-Latin2.woff2") format("woff2");
+  unicode-range: U+0100-0101, U+0104-0130, U+0132-0151, U+0154-017F, U+018F, U+0192, U+01A0-01A1, U+01AF-01B0, U+01FA-01FF, U+0218-021B, U+0237, U+0259, U+1E80-1E85, U+1E9E, U+20A1, U+20A4, U+20A6, U+20A8-20AA, U+20AD-20AE, U+20B1-20B2, U+20B4-20B5, U+20B8-20BA, U+20BD, U+20BF;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-SemiBold-Latin3.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+01CD-01DC, U+1E0C-1E0D, U+1E12-1E13, U+1E24-1E25, U+1E36-1E37, U+1E3C-1E3D, U+1E40-1E47, U+1E4A-1E4B, U+1E62-1E63, U+1E6C-1E6D, U+1E70-1E71, U+1E92-1E93, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("/fonts/plex/IBMPlexMono-SemiBold-Cyrillic.woff2") format("woff2");
+  unicode-range: U+0400-045F, U+0462-0463, U+046A-046B, U+0472-0475, U+0490-04C2, U+04CF-04D9, U+04DC-04E9, U+04EE-04F9, U+0524-0525;
+}
+
+/* ---------- Tokens ---------- */
+:root {
+  --paper: #F0E9DA;
+  --paper-2: #E7DFCC;
+  --ink: #16140F;
+  --ink-2: #5B5648;
+  --rule: #CFC6B2;
+  --red: #B2271D;
+  --khaki: #6C6316;       /* text */
+  --khaki-rule: #857A3C;  /* underlines and rules */
+  --mark: rgb(239 217 63 / 0.45);
+  /* Highlighter geometry: a full fill on paper. */
+  --mark-size: 100%;
+  --mark-pos: 0;
+  --focus: #16140F;
+  --mono: "termsapply Arrows", "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  --serif: "Literata Variable", "Literata", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --wrap: 76rem;
+  --measure: 65ch;
+  color-scheme: light;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 1rem; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-optical-sizing: auto;
+  overflow-wrap: break-word;
+}
+@media (min-width: 60rem) { body { font-size: 1.125rem; } }
+/* Paper texture: a fine grain and a faint slow mottle, mid-grey noise in soft-light under the
+   content (z-index -1 over the page background), so the paper keeps its colour on average and the
+   type stays solid ink. One inline SVG per layer (img-src allows data:), no file, no script; not
+   printed, not in forced colours. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  mix-blend-mode: soft-light; opacity: 0.6;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='3 0 0 0 -1.1 3 0 0 0 -1.1 3 0 0 0 -1.1 0 0 0 0 0.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='1200'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='2 0 0 0 -0.55 2 0 0 0 -0.55 2 0 0 0 -0.55 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+}
+@media print, (forced-colors: active) { body::before { content: none; } }
+img, svg { max-width: 100%; height: auto; display: block; }
+h1, h2, h3, h4 { text-wrap: balance; margin: 0; font-weight: 600; line-height: 1.15; }
+p, li, dd, figcaption { text-wrap: pretty; }
+p { margin: 0 0 1em; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18em; text-decoration-color: var(--ink-2); }
+a:hover { text-decoration-color: var(--red); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+/* A link that ends (or starts) in an arrow: the words carry the underline, the arrow does not, so
+   the underline never doubles the arrow's shaft. The arrow is Plex Mono's U+2192 / U+2190 from the
+   "termsapply Arrows" faces above; it is aria-hidden, so the link is named by its words. */
+.go { text-decoration: none; }
+.go__w { text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--ink-2); }
+.go:hover .go__w { text-decoration-color: var(--red); }
+::selection { background: var(--mark); color: var(--ink); }
+mark {
+  --lw: var(--mark-size); color: var(--ink); padding: 0 0.1em;
+  background: linear-gradient(var(--mark), var(--mark)) no-repeat 0 var(--mark-pos) / 100% var(--lw);
+  /* A highlight that wraps is drawn per line, each piece with its own end padding. */
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+.mono, code, pre, kbd, samp { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+code { font-size: 0.9em; }
+/* A name from an app's traffic, `backticked` in a field (Inline.astro) or in an MDX body: mono on a
+   tone of paper, so it reads as a value, not a word of ours. Never red. */
+.tick, .body p code, .body li code { background: var(--paper-2); padding: 0.05em 0.3em; border-radius: 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+time { font-variant-numeric: tabular-nums; }
+/* A date is one word: never "2026-" / "08-01" across a line break. */
+time { white-space: nowrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.skip { position: absolute; left: var(--gutter); top: -3rem; background: var(--paper); color: var(--ink); font-family: var(--mono); font-size: 0.8125rem; padding: 0.5rem 0.75rem; border: 1px solid var(--ink); z-index: 10; }
+.skip:focus { top: 0.5rem; }
+.wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--gutter); }
+.nw { white-space: nowrap; }
+/* The running head of a printed page (Base): the address and the file reference. Print only. */
+.print-head { display: none; }
+
+/* Small labels: the structural voice */
+.label {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Category tags: a plain label, no box. Red is not a category colour. */
+.tag {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.tag--surv { color: var(--ink); }
+.tag--soma { color: var(--khaki); }
+
+/* ---------- Masthead ---------- */
+.notice {
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  padding-block: 0.45rem;
+}
+.notice .wrap { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; justify-content: space-between; }
+/* One short line on phones, two spans from 40rem. */
+.notice__long { display: none; }
+@media (max-width: 39.99rem) { .notice { font-size: 0.75rem; padding-block: 0.4rem; } }
+@media (min-width: 40rem) { .notice__long { display: inline; } .notice__short { display: none; } }
+.masthead { border-bottom: 1px solid var(--ink); }
+.masthead__row {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: 0.75rem 2rem; padding-block: 1.25rem 1rem;
+}
+.wordmark { display: inline-block; color: var(--ink); text-decoration: none; line-height: 0; }
+/* Final wordmark (design/logo): outlined SVG, asterisk already sits in the full-stop position. */
+.wordmark__svg { height: var(--wm-h, 22px); width: auto; overflow: visible; }
+/* Masthead size: close to the mockup's typed wordmark (clamp(1.625rem, 5vw, 2.25rem) of Plex Mono).
+   The SVG sits inline and is lowered by its descender depth (26.02 of 96.08 viewBox units), so the
+   link's baseline is the letters' baseline and the nav, aligned on baseline, lines up with it. */
+.masthead .wordmark { --wm: 24px; line-height: 1; }
+@media (min-width: 48rem) { .masthead .wordmark { --wm: 30px; } }
+.masthead .wordmark__svg { display: inline-block; height: var(--wm); vertical-align: calc(var(--wm) * -0.2708); }
+.wordmark__ast { fill: var(--red); }
+/* Brand asterisk as inline SVG (Asterisk.astro) */
+.asterisk { display: inline-block; width: var(--ast-size, 1em); height: var(--ast-size, 1em); color: var(--ast-color, var(--red)); vertical-align: baseline; flex: none; }
+.nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; }
+.nav a {
+  font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; color: var(--ink); padding-block: 0.3rem; display: inline-block;
+  border-bottom: 1px solid transparent;
+}
+.nav a:hover { border-bottom-color: var(--ink); }
+.nav a[aria-current] { border-bottom-color: var(--red); }
+/* Phone masthead: the same row of links, a little smaller, beside the wordmark; on a very narrow
+   screen the row wraps under the wordmark, at the left. */
+@media (max-width: 47.99rem) {
+  .masthead__row { gap: 0.4rem 1.5rem; padding-block: 0.85rem 0.7rem; }
+  .nav ul { gap: 0.35rem 1rem; }
+  .nav a { font-size: 0.6875rem; }
+}
+
+/* ---------- Section heads ---------- */
+.section { padding-block: 3rem 0; }
+.sect-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem 1.5rem;
+  border-top: 1px solid var(--ink); padding-top: 0.6rem; margin-bottom: 1.5rem;
+}
+.sect-head h2 { font-size: clamp(1.375rem, 3vw, 1.75rem); font-weight: 600; display: flex; gap: 0.75rem; align-items: baseline; }
+.sect-head h2 .label { font-size: 0.75rem; color: var(--ink-2); }
+.sect-head .more { font-family: var(--mono); font-size: 0.8125rem; color: var(--ink); }
+
+/* Page heads for section indexes and plain pages */
+/* Under a bar-only FileHeader (section indexes, How to read, Legal, 404) the head loses its own rule. */
+.page-head.page-head--filed { margin-top: 0; border-top: 0; padding-top: 1.75rem; }
+.page-head { margin-top: 2rem; border-top: 3px double var(--ink); padding-block: 0.6rem 2rem; display: grid; gap: 1rem; }
+/* A section name sits one step above a file's headline (round 5): 48 px at 1280, 32 px at 400. */
+.page-head h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; letter-spacing: -0.015em; line-height: 1.06; max-width: 24ch; }
+.page-head .dek { max-width: 52ch; }
+/* A plain page's byline is structure only (who, revised); the sentences that used to ride in it are
+   ours and sit in a serif note under the dek (round 5). */
+.page-head .byline { max-width: 65ch; }
+.page-note { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--ink-2); max-width: 52ch; }
+
+/* ---------- File header ---------- */
+.file { margin-top: 2rem; border-top: 3px double var(--ink); }
+.file__bar {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1.5rem;
+  font-family: var(--mono); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.06em;
+  padding-block: 0.6rem; border-bottom: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+.file__bar .ref { color: var(--ink); }
+.file__bar .ref b { font-weight: 600; }
+.file__bar .side { color: var(--ink-2); }
+.file__grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px; background: var(--rule); margin: 0; border-bottom: 1px solid var(--rule);
+}
+.file__grid > div { background: var(--paper); padding: 0.7rem 0.75rem 0.75rem 0; }
+.file__grid > div:nth-child(2n) { padding-left: 0.75rem; }
+.file__grid dt { margin-bottom: 0.25rem; }
+.file__grid dd { margin: 0; font-family: var(--mono); font-size: 0.875rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.file__grid dd .sub { color: var(--ink-2); display: block; font-size: 0.8125rem; }
+@media (min-width: 46rem) {
+  .file__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .file__grid > div, .file__grid > div:nth-child(2n) { padding-left: 0.75rem; }
+  .file__grid > div:nth-child(3n+1) { padding-left: 0; }
+}
+
+/* ---------- Dek, byline, "What this means for you" ---------- */
+.dek { font-size: clamp(1.125rem, 2.2vw, 1.375rem); line-height: 1.45; color: var(--ink-2); max-width: 46ch; margin: 0; font-weight: 400; }
+.byline { font-family: var(--mono); font-size: 0.8125rem; color: var(--ink-2); margin: 0; font-variant-numeric: tabular-nums; }
+.byline strong { color: var(--ink); font-weight: 500; }
+/* "What this means for you": inside a finding's after row. */
+.means { border-top: 1px solid var(--rule); padding: 1rem 0 1.25rem; display: grid; gap: 0.4rem; }
+.means p { margin: 0; max-width: var(--measure); font-size: 1rem; }
+@media print, (min-width: 48rem) {
+  .means { grid-template-columns: 13rem minmax(0, 1fr); gap: 1.5rem; padding: 1.1rem 0 1.4rem; }
+  .means .label { padding-top: 0.25rem; }
+}
+
+/* ---------- Spread: facing pages ----------
+   Their words on the verso (mono), ours on the recto (serif), the asterisk in the gutter where they
+   part. Stacked below 48rem: the gutter becomes a horizontal rule with the asterisk at its left
+   end, and the interval row ("+ 33 days") sits on that rule. Side by side from 48rem: the gutter is
+   a vertical hairline with the asterisk centred on it; the interval is a thin row under the verso.
+   Sizes set type, gutter width and asterisk: display (404), lead (article heads), body (findings,
+   diffs, profile), row (index rows), compact (footer). */
+.spread {
+  --sp-gutter: 4.5rem; --sp-ast: 1.5rem; --sp-seam: 3rem;
+  display: grid; grid-template-columns: minmax(0, 1fr); margin: 0;
+  grid-template-areas: "head" "verso" "seam" "recto" "after";
+}
+/* The head row above both pages (a diff's file line, a correction's head): one idiom, a
+   mono row on a hairline whose links carry no underline at rest (round 5). */
+.spread__head {
+  grid-area: head; padding: 0.6rem 0; border-bottom: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 0.8125rem; font-variant-numeric: tabular-nums;
+}
+.spread__head a { text-decoration: none; }
+.spread__head a:hover { text-decoration: underline; }
+.spread__verso { grid-area: verso; min-width: 0; font-family: var(--mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.spread__recto { grid-area: recto; min-width: 0; font-family: var(--serif); color: var(--ink); }
+.spread__after, .spread > figcaption { grid-area: after; }
+.spread__seam { grid-area: seam; position: relative; min-height: var(--sp-seam); }
+.spread__seam::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--rule); }
+.spread__mark {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  background: var(--paper); padding: 0.35rem 0.6rem 0.35rem 0; line-height: 0;
+}
+.spread__mark .asterisk { display: block; }
+.spread__labels { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.85rem; }
+.spread__labels .label:first-child { color: var(--ink); font-weight: 600; }
+.spread__labels .label a { color: var(--ink); }
+/* Their sentence and ours. Sizes below. */
+.spread__q { margin: 0; font-family: var(--mono); font-weight: 400; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.spread__q p { margin: 0 0 0.6em; }
+.spread__q p:last-child { margin-bottom: 0; }
+.spread__q .ref { white-space: nowrap; }
+.spread__a { margin: 0; font-family: var(--serif); font-weight: 700; color: var(--ink); letter-spacing: -0.005em; }
+.spread__src { margin: 1rem 0 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.spread__src p { margin: 0; }
+.spread__src cite { font-style: normal; }
+.spread__evidence { margin: 0.9rem 0 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+/* The interval: mono, khaki, on the stacked rule (count and end date; the start date is on the verso
+   above it); side by side, both dates. */
+.spread__int {
+  grid-area: seam; justify-self: end; align-self: center; position: relative; z-index: 1; margin: 0;
+  background: var(--paper); padding-left: 0.6rem;
+  font-family: var(--mono); font-size: 0.75rem; line-height: 1.4; color: var(--khaki);
+  letter-spacing: 0.04em; font-variant-numeric: tabular-nums;
+}
+.spread__int-n { font-weight: 600; white-space: nowrap; }
+.spread__int-ctx { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* The end date stays visible when stacked, so the count can be checked against what is printed. */
+.spread__int-to { color: var(--ink-2); font-weight: 400; white-space: nowrap; }
+/* Recessed verso (findings). */
+.spread--panel .spread__verso { background: var(--paper-2); padding: 1.25rem 1rem; display: grid; grid-template-rows: auto auto 1fr; }
+.spread--panel .spread__src { align-self: end; }
+.spread--panel .spread__recto { padding: 1.25rem 0 1.5rem; }
+.spread--ruled { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.spread--nomark .spread__seam { --sp-seam: 2rem; }
+
+/* Sizes: one scale. display / lead per mockup A; body is the in-article finding; row the index. */
+.spread--display { --sp-ast: 2rem; --sp-seam: 3.5rem; }
+.spread--display .spread__q { font-size: clamp(1.375rem, 3.4vw, 2.375rem); line-height: 1.28; letter-spacing: -0.01em; text-wrap: balance; }
+.spread--display .spread__a { font-size: clamp(1.5rem, 3.6vw, 2.5rem); line-height: 1.16; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
+.spread--lead { --sp-ast: 1.75rem; }
+.spread--lead .spread__q { font-size: clamp(1.25rem, 2.6vw, 1.75rem); line-height: 1.38; }
+.spread--lead .spread__a { font-size: clamp(1.375rem, 2.8vw, 1.875rem); line-height: 1.25; }
+.spread--body .spread__q { font-size: clamp(1rem, 1.6vw, 1.125rem); line-height: 1.6; }
+.spread--body .spread__a { font-size: clamp(1.1875rem, 2.2vw, 1.4375rem); line-height: 1.3; }
+.spread--row { --sp-gutter: 2.5rem; --sp-ast: 1rem; --sp-seam: 1.75rem; }
+.spread--row .spread__q { font-size: 0.875rem; line-height: 1.55; }
+.spread--row .spread__a { font-size: clamp(1.0625rem, 1.6vw, 1.1875rem); line-height: 1.3; font-weight: 600; }
+.spread--compact { --sp-gutter: 2.5rem; --sp-ast: 0.875rem; --sp-seam: 1.75rem; }
+.spread--compact .spread__q { font-size: 0.8125rem; line-height: 1.6; }
+.spread--compact .spread__a { font-size: 0.9375rem; line-height: 1.4; font-weight: 600; }
+/* Rows and compact pairs sit between list rules: the gutter keeps only its asterisk. */
+.spread--row .spread__seam::before, .spread--compact .spread__seam::before { display: none; }
+/* A stacked row without the asterisk (archive rows) keeps a short seam with its hairline, so its
+   two pages read as one row (round 5). */
+@media (max-width: 47.99rem) {
+  .spread--row.spread--nomark .spread__seam { --sp-seam: 0.5rem; }
+  .spread--row.spread--nomark .spread__seam::before { display: block; }
+}
+.spread--row .spread__mark, .spread--compact .spread__mark { background: none; }
+/* The recto carries their words too (a diff: new version facing old). */
+.spread--theirs .spread__recto { font-family: var(--mono); }
+
+@media print, (min-width: 48rem) {
+  .spread {
+    grid-template-columns: minmax(0, 1fr) var(--sp-gutter) minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto auto;
+    grid-template-areas: "head head head" "verso seam recto" "int seam recto" "after after after";
+  }
+  .spread__seam { min-height: 0; }
+  .spread__seam::before { left: 50%; right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
+  .spread__mark { left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 0.6rem 0; }
+  .spread--display { --sp-ast: 2.5rem; }
+  .spread--lead { --sp-ast: 2rem; }
+  .spread--body { --sp-ast: 1.75rem; }
+  .spread__int {
+    grid-area: int; justify-self: stretch; align-self: start; background: none;
+    padding: 0.5rem 0 0; margin-top: 0.75rem; border-top: 1px solid var(--rule);
+  }
+  .spread__int-ctx { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; color: var(--ink-2); font-weight: 400; }
+  .spread--panel .spread__verso { padding: 1.5rem 1.5rem 1.75rem; }
+  .spread--panel .spread__recto { padding: 1.5rem 0 1.75rem; }
+  /* On a panel the interval continues the recessed page, under a hairline. */
+  .spread--panel .spread__int { margin-top: 0; padding: 0.55rem 1.5rem 0.7rem; background: var(--paper-2); border-top-color: var(--rule); }
+  .spread--panel.spread--int .spread__verso { padding-bottom: 1.25rem; }
+  .spread--row .spread__mark, .spread--compact .spread__mark { top: 0.2rem; transform: translateX(-50%); padding: 0; }
+}
+
+/* ---------- Index rows (case index, services) ---------- */
+.pairs { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--rule); }
+.pairs > li { border-top: 1px solid var(--rule); padding-block: 1rem 1.15rem; }
+.pair .spread__a a { text-decoration: none; }
+.pair .spread__a a:hover { text-decoration: underline; text-decoration-color: var(--red); }
+/* A piece with no quotable sentence on file: our dek, in our voice, and no asterisk. */
+.pair__ours { margin: 0; font-family: var(--serif); font-size: 0.9375rem; line-height: 1.5; color: var(--ink-2); }
+.pair__seen { margin: 0.35rem 0 0; font-size: 0.9375rem; line-height: 1.5; color: var(--ink-2); max-width: 52ch; }
+.pair__meta {
+  margin: 0.75rem 0 0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem;
+  font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.pair__meta b { color: var(--ink); font-weight: 600; }
+.pair__meta .nw { white-space: nowrap; }
+/* The service is the name a reader scans for: ink. The date keeps one place (round 5): its own
+   line below 48rem, the right end of the line from 48rem. */
+.pair__meta .svc { color: var(--ink); }
+.pair__meta time { margin-left: auto; }
+@media (max-width: 47.99rem) { .pair__meta time { flex-basis: 100%; } }
+.legend { margin: 0.75rem 0 0; font-size: 0.875rem; line-height: 1.5; color: var(--ink-2); max-width: var(--measure); }
+
+/* ---------- Case index, compact mode (Related cases) ---------- */
+.cases { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--rule); }
+.case {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem 1rem;
+  grid-template-areas: "ref date" "title title" "tag tag";
+  padding-block: 1rem; border-top: 1px solid var(--rule);
+}
+.case__ref { grid-area: ref; font-family: var(--mono); font-size: 0.8125rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.case__ref b { color: var(--ink); font-weight: 600; }
+.case__date { grid-area: date; font-family: var(--mono); font-size: 0.8125rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.case__title { grid-area: title; }
+.case__title :is(h2, h3, h4) { font-size: 1.25rem; font-weight: 600; line-height: 1.25; }
+.case__title :is(h2, h3, h4) a { text-decoration: none; }
+.case__title :is(h2, h3, h4) a:hover { text-decoration: underline; }
+.case__tag { grid-area: tag; padding-top: 0.15rem; }
+@media (min-width: 52rem) {
+  .case { grid-template-columns: 10.25rem minmax(0, 1fr) 8rem 7.5rem; grid-template-areas: "ref title tag date"; gap: 1.5rem; padding-block: 1.1rem; align-items: baseline; }
+  .case__date { text-align: right; }
+  .case__title :is(h2, h3, h4) { font-size: 1.375rem; }
+}
+
+/* ---------- Diff: facing versions ---------- */
+.diff { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.diff__file { margin: 0; font-weight: 600; color: var(--ink); }
+.diff .spread__verso, .diff .spread__recto { padding-block: 1rem 1.1rem; }
+.diff .spread__verso .spread__labels .label:first-child { color: var(--red); }
+/* Version numbers are their notation: "v4.1", never "V4.1". */
+.diff .spread__labels .label:first-child { text-transform: none; letter-spacing: 0.04em; }
+.diff .spread__recto .spread__labels .label:first-child { color: var(--khaki); }
+.diff__text { color: var(--ink); }
+.diff__text .diff__ctx { color: var(--ink-2); }
+.diff--compact .diff__file { font-weight: 500; }
+@media print, (min-width: 48rem) {
+  .diff .spread__int { margin-bottom: 0.9rem; }
+  /* Compact diffs (Policy history): the gutter asterisk sits level with the first line of text,
+     under the version labels, not on the hairline above them. */
+  .diff.spread--compact .spread__mark { top: calc(1rem + 0.75rem * 1.4 + 0.85rem + 0.2rem); }
+}
+/* Strike and underline are drawn as backgrounds so they can draw in (see Motion); forced-colors
+   and print fall back to real text decoration below. --lw is the line weight. */
+del {
+  --lw: 1.5px; color: var(--red); text-decoration: none;
+  background: linear-gradient(var(--red), var(--red)) no-repeat 0 58% / 100% var(--lw);
+}
+ins {
+  --lw: 2px; color: var(--ink); text-decoration: none; padding-bottom: 0.08em;
+  background: linear-gradient(var(--khaki-rule), var(--khaki-rule)) no-repeat 0 100% / 100% var(--lw);
+}
+@media (forced-colors: active), print {
+  del { text-decoration: line-through; background: none; }
+  ins { text-decoration: underline; text-underline-offset: 0.22em; background: none; }
+}
+.diff__note { padding: 0.75rem 0 0.9rem; border-top: 1px solid var(--rule); margin: 0; font-size: 0.9375rem; color: var(--ink-2); }
+.diff__note p { margin: 0; max-width: var(--measure); }
+.diff__notice { display: block; margin-top: 0.5rem; }
+.diff__notice--none { color: var(--red); }
+
+/* ---------- Footer: our own terms, as facing pages ---------- */
+.footer { margin-top: 4.5rem; border-top: 3px double var(--ink); padding-block: 2rem 2.5rem; }
+.footer__pages { padding-bottom: 1.75rem; border-bottom: 1px solid var(--rule); }
+.footer__pages .spread__seam::before { display: block; }
+/* "and verify." is the footnote to the start page's sentence, under its asterisk: mono. The
+   asterisk stands in the label row, its foot on the row's baseline. */
+.footer__ast { vertical-align: -0.2em; }
+.footer__sign {
+  font-family: var(--mono); font-size: clamp(2rem, 6vw, 3rem); font-weight: 500; line-height: 1;
+  letter-spacing: -0.04em; color: var(--ink); margin: 0.25rem 0 0;
+}
+/* Brand asterisk in the full-stop position (the start page's sentence): bars' foot on the baseline
+   (the viewBox has 3.7% air below them), 0.04em after the last letter's advance. */
+.ast-stop { vertical-align: calc(var(--ast-size) * -0.037); margin-left: 0.04em; }
+.footer__policy { max-width: 46ch; font-size: 1rem; line-height: 1.55; color: var(--ink); margin: 0; }
+/* The colophon is ours: serif, small; it sits on the pages' own bottom hairline. */
+.footer__colophon {
+  padding-top: 0.75rem;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.35rem 1.5rem;
+  font-size: 0.875rem; line-height: 1.5; color: var(--ink-2);
+}
+@media print, (min-width: 48rem) {
+  .footer__colophon { grid-template-columns: minmax(0, 1fr) auto; }
+}
+
+/* ---------- Start page: the one sentence in two lines, centred on the first screen ----------
+   The box takes the viewport under the masthead (about 4.5rem), so the footer starts below the
+   fold and is reached by scrolling. Each line keeps to one line; the longer one is about 10em
+   wide, so 9.6cqi (9.6% of the column's width) fills the column with a little air. The vw value
+   is the fallback for browsers without container units. */
+.start {
+  min-height: calc(100svh - 4.5rem); display: grid; place-items: center; text-align: center;
+  padding-block: 2rem; container-type: inline-size;
+}
+.start h1 {
+  font-size: 8.4vw; font-size: 9.6cqi; line-height: 1.02; letter-spacing: -0.025em;
+  font-weight: 600; max-width: none;
+}
+.start__line { display: block; white-space: nowrap; }
+
+/* Every page takes at least the viewport under the masthead, like the start page, so the footer
+   starts below the fold and is reached by scrolling, also on a page with little content. */
+#main { min-height: calc(100svh - 4.5rem); }
+
+/* ---------- Article ---------- */
+.art-head { padding-block: 1.75rem 2rem; display: grid; gap: 1.1rem; }
+/* Under the head pair, the headline opens below a hairline. */
+.spread + .art-head { border-top: 1px solid var(--rule); padding-top: 1.5rem; }
+/* Their sentence is the headline of the pair; ours follows one step down the scale (mockup A). */
+.spread + .art-head h1 { font-size: clamp(1.75rem, 4.2vw, 2.75rem); line-height: 1.1; max-width: 26ch; }
+/* The fact grid, moved under the byline: no double rule, a hairline above. */
+.file--grid { margin-top: 0; border-top: 1px solid var(--rule); margin-bottom: 1.5rem; }
+.art-head h1 { font-size: clamp(2rem, 5.6vw, 3.625rem); font-weight: 600; letter-spacing: -0.015em; line-height: 1.06; max-width: 24ch; }
+.art-head .dek { max-width: 52ch; }
+.body { display: grid; grid-template-columns: minmax(0, 1fr); padding-top: 0.5rem; }
+.body > * { grid-column: 1; }
+.body > p, .body > h2, .body > h3, .body > ul, .body > ol, .body > .note { max-width: var(--measure); }
+.body > h2 { font-size: clamp(1.375rem, 2.6vw, 1.75rem); margin: 2.25rem 0 0.85rem; }
+.body > h3 { font-size: 1.25rem; margin: 1.75rem 0 0.6rem; }
+.body > ul, .body > ol { padding-left: 1.4rem; margin: 0 0 1em; }
+.note {
+  font-family: var(--mono); font-size: 0.75rem; color: var(--ink-2); line-height: 1.5;
+  margin: 0 0 0.4rem; font-variant-numeric: tabular-nums;
+}
+.note b, .note strong { color: var(--ink); font-weight: 600; }
+.body > .do, .body > .exhibit, .body > .box, .body > .appendix, .body > .table-wrap { margin-block: 1.75rem 2rem; }
+/* Rhythm: a finding gets more air above it; an exhibit stays close to the paragraph introducing it. */
+.body > .do { margin-top: 2.5rem; }
+.body > p + .exhibit { margin-top: 1.5rem; }
+@media (min-width: 64rem) {
+  .body { grid-template-columns: 10.5rem minmax(0, 40rem) minmax(0, 1fr); column-gap: 2.5rem; }
+  .body > * { grid-column: 2; }
+  .body > .note { grid-column: 1; text-align: right; margin: 0; border-top: 1px solid var(--rule); padding-top: 0.4rem; align-self: start; }
+  .body > .do, .body > .exhibit, .body > .related, .body > .appendix, .body > .table-wrap { grid-column: 2 / 4; }
+  .body > .box { grid-column: 2; }
+}
+
+/* ---------- One file, four addresses (round 4) ----------
+   Tab row under the file bar: Story / Evidence / Reply / History.
+   Mono structure, the current tab in ink with an ink underline sitting on the row's hairline. */
+.tabs { display: grid; grid-template-columns: minmax(0, 1fr); }
+.tabs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.75rem; border-bottom: 1px solid var(--rule); }
+.tabs a {
+  display: inline-block; padding-block: 0.55rem 0.45rem; margin-bottom: -1px;
+  font-family: var(--mono); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-2); text-decoration: none; border-bottom: 2px solid transparent;
+}
+.tabs a:hover { color: var(--ink); border-bottom-color: var(--rule); }
+.tabs a[aria-current="page"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+/* "How to read this file" (block B): not a tab. Sentence case, small, ink-2, underlined like any
+   mono link. On a phone it sits on its own line under the hairline, right-aligned, so the current
+   tab's underline always lands on the rule; from 48rem it shares the tab row, on the right. */
+.tabs a.tabs__help {
+  justify-self: end; margin: 0; padding: 0.4rem 0 0.45rem; border: 0;
+  font-size: 0.75rem; font-weight: 400; letter-spacing: 0.02em; text-transform: none;
+  color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--rule);
+}
+.tabs a.tabs__help:hover { color: var(--ink); text-decoration-color: var(--red); }
+@media (min-width: 48rem) {
+  .tabs { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1.5rem; align-items: end; border-bottom: 1px solid var(--rule); }
+  .tabs ul { border-bottom: 0; }
+  .tabs a.tabs__help { padding: 0 0 0.55rem; }
+}
+/* Evidence, Reply and History: the story's title as an over-line back to it, then the part's h1.
+   The title is a sentence of ours, so the over-line is serif (round 5); a section word over a
+   section page's h1 stays mono, see .page-head .part-head__over. */
+.part-head { gap: 0.75rem; }
+.part-head__over { margin: 0; font-family: var(--serif); font-size: 1rem; line-height: 1.45; color: var(--ink-2); max-width: 60ch; text-wrap: balance; }
+.part-head__over a { color: var(--ink); }
+/* The story's scale, so the four addresses of one file open on one h1 (round 5). */
+.part-head h1 { font-size: clamp(1.75rem, 4.2vw, 2.75rem); line-height: 1.1; }
+/* The three part pages open their content the same way: the first block (captures, the reply
+   pair, the policy history) sits directly under the head, full width, 40 px below it (round 5). */
+.part-head + .captures, .part-head + .reply { margin-top: 0.5rem; }
+/* The story's pointer to an exhibit: on its own line, a ruled mono row in the text column. */
+.exh-ref { font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5; color: var(--ink); font-variant-numeric: tabular-nums; }
+.exh-ref b { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.body > .exh-ref { display: block; max-width: var(--measure); margin: 0.25rem 0 1.5rem; padding: 0.6rem 0; border-block: 1px solid var(--rule); }
+.body > .exh-ref + .exh-ref { margin-top: -1.5rem; border-top: 0; }
+.exh-list { border-top: 1px solid var(--ink); padding-top: 0.6rem; margin-block: 2rem 0.5rem; max-width: var(--measure); }
+.exh-list ul { list-style: none; margin: 0.5rem 0 0; padding: 0; border-bottom: 1px solid var(--rule); }
+.exh-list li { border-top: 1px solid var(--rule); padding-block: 0.55rem; }
+/* Capture metadata on the evidence page. */
+.captures { margin-bottom: 1.5rem; }
+.captures .label { margin: 0 0 0.5rem; }
+.captures .ltable tbody th { font-family: var(--mono); font-size: 0.875rem; font-weight: 500; }
+/* Below 40rem each device is one ruled entry: the name, then "system / build / from to to", which
+   wraps between its parts (a date stays whole) instead of running off the frame; with nothing to
+   scroll, the frame loses its focus-ring bleed so the rules end at the gutter (round 5). */
+@media (max-width: 39.99rem) {
+  .captures .table-wrap { margin-inline: 0; padding-inline: 0; }
+  .captures .ctable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .captures .ctable tr { display: block; border-bottom: 1px solid var(--rule); padding-block: 0.6rem 0.7rem; }
+  .captures .ctable tbody tr:last-child { border-bottom: 0; }
+  .captures .ctable th, .captures .ctable td { display: inline; border: 0; padding: 0; white-space: normal; }
+  .captures .ctable tbody th { display: block; margin-bottom: 0.2rem; }
+  .captures .ctable td + td::before { content: " / "; }
+  .captures .ctable td.ctable__to::before { content: " to "; }
+}
+/* A file's own revision log (History): date in mono, what happened in serif, the interval in khaki. */
+.flog { border-top: 1px solid var(--ink); }
+.flog h2 { font-size: 1.375rem; margin: 0.75rem 0 1rem; }
+.flog ol { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--rule); }
+.flog li { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.15rem 1.5rem; border-top: 1px solid var(--rule); padding-block: 0.65rem 0.75rem; }
+.flog time { font-family: var(--mono); font-size: 0.8125rem; color: var(--ink); font-weight: 500; padding-top: 0.15rem; }
+.flog__what { font-size: 1rem; line-height: 1.5; max-width: var(--measure); }
+.flog__int { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.flog__int b { color: var(--khaki); font-weight: 600; }
+@media (min-width: 40rem) { .flog li { grid-template-columns: 7.5rem minmax(0, 1fr); align-items: baseline; } }
+.body > .flog { margin-block: 2.5rem 0; }
+.file-back { margin: 2.5rem 0 0; padding-top: 0.75rem; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 0.8125rem; }
+
+/* Exhibits */
+.exhibit { margin: 0; border: 1px solid var(--rule); }
+.exhibit__cap {
+  display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; justify-content: space-between;
+  font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--ink-2);
+  padding: 0.6rem 0.9rem; border-top: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+.exhibit__cap b { color: var(--ink); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.exhibit__cap .t { flex: 1 1 100%; }
+.exhibit__cap > span:not(.t) { margin-left: auto; text-align: right; }
+.log {
+  margin: 0; padding: 0.9rem; overflow-x: auto; font-size: 0.8125rem; line-height: 1.65; color: var(--ink);
+  white-space: pre; tab-size: 2; background: var(--paper);
+}
+.log .c { color: var(--ink-2); }
+.log .bad { color: var(--red); }
+.shot {
+  margin: 0.9rem; background: var(--paper-2); padding: 1.25rem 1.5rem;
+  display: grid; justify-items: start; gap: 0.6rem;
+  font-family: var(--mono); font-size: 0.8125rem; color: var(--ink-2); line-height: 1.55;
+}
+/* A screenshot exhibit is one frame hugging a 28rem recessed panel (or, later, a 28rem <img>). */
+.exhibit--shot { max-width: calc(28rem + 1.8rem + 2px); justify-self: start; }
+.exhibit > img { display: block; max-width: 28rem; width: calc(100% - 1.8rem); margin: 0.9rem; }
+/* A screenshot as a file (block C): the frame hugs the image's own width (--exh-w, set from its
+   width prop) and never exceeds the column; the image scales down inside it. Never filtered:
+   their pixels are evidence. */
+.exhibit--img { max-width: min(100%, calc(var(--exh-w, 28rem) + 1.8rem + 2px)); justify-self: start; }
+.exhibit > img.exhibit__img { width: calc(100% - 1.8rem); max-width: var(--exh-w, 28rem); height: auto; }
+/* What was painted over, under the caption: always printed, never hidden. */
+.exhibit__cap > span.exhibit__red { flex: 1 1 100%; margin-left: 0; text-align: left; color: var(--ink-2); }
+.shot p { margin: 0; max-width: 46ch; }
+/* The description around a described screenshot is ours; only the UI rows are theirs. */
+.shot > p { font-family: var(--serif); font-size: 0.9375rem; font-style: italic; }
+.shot .ui { color: var(--ink); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 0.6rem 0; width: 100%; display: grid; gap: 0.2rem; }
+.shot .ui .row { display: flex; justify-content: space-between; gap: 1rem; }
+
+/* Data-flow diagram. The drawing has its own divider, so its exhibit drops the frame and keeps
+   only the caption rule. */
+.flow { padding: 1rem 0.9rem 0.75rem; color: var(--ink); }
+.exhibit:has(> .flow) { border: 0; }
+.exhibit:has(> .flow) .flow { padding-inline: 0; }
+.exhibit:has(> .flow) .exhibit__cap { padding-inline: 0; }
+.flow svg { width: 100%; font-family: var(--mono); }
+.flow .flow-tall { display: block; max-width: 26rem; }
+.flow .flow-wide { display: none; }
+@media (min-width: 40rem) {
+  .flow .flow-tall { display: none; }
+  .flow .flow-wide { display: block; }
+}
+.svg-red { stroke: var(--red); }
+.svg-red-fill { fill: var(--red); }
+.svg-sub { fill: var(--ink-2); }
+.svg-rule { stroke: var(--ink-2); }
+
+/* What this means box */
+.box { border: 1px solid var(--ink); padding: 1.1rem 1rem 1.25rem; }
+.box h2 { font-size: 1.375rem; margin: 0.4rem 0 0.75rem; }
+.box ul { margin: 0; padding-left: 1.6rem; max-width: var(--measure); }
+.box li { margin-bottom: 0.55rem; }
+.box li::marker { content: "*  "; color: var(--red); font-family: var(--mono); font-weight: 600; }
+@media (min-width: 40rem) { .box { padding: 1.4rem 1.5rem 1.5rem; } }
+
+/* Policy history */
+/* Compact diffs inside Policy history: hairlines only, the section rule above is enough. */
+
+/* Technical appendix */
+.appendix { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 0.8125rem; line-height: 1.6; }
+.appendix summary {
+  cursor: pointer; padding: 0.9rem 0; list-style: none; display: flex; justify-content: space-between; gap: 1rem;
+  font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.8125rem;
+}
+.appendix summary::-webkit-details-marker { display: none; }
+.appendix summary::after { content: "[+] expand"; font-weight: 400; color: var(--ink-2); letter-spacing: 0.04em; text-transform: none; white-space: nowrap; }
+.appendix[open] summary::after { content: "[−] collapse"; }
+.appendix .inner { padding: 0 0 1.25rem; color: var(--ink); }
+/* Appendix prose is ours (serif); hosts, logs, tables and the dl terms stay mono. */
+.appendix .inner > p, .appendix .inner > ol, .appendix .inner > ul, .appendix dd { font-family: var(--serif); font-size: 0.9375rem; line-height: 1.6; }
+.appendix .inner code { font-size: 0.875em; }
+.appendix h3 { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin: 1.25rem 0 0.4rem; font-weight: 500; }
+.appendix p, .appendix ol, .appendix ul { margin: 0 0 0.75rem; max-width: 80ch; }
+.appendix ol, .appendix ul { padding-left: 1.5rem; }
+.appendix dl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.15rem 1.5rem; margin: 0 0 0.75rem; }
+.appendix dt { color: var(--ink-2); }
+.appendix dd { margin: 0 0 0.5rem; }
+@media (min-width: 40rem) { .appendix dl { grid-template-columns: 11rem minmax(0, 1fr); } .appendix dd { margin: 0; } }
+.scroll { overflow-x: auto; margin: 0 0 0.75rem; border: 1px solid var(--rule); }
+.scroll table { border-collapse: collapse; min-width: 34rem; width: 100%; font-variant-numeric: tabular-nums; }
+.scroll th, .scroll td { text-align: left; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.scroll th { font-weight: 500; color: var(--ink-2); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.scroll tr:last-child td { border-bottom: 0; }
+.scroll td.r { text-align: right; }
+/* A bare Markdown table in a body (not wrapped in .scroll): the same minimal style, and it scrolls
+   inside its own box on a narrow screen, so the page never scrolls sideways. */
+.body > table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; border: 1px solid var(--rule); margin: 0 0 1em; font-variant-numeric: tabular-nums; }
+.body > table th, .body > table td { text-align: left; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.body > table th { font-weight: 500; color: var(--ink-2); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.body > table tr:last-child td { border-bottom: 0; }
+
+/* Related */
+.related { border-top: 1px solid var(--ink); padding-top: 0.6rem; margin-top: 2rem; }
+.related h2 { font-size: 1.375rem; margin: 0 0 0.75rem; }
+
+/* ---------- Service profile ---------- */
+.profile { display: grid; gap: 0 2.5rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 60rem) { .profile { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.facts { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--rule); }
+.facts li { border-top: 1px solid var(--rule); padding: 0.6rem 0; display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+.facts .who { font-family: var(--mono); font-size: 0.875rem; }
+.facts .who .sub { display: block; color: var(--ink-2); font-size: 0.8125rem; }
+.empty { color: var(--ink-2); font-style: italic; }
+/* ---------- Plain pages (how to read, legal, about, 404) ---------- */
+.prose { max-width: var(--measure); }
+.prose h2 { font-size: clamp(1.375rem, 2.6vw, 1.75rem); margin: 2.25rem 0 0.85rem; }
+.prose ul, .prose ol { padding-left: 1.4rem; }
+.prose li { margin-bottom: 0.4rem; }
+
+.prose h3 { font-size: 1.25rem; margin: 2rem 0 0.6rem; }
+.prose h3 .label { margin-right: 0.75rem; }
+.prose > :first-child { margin-top: 0; }
+/* An appendix's text drawing gets the exhibit hairline. */
+.appendix pre.log { border: 1px solid var(--rule); margin: 0 0 0.75rem; }
+/* 404: a display pair, their notice facing our explanation */
+.notfound { padding-block: 2.5rem 2rem; }
+.notfound h1.spread__q { line-height: 1.28; }
+.notfound__more { margin: 1rem 0 0; font-size: clamp(1.0625rem, 1.6vw, 1.1875rem); line-height: 1.5; color: var(--ink-2); max-width: 40ch; }
+.next-links { border-top: 1px solid var(--rule); padding-top: 0.9rem; }
+.next-links ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; }
+.next-links a { font-family: var(--mono); font-size: 0.875rem; display: inline-block; padding-block: 0.3rem; }
+
+/* ---------- Services, diffs, archive ----------
+   Everything else on those pages reuses the classes above (page-head, file, spread, pairs, cases,
+   diff, profile, facts). */
+
+/* FileHeader with an odd number of cells: the last cell
+   spans the leftover columns, so no empty rule-coloured block shows in the grid. */
+.file__grid > div:last-child:nth-child(odd) { grid-column: span 2; }
+@media (min-width: 46rem) {
+  .file__grid > div:last-child:nth-child(odd) { grid-column: auto; }
+  .file__grid > div:last-child:nth-child(3n+2) { grid-column: span 2; }
+  .file__grid > div:last-child:nth-child(3n+1) { grid-column: span 3; }
+}
+
+/* Tables: each scrolls inside its own container, never the page. */
+/* The 5px inline bleed keeps the 2px + 3px focus ring of edge links inside the scroll box. */
+.table-wrap { overflow-x: auto; max-width: calc(100% + 10px); padding-inline: 5px; margin-inline: -5px; }
+.ltable {
+  width: 100%; border-collapse: collapse; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.ltable th, .ltable td { text-align: left; vertical-align: baseline; padding: 0.7rem 1rem 0.75rem 0; border-bottom: 1px solid var(--rule); }
+.ltable th:last-child, .ltable td:last-child { padding-right: 0; }
+.ltable tbody tr:last-child > * { border-bottom: 0; }
+.ltable thead th {
+  font-family: var(--mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-2); padding-block: 0.5rem; vertical-align: bottom;
+}
+.ltable td { font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5; color: var(--ink-2); }
+.ltable .r { text-align: right; white-space: nowrap; }
+.ltable tbody th { font-weight: 600; line-height: 1.3; }
+.ltable tbody th a { text-decoration: none; }
+.ltable tbody th a:hover { text-decoration: underline; }
+/* Who receives it: an undisclosed row is set like any other, in ink; "No" and "not listed" say it
+   in words, with no red. The name is our description of the recipient: serif 600; its host is notation: mono.
+   Below 40rem each row stacks (name, then labelled role / disclosed / where), so nothing scrolls. */
+.rtable tbody th { font-family: var(--serif); font-size: 0.9375rem; font-weight: 600; color: var(--ink); }
+.rtable tbody th .sub { display: block; font-family: var(--mono); font-size: 0.75rem; color: var(--ink-2); font-weight: 400; overflow-wrap: anywhere; }
+.rtable td.role { font-family: var(--serif); font-size: 0.9375rem; color: var(--ink); }
+.rtable .yn, .rtable .where { white-space: nowrap; }
+@media (max-width: 39.99rem) {
+  .rtable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .rtable tr, .rtable th, .rtable td { display: block; }
+  .rtable tr { border-bottom: 1px solid var(--rule); padding-block: 0.7rem 0.8rem; }
+  .rtable tbody tr:last-child { border-bottom: 0; }
+  .rtable th, .rtable td { border: 0; padding: 0; }
+  .rtable td.role { margin-top: 0.35rem; }
+  .rtable td.yn, .rtable td.where { display: inline-block; margin: 0.35rem 1.5rem 0 0; }
+  .rtable td::before {
+    content: attr(data-label) " "; font-family: var(--mono); font-size: 0.75rem; font-weight: 400;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2);
+  }
+  .rtable td.role::before { display: block; margin-bottom: 0.1rem; }
+}
+@media (min-width: 40rem) {
+  .rtable tbody th { min-width: 9rem; }
+  .rtable tbody th .sub { overflow-wrap: normal; white-space: nowrap; }
+  .rtable td.role { min-width: 11rem; }
+}
+@media (min-width: 60rem) { .profile--svc { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } }
+/* Declared vs observed (service profiles): a stack of pairs */
+.do-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.75rem; }
+/* Service profile */
+.svc-note { color: var(--ink-2); font-size: 1rem; max-width: var(--measure); }
+.svc-note p { margin: 0; }
+.svc-flow { margin-top: 2.5rem; max-width: 56rem; }
+.svc-legend { margin-top: 0.75rem; }
+
+/* The intro of the corrections register and the policy archive. */
+.mh-intro { max-width: var(--measure); }
+.mh-intro p { color: var(--ink-2); font-size: 1rem; max-width: var(--measure); }
+.mh-intro .byline { color: var(--ink-2); font-size: 0.8125rem; max-width: none; }
+
+/* ---------- Block A: archive, replies, corrections (8 Oct 2026) ----------
+   Evidential credibility: the full texts we quote (/archive/), the companies' replies in full
+   (…/reply/) and the register of our own corrections (/corrections/). Red is used here only for the
+   asterisk; a refusal to comment is set in ink, like any other status. */
+
+/* Spread: both pages ours (corrections). The verso keeps its place and its colour, in our voice. */
+.spread--ours .spread__verso { font-family: var(--serif); font-variant-numeric: normal; }
+/* A version label that links to the archived text keeps the label's own colour (red / khaki). */
+.diff .spread__labels .label a { color: inherit; text-decoration-color: currentColor; }
+
+/* Archive rows: their document (mono) facing our record of it (serif). */
+.arch-row__title { font-family: var(--mono); font-size: 0.9375rem; font-weight: 600; line-height: 1.4; color: var(--ink); letter-spacing: 0; }
+.arch-row__title a { text-decoration: none; }
+.arch-row__title a:hover { text-decoration: underline; text-decoration-color: var(--red); }
+.arch-row__eff { margin: 0.35rem 0 0; font-size: 0.8125rem; line-height: 1.5; }
+.arch-row__ours { margin: 0; font-size: 0.9375rem; line-height: 1.5; color: var(--ink); max-width: 52ch; }
+.arch-rows + .arch-rows { margin-top: 1.5rem; }
+.arch-intro { margin-bottom: 0.5rem; }
+
+/* Archive text page: metadata grid, the other versions, then the text in one mono column. */
+.arch-meta .file__grid dd { overflow-wrap: anywhere; }
+.arch-links { display: grid; gap: 0.9rem 2.5rem; margin: 0.25rem 0 0; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); }
+.arch-links__row .label { margin: 0 0 0.35rem; }
+.arch-links ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; font-family: var(--mono); font-size: 0.8125rem; line-height: 1.6; font-variant-numeric: tabular-nums; }
+.arch-links b { font-weight: 600; }
+.arch-links__d { color: var(--ink-2); }
+@media print, (min-width: 48rem) { .arch-links { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.arch-text {
+  max-width: 72ch; margin-top: 2rem; font-family: var(--mono); font-size: 0.875rem; line-height: 1.7;
+  color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: break-word;
+}
+@media (min-width: 48rem) { .arch-text { font-size: 0.9375rem; } }
+.arch-text p { margin: 0 0 1em; }
+.arch-text h2, .arch-text h3 { font-family: var(--mono); font-weight: 600; letter-spacing: 0; line-height: 1.45; text-wrap: wrap; }
+.arch-text h2 { font-size: 1em; margin: 2.25em 0 0.9em; padding-top: 0.6em; border-top: 1px solid var(--rule); }
+.arch-text h3 { font-size: 1em; margin: 1.6em 0 0.6em; }
+.arch-text :is(h2, h3):target { background: linear-gradient(var(--mark), var(--mark)) no-repeat 0 var(--mark-pos) / 100% var(--mark-size); }
+.arch-text .arch-text__label { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; border-top: 1px solid var(--ink); padding-top: 0.6rem; margin-bottom: 1.5rem; }
+.arch-text__dl { text-transform: none; letter-spacing: 0.02em; }
+.arch-text__dl a { color: var(--ink); }
+.arch-text__title { font-weight: 600; letter-spacing: 0.04em; }
+.arch-text .arch-text__end { margin-top: 2.5rem; padding-top: 0.6rem; border-top: 1px solid var(--rule); font-size: 0.75rem; color: var(--ink-2); line-height: 1.5; }
+.arch-text__sha { overflow-wrap: anywhere; }
+
+/* Reply page: their reply (mono) facing our note (serif). */
+.reply { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); margin-top: 0.5rem; }
+.reply .spread__verso, .reply .spread__recto { padding-block: 1.1rem 1.25rem; }
+.reply__text { margin: 0; color: var(--ink); font-size: clamp(0.9375rem, 1.4vw, 1rem); line-height: 1.65; }
+.reply__text p { margin: 0 0 1em; }
+/* A further message from the company: its date line, then its text in full. */
+.reply__text .reply__msg { margin: 1.75em 0 0.75em; padding-top: 0.75em; border-top: 1px solid var(--rule); color: var(--ink-2); }
+.reply .spread__src p { margin: 0 0 0.2rem; }
+.reply__ours { font-size: 1rem; line-height: 1.55; max-width: 52ch; }
+.reply__ours .label { margin: 0 0 0.4rem; }
+.reply__ours p { margin: 0 0 1.25rem; }
+.reply__ours p:last-child { margin-bottom: 0; }
+@media print, (min-width: 48rem) { .reply .spread__mark { top: 3.25rem; transform: translateX(-50%); } }
+
+/* Story: the "Company reply" block after the body. */
+.reply-teaser { border-top: 1px solid var(--ink); padding-top: 0.6rem; margin-block: 2.25rem 0.5rem; max-width: var(--measure); }
+.reply-teaser h2 { margin: 0 0 0.75rem; }
+.reply-teaser__q { margin: 0; font-family: var(--mono); font-size: 0.875rem; line-height: 1.6; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.reply-teaser__q p { margin: 0; }
+.reply-teaser__src { margin: 0.6rem 0 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--ink-2); }
+.reply-teaser__src cite { font-style: normal; }
+.reply-teaser__go { margin: 0.6rem 0 0; padding-top: 0.6rem; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 0.8125rem; }
+
+/* Corrections register: our sentence as published facing it as corrected. */
+.cr-list { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 2.5rem; }
+.cr { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.cr__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.25rem 1.5rem; color: var(--ink-2); }
+.cr__file { margin: 0; font-family: var(--mono); font-size: 0.8125rem; font-weight: 600; line-height: 1.5; color: var(--ink); letter-spacing: 0; text-wrap: wrap; }
+/* The corrected file's headline is ours: serif, after the mono "CR-0002 / File 0041" (round 5). */
+.cr__file a { font-family: var(--serif); font-size: 1rem; font-weight: 600; }
+.cr .spread__verso, .cr .spread__recto { padding-block: 1rem 1.1rem; }
+.cr__text { margin: 0; font-size: clamp(1.0625rem, 1.8vw, 1.25rem); line-height: 1.5; color: var(--ink); }
+.cr__text--was { color: var(--ink-2); }
+.cr__text s { text-decoration-thickness: 1.5px; text-decoration-color: var(--ink-2); }
+.cr__note { padding: 0.75rem 0 0.9rem; border-top: 1px solid var(--rule); font-size: 0.9375rem; color: var(--ink-2); }
+.cr__note p { margin: 0 0 0.5rem; max-width: var(--measure); }
+.cr:target { background: linear-gradient(var(--mark), var(--mark)) no-repeat 0 0 / 0.35rem 100%; padding-left: 0.9rem; }
+@media print, (min-width: 48rem) { .cr .spread__mark { top: calc(1rem + 0.75rem * 1.4 + 0.85rem + 0.35rem); transform: translateX(-50%); } }
+
+/* ---------- Block B: content structure (8 Oct 2026) ----------
+   Assessments, topics, the pager, the service profile's pair and /how-to-read/. Assessments are
+   words, never colours of alarm: red stays for the asterisk. */
+
+/* The assessment word: CONSISTENT in ink-2, OPEN TO INTERPRETATION in khaki, DEPARTS FROM THE
+   WORDING in ink at 700 with a 2 px ink underline, so it never reads as the page label beside it.
+   No red, no box. */
+.flag { font-weight: 600; letter-spacing: 0.08em; }
+.flag--fine { color: var(--ink-2); font-weight: 500; }
+.flag--vague { color: var(--khaki); }
+.flag--harmful { color: var(--ink); font-weight: 700; text-decoration: underline 2px; text-underline-offset: 0.3em; }
+
+/* A finding's assessment (a word under the right page's label row): a consistent pair has no
+   asterisk. The row sits where the label row
+   would otherwise meet the observation, and pulls the observation up by its own height. */
+.do__assess { margin: -0.35rem 0 0.5rem; line-height: 1.4; }
+/* Topics line under a byline. */
+.topic-line .label { margin-right: 0.35rem; }
+
+.page-head .part-head__over { margin-bottom: -0.25rem; font-family: var(--mono); font-size: 0.875rem; }
+/* An empty index: "No files yet." */
+.topic-empty { margin-top: 0.5rem; }
+
+/* Pager: the file bar turned over, closing a paginated index. */
+.pager {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: baseline; gap: 1rem;
+  margin-top: 2.5rem; padding-block: 0.6rem; border-top: 1px solid var(--ink); border-bottom: 3px double var(--ink);
+  font-family: var(--mono); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.pager__at { color: var(--ink-2); text-align: center; white-space: nowrap; }
+.pager__next { text-align: right; }
+.pager a { color: var(--ink); display: inline-block; padding-block: 0.2rem; }
+
+/* Service profile: what it collects (their list) facing what leaves the device (our captures). */
+.profile--pair { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 60rem) { .profile--svc.profile--pair { grid-template-columns: minmax(0, 1fr); } }
+.collects-pair { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.collects-pair .spread__verso, .collects-pair .spread__recto { padding-block: 1rem 1.25rem; }
+.collects__list { list-style: none; margin: 0; padding: 0; }
+.spread--body .collects__list { font-size: clamp(0.9375rem, 1.4vw, 1rem); line-height: 1.55; }
+/* No rules inside the pages (round 5): ruled lists implied rows that meet across the gutter, and
+   the two lists do not match one to one. Items are spaced instead. */
+.collects__list li + li { margin-top: 0.6rem; }
+.leaves__list { list-style: none; margin: 0; padding: 0; }
+.leaves__list li { font-size: 1.0625rem; line-height: 1.5; font-weight: 600; max-width: 52ch; }
+.leaves__list li + li { margin-top: 0.6rem; }
+.leaves__note { margin: 0.9rem 0 0; font-size: 0.9375rem; line-height: 1.5; color: var(--ink-2); max-width: 52ch; }
+.leaves__none { margin-top: 0; font-style: italic; }
+.collects-pair .spread__src a { color: inherit; }
+@media print, (min-width: 48rem) { .collects-pair .spread__mark { top: calc(1rem + 0.75rem * 1.4 + 0.85rem + 0.35rem); transform: translateX(-50%); } }
+
+/* How to read a file: live examples set off from the prose. */
+.howto-ex { margin-top: 1.5rem; }
+.howto-after { margin-top: 1.25rem; }
+.howto-exhibit { max-width: 52rem; }
+.howto-bar .file { margin-top: 0; }
+.howto-int { color: var(--khaki); font-weight: 600; font-size: 0.875em; white-space: nowrap; }
+.prose .howto-cats { list-style: none; padding-left: 0; }
+.howto-cats .tag { margin-right: 0.5rem; }
+.howto-dl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.2rem 0; margin: 1rem 0 0; max-width: var(--measure); }
+.howto-dl dt { padding-top: 0.6rem; border-top: 1px solid var(--rule); }
+.howto-dl dd { margin: 0 0 0.6rem; font-size: 1rem; line-height: 1.55; }
+@media (min-width: 40rem) {
+  .howto-dl { grid-template-columns: 8rem minmax(0, 1fr); row-gap: 0; border-bottom: 1px solid var(--rule); }
+  .howto-dl dd { padding: 0.6rem 0 0.6rem 1.5rem; border-top: 1px solid var(--rule); margin: 0; }
+}
+/* The tab row as a static picture: the same type, spans instead of links. */
+.tabs--example { max-width: 40rem; }
+.tabs--example span { display: inline-block; padding-block: 0.55rem 0.45rem; margin-bottom: -1px; font-family: var(--mono); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); border-bottom: 2px solid transparent; }
+.tabs--example span.is-current { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+@media (min-width: 48rem) { .tabs--example { grid-template-columns: minmax(0, 1fr); border-bottom: 0; } .tabs--example ul { border-bottom: 1px solid var(--rule); } }
+
+/* ---------- Block D: the legal page (8 Oct 2026) ----------
+   /legal/ is a plain page (page-head, sections in .prose); what is new is below. */
+/* A value we do not have yet (Placeholder.astro): a mono marker on the recessed paper, so it reads
+   as structure and cannot pass for a real value. Never red: a missing value is not a discrepancy. */
+.ph {
+  /* Never under 0.8125rem, the smallest mono text on the site, even inside a .sub line. */
+  font-family: var(--mono); font-size: max(0.8125rem, 0.875em); font-weight: 500; letter-spacing: 0.02em; color: var(--ink);
+  background: var(--paper-2); padding: 0.05em 0.3em;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+/* An e-mail address is notation: mono, never broken across lines, linked as itself (mailto:). */
+.addr { font-family: var(--mono); font-size: 0.9375em; white-space: nowrap; }
+/* Channel and publisher rows: the label column, then the value in mono; wraps under the label on a phone. */
+.channels li { flex-wrap: wrap; justify-content: flex-start; gap: 0.15rem 1rem; }
+.channels .label { flex: 0 0 11rem; }
+.channels .who { flex: 1 1 18rem; }
+.channels .who .sub { margin-top: 0.25rem; }
+.channels .addr { font-size: 1em; }
+
+/* ---------- Motion (CSS only; nothing moves for reduced-motion users) ----------
+   Every resting state is the finished state, so browsers without support see it complete. Screen
+   only (round 5): a PDF made straight after load must not catch a highlight or an asterisk midway. */
+@keyframes ast-settle {
+  from { opacity: 0.25; rotate: -72deg; scale: 0.7; }
+}
+/* Draws a background line or highlight in from the left; the end state is the element's own size. */
+@keyframes draw {
+  from { background-size: 0% var(--lw, 100%); }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  /* (a) underline offset and colour ease on hover */
+  a { transition: text-decoration-color 160ms ease, text-underline-offset 160ms ease; }
+  a:hover { text-underline-offset: 0.28em; }
+  /* (b) the seam asterisk settles in once on load; the highlighter on their sentence draws in once
+     after it (time-based, so it plays once and rests complete however far the page scrolls) */
+  .spread--display .spread__mark .asterisk, .spread--lead .spread__mark .asterisk, .spread--body .spread__mark .asterisk {
+    animation: ast-settle 700ms cubic-bezier(0.2, 0.7, 0.2, 1) 150ms backwards;
+  }
+  .spread__q mark { animation: draw 600ms cubic-bezier(0.3, 0.6, 0.3, 1) 500ms backwards; }
+  /* (c) appendix opens smoothly where ::details-content and interpolate-size exist */
+  @supports (interpolate-size: allow-keywords) {
+    :root { interpolate-size: allow-keywords; }
+  }
+  @supports selector(::details-content) {
+    .appendix::details-content {
+      block-size: 0; overflow: clip;
+      transition: block-size 320ms ease, content-visibility 320ms allow-discrete;
+    }
+    .appendix[open]::details-content { block-size: auto; }
+  }
+  /* (d) diff strike/underline draw in left to right as they scroll into view. The timeline sits in
+     its own rule: the minifier folds `animation` + `animation-timeline` in one rule into a single
+     shorthand with view() inside it, which browsers reject, and nothing animates. */
+  @supports (animation-timeline: view()) {
+    .diff del, .diff ins { animation: draw linear both; }
+    :is(.diff del, .diff ins) { animation-timeline: view(); animation-range: entry 10% cover 30%; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- Print (block C) ----------
+   A file printed is a file on paper: white paper, black ink, the red kept for the asterisk and the
+   discrepancy marks. Navigation goes (the masthead sections, the sample notice, the tab row, the
+   pager, the skip link); the file bar, the facing pages and the
+   colophon stay. Pairs stay side by side: every "from 48rem" rule that lays out a pair also applies
+   in print (search "print, (min-width: 48rem)"), because A4 and Letter leave about 41rem of
+   measure. The printer's own paper size is used. Each link
+   prints its address after it, internal ones as <domain>/… (--site-host, set by Base.astro), except the wordmark, the footnote
+   asterisk,
+   the exhibit references in a pair's label row (the pair's source line already names the exhibit)
+   and anchors on the same page. Every sheet carries a running head: the page's address and its
+   file reference (see .print-head); on the first sheet the file bar prints the reference, so the
+   head there prints the address only. */
+@page {
+  margin: 18mm 16mm 16mm;
+  @top-left { font-family: "IBM Plex Mono", monospace; font-size: 7.5pt; letter-spacing: 0.04em; color: var(--ink-2); vertical-align: bottom; padding-bottom: 4mm; }
+  @top-right { font-family: "IBM Plex Mono", monospace; font-size: 7.5pt; font-weight: 600; letter-spacing: 0.04em; color: var(--ink); vertical-align: bottom; padding-bottom: 4mm; }
+}
+@media print {
+  :root {
+    --paper: #FFFFFF; --paper-2: #F2F2F2; --ink: #000000; --ink-2: #3D3D3D; --rule: #B5B5B5;
+    --red: #B2271D; --khaki: #5A5212; --khaki-rule: #857A3C; --mark: rgb(239 217 63 / 0.45);
+    --mark-size: 100%; --mark-pos: 0; --focus: #000000;
+    color-scheme: light;
+  }
+  body { font-size: 10.5pt; line-height: 1.5; }
+  .notice, .nav, .skip, .tabs, .pager, .file-back { display: none; }
+  .appendix .inner { display: block; }
+  .appendix summary::after { content: none; }
+  .masthead { border-bottom-width: 1px; }
+  .masthead__row { padding-block: 0 0.5rem; }
+  /* The running head. First sheet: this line, in the flow above the masthead. Later sheets: the
+     same two strings in the top margin boxes, filled per page by an inline print rule in Base and
+     styled below (a position: fixed head repeats too, but overlaps the text of every later sheet). */
+  .print-head {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 1rem; margin: 0 0 0.75rem;
+    font-family: var(--mono); font-size: 7.5pt; letter-spacing: 0.04em; color: var(--ink-2);
+  }
+  .print-head span:last-child { font-weight: 600; color: var(--ink); }
+  /* First sheet: the file bar below prints the reference; the head keeps the address only. */
+  .print-head span + span { display: none; }
+  /* Links: the words, then the address in small mono. */
+  a[href^="http"]::after, a[href^="/"]::after {
+    content: " (" attr(href) ")"; font-family: var(--mono); font-size: 7.5pt; font-weight: 400;
+    letter-spacing: 0; text-transform: none; color: var(--ink-2); overflow-wrap: anywhere;
+  }
+  a[href^="/"]::after { content: " (" var(--site-host) attr(href) ")"; }
+  a.wordmark::after, .spread__labels a::after { content: none; }
+  /* Nothing splits across a sheet that should be read whole. Diagrams print; a lazy image prints
+     once it has loaded (Exhibit `eager` for one that must always print). */
+  .exhibit, .spread, figure, .do, .box, .diff, .cr, .reply, .file__bar, .file__grid, .means, .flog li { break-inside: avoid; }
+  h1, h2, h3, .sect-head, .spread__labels { break-after: avoid; }
+  /* Logs wrap on paper. */
+  .log { white-space: pre-wrap; overflow: visible; }
+  .table-wrap, .scroll { overflow: visible; }
+  /* The asterisk and the marks keep their colour on paper. */
+  .asterisk, .wordmark__ast, .spread__mark, mark, del, ins, .diff__notice--none, .log .bad, .svg-red, .svg-red-fill {
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .exhibit__img { break-inside: avoid; }
+}
+/* A closed technical appendix prints open: its content lives in ::details-content, hidden until open.
+   In its own rule, so a browser that does not know the pseudo-element drops only this rule. */
+@media print {
+  .appendix::details-content { content-visibility: visible; block-size: auto; overflow: visible; }
+}

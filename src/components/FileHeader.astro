@@ -1,0 +1,77 @@
+---
+/**
+ * FileHeader: the dossier header: "FILE 0042 / REV 2026-09-14 ........ SIDE NOTE" over a
+ * hairline grid of facts (service, platforms, policy, tested, category, company reply).
+ * Build `fields` by hand, or with investigationFields(entry, service, 'lead' | 'article')
+ * from src/lib/cases.ts.
+ *
+ * Props:
+ *   fileNo  "0042" (rendered as "FILE 0042"); pass `ref` instead for other identifiers, e.g. "MH-0117"
+ *   ref     full left-hand reference text, overrides fileNo
+ *   rev     revision date (REV …)
+ *   side    right-hand note, e.g. "LEAD CASE"; a Part, so dates may be included
+ *           (["NEWEST ", date, " / 2 SOMA"] renders the date as <time>)
+ *   fields  FileField[]: { label, value?, sub?, category?, href? }; value/sub accept strings, Dates or
+ *           arrays; `href` links the value (e.g. the service name to its profile). May be empty:
+ *           then only the bar renders (section index pages open this way).
+ *   category  optional CategoryTag appended to the side note ("LEAD CASE / QUILL NOTES / SURVEILLANCE")
+ *   part    'all' (default), 'bar' (the bar only, whatever `fields` holds) or 'grid' (the fact grid
+ *           only, with no double rule). Articles open with the bar, set the display pair and the
+ *           headline, then print the grid under the byline.
+ */
+import CategoryTag from './CategoryTag.astro';
+import Stamp from './Stamp.astro';
+import { iso } from '../lib/format';
+import type { Category, FileField, Part } from '../lib/cases';
+
+interface Props {
+  fileNo?: string;
+  ref?: string;
+  rev?: Date;
+  side?: Part;
+  fields: FileField[];
+  category?: Category;
+  part?: 'all' | 'bar' | 'grid';
+}
+const { fileNo, ref, rev, side, fields, category, part = 'all' } = Astro.props;
+const showBar = part !== 'grid';
+const showGrid = part !== 'bar' && fields.length > 0;
+const Tag = part === 'grid' ? 'div' : 'header';
+/* The bar breaks only at a slash (round 5): each " / " segment of the ref and the side note is one
+   unbreakable run (the rule ArchiveRows uses), and the separator is a no-break space, a slash and
+   a space, so a wrapped line ends on the slash and never starts with one. */
+const SEP = '\u00a0/ ';
+const segments = (p: Part): (string | Date)[][] => {
+  const out: (string | Date)[][] = [[]];
+  for (const x of ([] as (string | Date)[]).concat(p)) {
+    if (x instanceof Date) { out[out.length - 1].push(x); continue; }
+    x.split(' / ').forEach((t, i) => { if (i) out.push([]); if (t) out[out.length - 1].push(t); });
+  }
+  return out.filter((seg) => seg.length > 0);
+};
+const refSegs = segments(ref ?? `FILE ${fileNo}`);
+const sideSegs = side !== undefined ? segments(side) : [];
+---
+<Tag class:list={['file', { 'file--bar': !showGrid, 'file--grid': part === 'grid' }]}>
+  {showBar && <div class="file__bar">
+    <span class="ref">
+      <b>{refSegs.map((seg, i) => <>{i > 0 && SEP}<span class="nw"><Stamp part={seg} /></span></>)}</b>{rev && <>{SEP}<span class="nw">REV <time datetime={iso(rev)}>{iso(rev)}</time></span></>}
+    </span>
+    {(sideSegs.length > 0 || category) && <span class="side">{sideSegs.map((seg, i) => <>{i > 0 && SEP}<span class="nw"><Stamp part={seg} /></span></>)}{category && <>{sideSegs.length > 0 && SEP}<CategoryTag category={category} /></>}</span>}
+  </div>}
+  {showGrid && <dl class="file__grid">
+    {fields.map((f) => (
+      <div>
+        <dt class="label">{f.label}</dt>
+        <dd>
+          {f.category ? (
+            <CategoryTag category={f.category} />
+          ) : f.value !== undefined && (
+            f.href ? <a href={f.href}><Stamp part={f.value} /></a> : <Stamp part={f.value} />
+          )}
+          {f.sub !== undefined && <span class="sub"><Stamp part={f.sub} /></span>}
+        </dd>
+      </div>
+    ))}
+  </dl>}
+</Tag>

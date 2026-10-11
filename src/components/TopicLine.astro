@@ -1,0 +1,22 @@
+---
+/**
+ * TopicLine: the mono "Topics" line under a file's byline (story page): the label,
+ * then each topic's label as plain text (this template has no topic pages), separated by slashes as
+ * in the byline above it.
+ * Renders nothing when the file has no topics.
+ *
+ * Props:
+ *   topics  topic slugs (src/lib/topics.ts)
+ */
+import { topicOf, type Topic } from '../lib/topics';
+interface Props {
+  topics: readonly Topic[];
+}
+const { topics } = Astro.props;
+---
+{topics.length > 0 && (
+  <p class="byline topic-line">
+    <span class="label">Topics</span>{' '}
+    {topics.map((t, i) => <>{i > 0 && ' / '}{topicOf(t).label}</>)}
+  </p>
+)}

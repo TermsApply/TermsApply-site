@@ -1,0 +1,67 @@
+---
+/**
+ * Investigation file, the company's reply: /publications/<slug>/reply/. Built only for
+ * investigations with a `reply` in the frontmatter. Same file bar and tab row as the story
+ * ("Story / Evidence / Reply / History"); the story's title as a serif over-line linking back; the
+ * h1 "Reply"; then the reply as facing pages (CompanyReply): their reply in full, in mono, on the
+ * left with its source line; our note on the right: what we asked and when, and `replyNote`, our
+ * paragraph on what the reply does and does not address.
+ */
+import { getEntry } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import FileHeader from '../../../components/FileHeader.astro';
+import FileTabs from '../../../components/FileTabs.astro';
+import CompanyReply from '../../../components/CompanyReply.astro';
+import { fileHref, fileRefOf, getEvidence, getInvestigations, replyOg, replyStatus } from '../../../lib/cases';
+import { long } from '../../../lib/format';
+
+export async function getStaticPaths() {
+  const entries = (await getInvestigations()).filter((e) => e.data.reply);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const reply = d.reply!;
+const service = await getEntry(d.service);
+if (!service) throw new Error(`Unknown service "${d.service.id}" in ${entry.id}`);
+const story = fileHref('investigations', entry.id);
+const evidence = await getEvidence(entry.id);
+const status = replyStatus(d, `investigations/${entry.id}`);
+const name = service.data.name;
+const further = reply.followUps.length;
+const furtherText = further ? ` and ${further === 1 ? 'one further message' : `${further} further messages`}` : '';
+const description =
+  status.kind === 'declined'
+    ? `${name} declined to comment on file ${d.fileNo}. Its reply of ${long(reply.date)}${furtherText}, in full, and our note.`
+    : `${name}’s reply to file ${d.fileNo}, received ${long(reply.date)}${furtherText}, printed in full, and our note on what it addresses.`;
+---
+<Base title={`Reply / ${d.title}`} description={description} type="article" published={d.date} fileRef={fileRefOf(d, 'reply')} og={replyOg(reply, name, d.replyNote, d.title)}>
+  <div class="wrap">
+    <article aria-labelledby="part-title">
+      <FileHeader
+        fileNo={d.fileNo}
+        rev={d.revised ?? d.date}
+        side={`PUBLICATIONS / ${name.toUpperCase()}`}
+        category={d.category}
+        fields={[]}
+      />
+      <FileTabs collection="investigations" slug={entry.id} current="reply" evidence={Boolean(evidence)} reply />
+
+      <div class="art-head part-head">
+        <p class="part-head__over"><a href={story}>{d.title}</a></p>
+        <h1 id="part-title">Reply</h1>
+        <p class="dek">{description}</p>
+      </div>
+
+      <CompanyReply
+        reply={reply}
+        serviceName={name}
+        asked={d.companyAsked}
+        note={d.replyNote}
+        status={status.kind}
+      />
+      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the story</span></a></p>
+    </article>
+  </div>
+</Base>

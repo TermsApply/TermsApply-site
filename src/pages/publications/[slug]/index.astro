@@ -1,0 +1,158 @@
+---
+/**
+ * Investigation file, the story: /publications/<slug>/. One of three addresses under one file
+ * (round 4): the story here, the exhibits at ./evidence/ (only when src/content/evidence/ has a file
+ * for this slug), the company's reply in full at ./reply/ (only when the frontmatter has `reply`) and
+ * the policy history and revision log at ./history/. FileTabs links them.
+ *
+ * When the file has a reply, a "Company reply" block (ReplyTeaser) follows the body: its first words,
+ * in mono, and a link to the Reply page. When the corrections register has entries for the file, the
+ * byline counts them and links to the revision log on the History page. Under the byline, the
+ * Topics line (TopicLine) names the file's topics.
+ *
+ * As facing pages: the file bar and the tab row; the first finding as a lead-size pair (their
+ * sentence at the size of our finding, the interval row between the policy's effective date and the
+ * observation); then our headline, dek and byline; the fact grid; then the body in the margin-note
+ * grid (.body), followed by anything the body did not place itself, "What this means for you" and
+ * related files.
+ *
+ * The first finding is printed once, at the head. In the body, <Finding finding={props.findings[0]} />
+ * receives it marked `inHead` and renders nothing; later findings render as body-size pairs. When
+ * the file has evidence, each finding's evidenceRef ("Exh. 1") links to that exhibit.
+ *
+ * In an .mdx body these components are available without imports:
+ *   Note, Finding (= DeclaredObserved), DeclaredObserved, ExhibitRef, ForReaders, Diff,
+ *   CategoryTag, Asterisk
+ * and these props:  props.findings (frontmatter findings), props.service (service data).
+ * Exhibits, the data flow and the technical appendix live in the evidence file; the story points at
+ * them with <ExhibitRef n={1} />. The build fails if a story points at an exhibit the evidence
+ * file does not have, or uses ExhibitRef with no evidence file at all.
+ *
+ * Fallbacks, so plain .md files still get the full layout: findings not referenced as
+ * props.findings[n] are rendered after the body; if the body has no <ForReaders>, the findings'
+ * `means` lines become the "What this means for you" box; a file with evidence whose body places no
+ * <ExhibitRef> gets a short "Evidence on file" list instead. Related files come last.
+ */
+import { getEntry, render } from 'astro:content';
+import Inline from '../../../components/Inline.astro';
+import NoBreak from '../../../components/NoBreak.astro';
+import Base from '../../../layouts/Base.astro';
+import FileHeader from '../../../components/FileHeader.astro';
+import FileTabs from '../../../components/FileTabs.astro';
+import DeclaredObserved from '../../../components/DeclaredObserved.astro';
+import Note from '../../../components/Note.astro';
+import ExhibitRef from '../../../components/ExhibitRef.astro';
+import Diff from '../../../components/Diff.astro';
+import ForReaders from '../../../components/ForReaders.astro';
+import CategoryTag from '../../../components/CategoryTag.astro';
+import Asterisk from '../../../components/Asterisk.astro';
+import CaseIndex from '../../../components/CaseIndex.astro';
+import ReplyTeaser from '../../../components/ReplyTeaser.astro';
+import TopicLine from '../../../components/TopicLine.astro';
+import {
+  correctionsFor, exhibitId, fileOgVerso, fileRefOf, exhibitRefsIn, exhibitsIn, fileHref, firstExhibit, getEvidence, getInvestigations,
+  investigationFields, resolveRelated,
+} from '../../../lib/cases';
+import { iso, long, range, readingTime } from '../../../lib/format';
+
+export async function getStaticPaths() {
+  const entries = await getInvestigations();
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const service = await getEntry(d.service);
+if (!service) throw new Error(`Unknown service "${d.service.id}" in ${entry.id}`);
+
+const { Content } = await render(entry);
+const body = entry.body ?? '';
+const isMdx = entry.filePath?.endsWith('.mdx') ?? false;
+const minutes = d.readingTime ?? readingTime(body);
+
+/* Evidence: which exhibits exist, and whether every <ExhibitRef> in the story points at one. */
+const evidence = await getEvidence(entry.id);
+const evidenceHref = fileHref('investigations', entry.id, 'evidence');
+const exhibits = evidence ? exhibitsIn(evidence.body) : [];
+const refs = isMdx ? exhibitRefsIn(body) : [];
+for (const n of refs) {
+  if (!evidence) throw new Error(`${entry.id}: <ExhibitRef n={${n}} /> but no src/content/evidence/ file for this investigation`);
+  if (!exhibits.some((x) => x.n === n)) throw new Error(`${entry.id}: <ExhibitRef n={${n}} /> but ${evidence.id} has no <Exhibit n={${n}}>`);
+}
+const exhibitHref = (ref?: string) => {
+  const n = firstExhibit(ref);
+  return n !== undefined && exhibits.some((x) => x.n === n) ? `${evidenceHref}#${exhibitId(n)}` : undefined;
+};
+
+const referenced = new Set(isMdx ? [...body.matchAll(/findings\[(\d+)\]/g)].map((m) => Number(m[1])) : []);
+const findings = d.findings.map((f) => ({ ...f, evidenceHref: exhibitHref(f.evidenceRef) }));
+const [headFinding] = findings;
+// Findings handed to the body: the head finding is flagged so <Finding> skips it.
+const bodyFindings = findings.map((f, i) => (i === 0 ? { ...f, inHead: true } : f));
+const unplaced = findings.filter((_, i) => i > 0 && !referenced.has(i));
+const pull = d.pull && headFinding?.quote.includes(d.pull) ? d.pull : undefined;
+const placesForReaders = isMdx && /<ForReaders\b/.test(body);
+const means = d.findings.map((f) => f.means).filter((m): m is string => Boolean(m));
+
+const related = await resolveRelated(d.related);
+const corrections = await correctionsFor('investigations', entry.id);
+const components = { Note, Finding: DeclaredObserved, DeclaredObserved, ExhibitRef, Diff, ForReaders, CategoryTag, Asterisk };
+---
+<Base title={d.title} description={d.dek} type="article" published={d.date} fileRef={fileRefOf(d)} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: d.title, rectoLabel: 'Observed' }}>
+  <div class="wrap">
+    <article aria-labelledby="art-title">
+      <FileHeader
+        fileNo={d.fileNo}
+        rev={d.revised ?? d.date}
+        side={`PUBLICATIONS / ${service.data.name.toUpperCase()}`}
+        category={d.category}
+        fields={[]}
+      />
+      <FileTabs collection="investigations" slug={entry.id} current="story" evidence={Boolean(evidence)} reply={Boolean(d.reply)} />
+      {headFinding && (
+        <DeclaredObserved
+          finding={headFinding}
+          size="lead"
+          ruled={false}
+          pull={pull}
+          declared={d.policyDate}
+          observed={d.testedFrom}
+        />
+      )}
+
+      <div class="art-head">
+        <h1 id="art-title"><NoBreak text={d.title} /></h1>
+        <p class="dek"><Inline text={d.dek} /></p>
+        <p class="byline">
+          <strong>{d.byline}</strong>&nbsp;/ Published <time datetime={iso(d.date)}>{long(d.date)}</time>
+          {d.revised && <>&nbsp;/ Revised <a href={`${fileHref('investigations', entry.id, 'history')}#revision-log`}><time datetime={iso(d.revised)}>{long(d.revised)}</time></a></>}
+          {corrections.length > 0 && <>&nbsp;/ <a href={`${fileHref('investigations', entry.id, 'history')}#revision-log`}>{corrections.length === 1 ? '1 correction' : `${corrections.length} corrections`}</a></>}
+          {'\u00a0'}/ Tested {range(d.testedFrom, d.testedTo)}&nbsp;/ {minutes}&nbsp;min&nbsp;read
+        </p>
+        <TopicLine topics={d.topics} />
+      </div>
+      <FileHeader part="grid" fields={investigationFields(entry, service, 'article', { linkService: true })} />
+
+      <div class="body">
+        <Content components={components} findings={bodyFindings} service={service.data} />
+        {unplaced.map((f) => <DeclaredObserved finding={f} declared={d.policyDate} observed={d.testedFrom} />)}
+        {d.reply && <ReplyTeaser reply={d.reply} serviceName={service.data.name} href={fileHref('investigations', entry.id, 'reply')} />}
+        {evidence && refs.length === 0 && exhibits.length > 0 && (
+          <section class="exh-list" aria-labelledby="exh-h">
+            <h2 id="exh-h" class="label">Evidence on file</h2>
+            <ul>
+              {exhibits.map((x) => <li><ExhibitRef n={x.n} file={entry.id} label={x.caption.replace(/[.,].*$/, '')} /></li>)}
+            </ul>
+          </section>
+        )}
+        {!placesForReaders && means.length > 0 && <ForReaders items={means} />}
+        {related.length > 0 && (
+          <section class="related" aria-labelledby="rel-h">
+            <h2 id="rel-h">Related cases</h2>
+            <CaseIndex items={related} mode="compact" />
+          </section>
+        )}
+      </div>
+    </article>
+  </div>
+</Base>

@@ -1,0 +1,26 @@
+---
+/**
+ * ForReaders: the ruled "For readers / What this means for you" box. Plain-language advice, as
+ * a list marked with red asterisks. Give `items`, or write a Markdown list in the slot (MDX):
+ *   <ForReaders>
+ *
+ *   - First point.
+ *   - Second point.
+ *
+ *   </ForReaders>
+ *
+ * Props: items?: string[], title (default "What this means for you"), id (default "for-readers")
+ */
+import Inline from './Inline.astro';
+interface Props {
+  items?: string[];
+  title?: string;
+  id?: string;
+}
+const { items, title = 'What this means for you', id = 'for-readers' } = Astro.props;
+---
+<aside class="box" aria-labelledby={id}>
+  <span class="label">For readers</span>
+  <h2 id={id}>{title}</h2>
+  {items ? <ul>{items.map((i) => <li><Inline text={i} /></li>)}</ul> : <slot />}
+</aside>

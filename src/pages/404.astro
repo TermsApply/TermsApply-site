@@ -1,0 +1,29 @@
+---
+/**
+ * 404 as facing pages: the FileHeader bar, then a display <Spread>. Left page, in mono as if
+ * quoted from them: "This page has been rectified." (the h1). Right page, in serif, our plain
+ * explanation. The asterisk in the gutter marks where the two part. Links to the home page and the
+ * investigations index. Kept out of search with Base's noindex.
+ */
+import Base from '../layouts/Base.astro';
+import FileHeader from '../components/FileHeader.astro';
+import Spread from '../components/Spread.astro';
+---
+<Base title="Page not found" description="The address you followed is not in the termsapply archive." noindex fileRef="ERROR 404" og={{ verso: '"This page has been rectified."', versoLabel: 'The record says', recto: 'The address you followed is not in the archive.', source: 'Composite, in their voice', rectoLabel: 'What happened', plain: false }}>
+  <div class="wrap">
+    <FileHeader ref="ERROR 404" side="NOT IN THE ARCHIVE" fields={[]} />
+    <Spread size="display" class="notfound" labels={['The record says', 'What happened']} refs={['404', 'termsapply']}>
+      <h1 slot="verso" class="spread__q">"This page has been rectified."</h1>
+      <Fragment slot="recto">
+        <p class="spread__a">The address you followed is not in the archive.</p>
+        <p class="notfound__more">It may have been mistyped, or the file may have moved. We do not take files down quietly: if one is ever withdrawn, we say so, with the date.</p>
+      </Fragment>
+    </Spread>
+    <nav class="next-links" aria-label="Where to go instead">
+      <ul>
+        <li><a href="/">Home page</a></li>
+        <li><a href="/publications/">Publications</a></li>
+      </ul>
+    </nav>
+  </div>
+</Base>

@@ -1,0 +1,76 @@
+---
+/**
+ * Services index: every service we have a profile for, as pairs. Left page: the sentence its
+ * policy leads with in our newest file on it (the file's `pull`, else its first finding's quote,
+ * trimmed to about 20 words). Right page: the service name and the sentence we found (that
+ * finding's observed line, else the newest file's summary), or its kind when nothing is filed yet. Meta line: kind, platforms,
+ * files, newest file. Opens with the FileHeader bar (profiles left; newest file and file count
+ * right, plus "PAGE 2 OF 3" on a paginated index). PAGE_SIZE profiles to a page
+ * (/services/, /services/page/2/ …), with the Pager at the foot.
+ */
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Inline from '../../components/Inline.astro';
+import Base from '../../layouts/Base.astro';
+import FileHeader from '../../components/FileHeader.astro';
+import Spread from '../../components/Spread.astro';
+import Pager from '../../components/Pager.astro';
+import { getInvestigations, indexRef, paginatePaths, saidOf, withPageNote, type IndexPage, type Part } from '../../lib/cases';
+import { iso } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const services = (await getCollection('services')).sort((a, b) => a.data.name.localeCompare(b.data.name));
+  return paginatePaths(services, '/services/');
+}
+
+const { page } = Astro.props as { page: IndexPage<CollectionEntry<'services'>> };
+const files = await getInvestigations();
+const services = page.data
+  .map((s) => {
+    const own = files
+      .filter((f) => f.data.service.id === s.id)
+      .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+    const lead = own[0];
+    const said = lead ? saidOf(lead.data) : undefined;
+    // What we found: the newest observed line on file, else the newest file's own summary.
+    const seen = own.map((f) => f.data.findings[0]?.observed).find(Boolean) ?? lead?.data.summary ?? lead?.data.dek;
+    return { s, count: own.length, newest: lead?.data.date, said: said?.voice === 'theirs' ? said : undefined, seen };
+  });
+
+const description = 'Every service we have filed on: the sentence its policy leads with, and what we found.';
+const newestFile = files.map((f) => f.data.date).sort((a, b) => b.valueOf() - a.valueOf())[0];
+const side: Part = [
+  ...(newestFile ? ['NEWEST FILE ', newestFile, ' / '] : []),
+  `${files.length}\u00a0${files.length === 1 ? 'FILE' : 'FILES'}`,
+];
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+---
+<Base title={page.current > 1 ? `Services, page ${page.current}` : 'Services'} description={description} prev={page.prevUrl} next={page.nextUrl} fileRef={indexRef('Services', page.total, 'profile', 'profiles')} og={{ verso: 'Services', versoLabel: 'Services' }}>
+  <div class="wrap">
+    <FileHeader ref={indexRef('Services', page.total, 'profile', 'profiles')} side={withPageNote(side, page)} fields={[]} />
+    <div class="page-head page-head--filed">
+      <h1>Services</h1>
+      <p class="dek">{description}</p>
+    </div>
+    <ol class="pairs" aria-label="Services, A to Z">
+      {services.map(({ s, count, newest, said, seen }) => (
+        <Spread as="li" size="row" class="pair" mark={Boolean(said)}>
+          <Fragment slot="verso">
+            {said
+              ? <p class="spread__q">"{said.text}"{said.clause && <> <span class="ref">{said.clause}</span></>}</p>
+              : <p class="pair__ours">No policy sentence on file yet.</p>}
+          </Fragment>
+          <Fragment slot="recto">
+            <h2 class="spread__a"><a href={`/services/${s.id}/`}>{s.data.name}</a></h2>
+            <p class="pair__seen"><Inline text={seen ?? `A ${s.data.kind}. Nothing observed on file yet.`} /></p>
+          </Fragment>
+          <p slot="after" class="pair__meta">
+            <span><span class="nw">{s.data.kind}</span> <span class="nw">/ {s.data.platforms.join(', ')}</span> <span class="nw">/ {plural(count, 'file', 'files')}</span></span>
+            {newest ? <span>newest <time datetime={iso(newest)}>{iso(newest)}</time></span> : <span>no files yet</span>}
+          </p>
+        </Spread>
+      ))}
+    </ol>
+    <p class="legend">Left page: the sentence the policy leads with, from our newest file on the service. Right page: what we found.</p>
+    <Pager page={page} label="Services, pages" />
+  </div>
+</Base>

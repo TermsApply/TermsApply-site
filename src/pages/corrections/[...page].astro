@@ -1,0 +1,100 @@
+---
+/**
+ * Corrections: the register of every correction to our own files, newest first. Each is a
+ * <Spread ours> as a list item anchored #cr-0001 (the anchor the revision logs and the feed link to):
+ *   head    the id, the file it corrects (linked) and the date
+ *   verso   "As published": our sentence as it was
+ *   recto   "As corrected": our sentence as it is now
+ *   after   why, and who reported it
+ * Both pages are our words, so both are serif (`ours`); the asterisk stays in the gutter, because
+ * the two texts part. The words that changed are struck through (verso) and underlined in khaki
+ * (recto), from a word-level comparison (wordDiff in src/lib/format.ts); no red, which stays for
+ * the asterisk. Opens with the FileHeader bar like every index; the intro links to /legal/#corrections
+ * ("How to ask for a correction", block D). PAGE_SIZE corrections to a page
+ * (/corrections/, /corrections/page/2/ …), counts over the whole register, the Pager at the foot.
+ * Revision logs link to each correction on the page it is printed on (getCorrections
+ * gives every entry its `href`: /corrections/#cr-0002, or /corrections/page/2/#cr-0001 later).
+ */
+import Base from '../../layouts/Base.astro';
+import FileHeader from '../../components/FileHeader.astro';
+import Spread from '../../components/Spread.astro';
+import Pager from '../../components/Pager.astro';
+import { correctionId, getCorrections, indexRef, paginatePaths, withPageNote, type IndexPage, type Part } from '../../lib/cases';
+import { iso, wordDiff } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const all = await getCorrections();
+  return paginatePaths(all, '/corrections/').map((p) => ({ ...p, props: { ...p.props, all } }));
+}
+
+type Correction = Awaited<ReturnType<typeof getCorrections>>[number];
+const { page, all: list } = Astro.props as { page: IndexPage<Correction>; all: Correction[] };
+const files = new Set(list.map((c) => `${c.file.collection}/${c.file.id}`)).size;
+const side: Part = [
+  ...(list[0] ? ['NEWEST ', list[0].date, ' / '] : []),
+  `${files} ${files === 1 ? 'FILE' : 'FILES'} CORRECTED`,
+];
+const description = 'Every correction to a file we have published: the sentence as it was, the sentence as it is now, and why.';
+const split = (t: string) => {
+  const m = t.match(/^(.*?)(\s*)$/s)!;
+  return [m[1], m[2]] as const;
+};
+---
+<Base title={page.current > 1 ? `Corrections, page ${page.current}` : 'Corrections'} description={description} prev={page.prevUrl} next={page.nextUrl} fileRef={indexRef('Corrections', list.length, 'correction', 'corrections')} og={{ verso: 'Corrections', versoLabel: 'Corrections' }}>
+  <div class="wrap">
+    <FileHeader ref={indexRef('Corrections', list.length, 'correction', 'corrections')} side={withPageNote(side, page)} fields={[]} />
+    <div class="page-head page-head--filed">
+      <h1>Corrections</h1>
+      <p class="dek">{description}</p>
+    </div>
+
+    <div class="mh-intro">
+      <p>
+        We do not change a published sentence silently. When a file is wrong, we correct it, change its
+        revision date, and enter the correction here: what the file said, on the left; what it says now,
+        on the right; and why, underneath. The correction also appears in the revision log of the file
+        itself.
+      </p>
+      <p class="byline">
+        In the register: <span class="nw">{list.length} {list.length === 1 ? 'correction' : 'corrections'}</span>&nbsp;/ <span class="nw">{files} {files === 1 ? 'file' : 'files'}</span>
+        {'\u00a0'}/ <a class="nw" href="/legal/#corrections">How to ask for a correction</a>
+      </p>
+    </div>
+
+    {list.length > 0 ? (
+      <ol class="cr-list" aria-label="Corrections, newest first">
+        {page.data.map((c) => {
+          const anchor = correctionId(c.id);
+          const diff = wordDiff(c.was, c.now);
+          return (
+            <Spread as="li" class="cr" id={anchor} size="body" ours labelledby={`${anchor}-h`} labels={['As published', 'As corrected']} refs={[c.where, undefined]}>
+              <div slot="head" class="cr__head">
+                <h2 id={`${anchor}-h`} class="cr__file">{c.id} / <span class="nw">{c.target.label}</span>: <a href={c.target.href}>{c.target.title}</a></h2>
+                <time datetime={iso(c.date)}>{iso(c.date)}</time>
+              </div>
+              <p slot="verso" class="cr__text cr__text--was">
+                <span class="sr-only">As published: </span>
+                {diff.was.map((r) => {
+                  const [w, sp] = split(r.text);
+                  return r.changed ? <><s>{w}</s>{sp}</> : r.text;
+                })}
+              </p>
+              <p slot="recto" class="cr__text">
+                <span class="sr-only">As corrected: </span>
+                {diff.now.map((r) => {
+                  const [w, sp] = split(r.text);
+                  return r.changed ? <><ins>{w}</ins>{sp}</> : r.text;
+                })}
+              </p>
+              <div slot="after" class="cr__note">
+                <p>{c.why}</p>
+                <span class="label">Reported by {c.reportedBy}</span>
+              </div>
+            </Spread>
+          );
+        })}
+      </ol>
+    ) : <p class="empty">No corrections yet.</p>}
+    <Pager page={page} label="Corrections, pages" />
+  </div>
+</Base>

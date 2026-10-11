@@ -1,0 +1,83 @@
+---
+/**
+ * CaseIndex: a list of files. Feed it CaseItem[] from src/lib/cases.ts (investigationItem,
+ * resolveRelated).
+ *
+ * mode 'pairs' (default): an index is a list of pairs, not a list of titles. Each row is a
+ *   <Spread size="row">: left page, their sentence in mono with its clause (item.said: the piece's
+ *   `pull`, else its first finding's quote trimmed to about 20 words, else our dek, set in serif and
+ *   without the asterisk); right page, our headline; meta line below (ref / kind / service / tag,
+ *   date). The category label (CategoryTag) sits in the meta line as plain text.
+ * mode 'compact': the old one-line rows (ref / title / tag / date), for "Related cases".
+ *
+ * Props:
+ *   items      CaseItem[]
+ *   mode       'pairs' | 'compact' (default 'pairs')
+ *   level      heading level for titles (default 3)
+ *   label      aria-label for the list (optional)
+ *   legend     add the one-line key (left page / right page / the two categories) under the list
+ *   kinds      print the kind in the meta line (default true); the Investigations index turns it
+ *              off, since its file bar already says it
+ *
+ * In the meta line the service is set in ink, the one name a
+ * reader scans for; the date sits on its own line below 48rem and at the right end from 48rem.
+ */
+import Inline from './Inline.astro';
+import CategoryTag from './CategoryTag.astro';
+import Spread from './Spread.astro';
+import { iso } from '../lib/format';
+import type { CaseItem } from '../lib/cases';
+interface Props {
+  items: CaseItem[];
+  mode?: 'pairs' | 'compact';
+  level?: 2 | 3 | 4;
+  label?: string;
+  legend?: boolean;
+  kinds?: boolean;
+}
+const KIND = { INV: 'Publication' } as const;
+const { items, mode = 'pairs', level = 3, label, legend = false, kinds = true } = Astro.props;
+const H = `h${level}` as 'h2' | 'h3' | 'h4';
+// The category key is printed only when a listed file carries a category (it is optional).
+const categorised = items.some((c) => c.category);
+---
+{mode === 'pairs' ? (
+  <ol class="pairs" aria-label={label}>
+    {items.map((c) => {
+      const theirs = c.said?.voice !== 'ours';
+      return (
+        <Spread as="li" size="row" class="pair" mark={theirs && Boolean(c.said)}>
+          <Fragment slot="verso">
+            {c.said && (theirs
+              ? <p class="spread__q">"{c.said.text}"{c.said.clause && <> <span class="ref">{c.said.clause}</span></>}</p>
+              : <p class="pair__ours"><Inline text={c.said.text} /></p>)}
+          </Fragment>
+          <H slot="recto" class="spread__a"><a href={c.href}>{c.title}</a></H>
+          <p slot="after" class="pair__meta">
+            <span><span class="nw"><b>{c.ref}</b>{kinds && <> / {KIND[c.kind]}</>}</span>{c.service && <> <span class="nw">/ <span class="svc">{c.service}</span></span></>}{c.category && <> <span class="nw">/ <CategoryTag category={c.category} /></span></>}</span>
+            {c.date && <time datetime={iso(c.date)}>{iso(c.date)}</time>}
+          </p>
+        </Spread>
+      );
+    })}
+  </ol>
+) : (
+  <ol class="cases" aria-label={label}>
+    {items.map((c) => (
+      <li class="case">
+        <span class="case__ref"><b>{c.ref}</b> / {KIND[c.kind]}</span>
+        <div class="case__title">
+          <H><a href={c.href}>{c.title}</a></H>
+        </div>
+        <span class="case__tag">{c.category && <CategoryTag category={c.category} />}</span>
+        {c.date ? <time class="case__date" datetime={iso(c.date)}>{iso(c.date)}</time> : <span class="case__date" />}
+      </li>
+    ))}
+  </ol>
+)}
+{legend && (mode === 'pairs' || categorised) && (
+  <p class="legend">
+    {mode === 'pairs' && <>Left page: their words, verbatim. Right page: our file. </>}
+    {categorised && <>Surveillance: taken without asking. Soma: handed over for convenience.</>}
+  </p>
+)}

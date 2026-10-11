@@ -1,0 +1,102 @@
+---
+/**
+ * RoundTrip: inline SVG of one exchange that comes back: the app sends a request, a service answers
+ * with fields, and the app sends some of those fields on in later requests. DataFlow draws data
+ * leaving the device in one direction; this drawing is for the case where the direction is the
+ * finding. Same conventions as DataFlow: plain mono text, ink lines, the engraver's half-barb head,
+ * the dashed device divider, two drawings (wide from 40rem, tall below) shown by the .flow CSS.
+ * Red is not used here: a round trip to a disclosed host is drawn in ink; pass `undisclosed` to
+ * draw the whole exchange red dashed, as DataFlow does for an unlisted host.
+ *
+ * Props:
+ *   app       { name, sub? }: the left node ("Quill Notes", "at cold start")
+ *   service   { name, sub? }: the right node (host, what it is)
+ *   legs      [{ to: 'service' | 'app', lines: string[] }], in order, top to bottom: each an arrow
+ *             with one to three lines of label above it (the request, the answer, the later send)
+ *   undisclosed  draw the exchange red dashed (default false)
+ *   label     override the generated aria-label
+ */
+interface Node { name: string; sub?: string }
+interface Leg { to: 'service' | 'app'; lines: string[] }
+interface Props { app: Node; service: Node; legs: Leg[]; undisclosed?: boolean; label?: string }
+const { app, service, legs, undisclosed = false, label } = Astro.props;
+const cw = (chars: number, px: number) => chars * px * 0.6;
+
+const HEAD = 8;
+const barb = (h: number) => `M0,${h} L-11,-5 L-8,-${h} L-8,${h} Z`;
+type Pt = [number, number];
+const leg = (from: Pt, to: Pt) => {
+  const dir = Math.sign(to[0] - from[0]);
+  const end: Pt = [to[0] - dir * HEAD, to[1]];
+  const len = Math.abs(end[0] - from[0]);
+  return { d: `M${from[0]},${from[1]} L${end[0]},${end[1]}`, len, tip: { x: to[0], y: to[1], rotate: dir > 0 ? 0 : 180 } };
+};
+const dashPhase = (len: number) => +((((6 - len) % 10) + 10) % 10).toFixed(2);
+const stroke = (len: number) =>
+  undisclosed
+    ? { class: 'svg-red', 'stroke-width': '1.75', 'stroke-dasharray': '6 4', 'stroke-dashoffset': String(dashPhase(len)) }
+    : { stroke: 'currentColor', 'stroke-width': '1.5' };
+const headCls = undisclosed ? 'svg-red-fill' : undefined;
+const aria =
+  label ??
+  `${app.name} and ${service.name}: ` + legs.map((l) => `${l.to === 'service' ? 'to the service' : 'back to the app'}: ${l.lines.join(' ')}`).join('; ') + '.';
+
+/* Wide: nodes left and right, one arrow per leg between them, labels above each arrow. */
+const W = 760;
+const RX = 516;
+const DIV = 400;
+const x0 = Math.max(110, 20 + Math.max(cw(app.name.length, 15), cw(app.sub?.length ?? 0, 12)) + 10);
+const rowH = (l: Leg) => 34 + l.lines.length * 16;
+const wideRows = legs.reduce<{ l: Leg; y: number; top: number }[]>((acc, l) => {
+  const top = acc.length ? acc[acc.length - 1].y + 26 : 44;
+  acc.push({ l, top, y: top + rowH(l) - 14 });
+  return acc;
+}, []);
+const wideH = wideRows[wideRows.length - 1].y + 40;
+const midY = wideRows.length ? (wideRows[0].y + wideRows[wideRows.length - 1].y) / 2 : 80;
+const wide = wideRows.map(({ l, y }) => ({ l, y, leg: l.to === 'service' ? leg([x0, y], [RX - 10, y]) : leg([RX - 10, y], [x0, y]) }));
+
+/* Tall: both names on top, then one arrow row per leg across the width, labels above. */
+const TW = 380;
+const tallRows = legs.reduce<{ l: Leg; y: number; top: number }[]>((acc, l) => {
+  const top = acc.length ? acc[acc.length - 1].y + 24 : 96;
+  acc.push({ l, top, y: top + l.lines.length * 16 + 12 });
+  return acc;
+}, []);
+const tallH = tallRows[tallRows.length - 1].y + 30;
+const tall = tallRows.map(({ l, y }) => ({ l, y, leg: l.to === 'service' ? leg([24, y], [TW - 24, y]) : leg([TW - 24, y], [24, y]) }));
+---
+<div class="flow">
+  <svg class="flow-wide" viewBox={`0 0 ${W} ${wideH}`} role="img" aria-label={aria} fill="currentColor">
+    <text x="20" y="26" font-size="11" letter-spacing="1.2" class="svg-sub">ON YOUR DEVICE</text>
+    <text x={DIV + 20} y="26" font-size="11" letter-spacing="1.2" class="svg-sub">LEAVES YOUR DEVICE</text>
+    <line x1={DIV} y1="14" x2={DIV} y2={wideH - 8} class="svg-rule" stroke-width="1" stroke-dasharray="2 4" />
+    <text x="20" y={midY} font-size="15" font-weight="600">{app.name}</text>
+    {app.sub && <text x="20" y={midY + 20} font-size="12" class="svg-sub">{app.sub}</text>}
+    <text x={RX} y={midY} font-size="14" font-weight="600">{service.name}</text>
+    {service.sub && <text x={RX} y={midY + 20} font-size="12" class="svg-sub">{service.sub}</text>}
+    {wide.map(({ l, y, leg: g }) => (
+      <g>
+        <path d={g.d} fill="none" {...stroke(g.len)} />
+        <path d={barb(undisclosed ? 0.875 : 0.75)} transform={`translate(${g.tip.x},${g.tip.y})${g.tip.rotate ? ` rotate(${g.tip.rotate})` : ''}`} class={headCls} />
+        {l.lines.map((t, i) => <text x={x0 + 20} y={y - 10 - (l.lines.length - 1 - i) * 16} font-size="12" class={undisclosed ? 'svg-red-fill' : undefined}>{t}</text>)}
+      </g>
+    ))}
+  </svg>
+  <svg class="flow-tall" viewBox={`0 0 ${TW} ${tallH}`} role="img" aria-label={aria} fill="currentColor">
+    <text x="16" y="34" font-size="15" font-weight="600">{app.name}</text>
+    {app.sub && <text x="16" y="52" font-size="12" class="svg-sub">{app.sub}</text>}
+    <text x={TW - 16} y="34" font-size="13" font-weight="600" text-anchor="end">{service.name}</text>
+    {service.sub && <text x={TW - 16} y="52" font-size="12" text-anchor="end" class="svg-sub">{service.sub}</text>}
+    <line x1="0" y1="66" x2={TW} y2="66" class="svg-rule" stroke-width="1" stroke-dasharray="2 4" />
+    <text x="16" y="82" font-size="11" letter-spacing="1" class="svg-sub">DEVICE</text>
+    <text x={TW - 16} y="82" font-size="11" letter-spacing="1" text-anchor="end" class="svg-sub">SERVICE</text>
+    {tall.map(({ l, y, leg: g }) => (
+      <g>
+        <path d={g.d} fill="none" {...stroke(g.len)} />
+        <path d={barb(undisclosed ? 0.875 : 0.75)} transform={`translate(${g.tip.x},${g.tip.y})${g.tip.rotate ? ` rotate(${g.tip.rotate})` : ''}`} class={headCls} />
+        {l.lines.map((t, i) => <text x="24" y={y - 10 - (l.lines.length - 1 - i) * 16} font-size="12" class={undisclosed ? 'svg-red-fill' : undefined}>{t}</text>)}
+      </g>
+    ))}
+  </svg>
+</div>

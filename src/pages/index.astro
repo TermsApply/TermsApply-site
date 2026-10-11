@@ -1,0 +1,20 @@
+---
+/**
+ * Home = the start page: the masthead (wordmark, Publications, About), then one sentence in two
+ * lines, as wide as the column and centred on the first screen (.start in global.css), ending on
+ * the brand asterisk in place of the full stop. The footer starts below the fold.
+ */
+import Asterisk from '../components/Asterisk.astro';
+import Base from '../layouts/Base.astro';
+import { SITE } from '../lib/site';
+
+const [first, second] = ['Terms and conditions', 'are meant to be read'];
+const statement = `${first} ${second}`;
+---
+<Base description={SITE.description} fileRef="COVER" footerSign="and verify." og={{ verso: statement, versoLabel: SITE.name, plain: true }}>
+  <div class="wrap">
+    <section class="start" aria-label="termsapply">
+      <h1><span class="start__line">{first}</span> <span class="start__line">{second}<Asterisk size="0.4em" class="ast-stop" /></span></h1>
+    </section>
+  </div>
+</Base>

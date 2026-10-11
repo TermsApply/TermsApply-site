@@ -1,0 +1,11 @@
+---
+/**
+ * Stamp: renders a Part (see src/lib/cases.ts): a string, a Date, or an array of both.
+ * Dates become <time datetime="YYYY-MM-DD">YYYY-MM-DD</time>. Used inside FileHeader cells.
+ */
+import { iso } from '../lib/format';
+import type { Part } from '../lib/cases';
+interface Props { part: Part }
+const parts = ([] as (string | Date)[]).concat(Astro.props.part);
+---
+{parts.map((p) => (p instanceof Date ? <time datetime={iso(p)}>{iso(p)}</time> : p))}

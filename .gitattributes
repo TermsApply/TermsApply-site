@@ -1,0 +1,6 @@
+# Archived policy texts are published byte for byte and checked against their SHA-256: never let
+# Git convert their line endings.
+src/content/policies/text/*.txt -text
+# Downloads in public/files/ (captures, checksums, scripts) are served byte for byte and their
+# SHA-256 is published: never let Git convert their line endings either.
+public/files/** -text

@@ -1,0 +1,33 @@
+---
+/**
+ * Footer: the site applies its own grammar to itself. A <Spread size="compact"> with no gutter
+ * asterisk (our policy does not part from what we say): on the left page, under the brand asterisk
+ * where a label would be, the sign in mono: "for everyone." on every page, and on the start page
+ * "and verify.", the footnote to its sentence, which ends on the same asterisk ("Terms and
+ * conditions are meant to be read*"); on the right page, our two-sentence
+ * privacy policy in full, in serif, because it is ours (PRIVACY_POLICY in src/lib/site.ts). Then a
+ * colophon with a link to the legal notice (/legal/).
+ */
+import Asterisk from './Asterisk.astro';
+import Spread from './Spread.astro';
+import { PRIVACY_POLICY } from '../lib/site';
+
+interface Props {
+  /** The words under the asterisk on the left page. */
+  sign?: string;
+}
+const { sign = 'for everyone.' } = Astro.props;
+---
+<footer class="footer">
+  <div class="wrap">
+    <Spread size="compact" class="footer__pages" mark={false} labels={[undefined, 'Our privacy policy']} refs={[undefined, 'In full']}>
+      <Asterisk slot="verso-label" size="1.5rem" class="footer__ast" />
+      <p slot="verso" class="footer__sign">{sign}</p>
+      <p slot="recto" class="footer__policy">{PRIVACY_POLICY}</p>
+    </Spread>
+    <div class="footer__colophon">
+      <span>Fonts served from this domain.</span>
+      <span><a href="/legal/">Legal notice</a>.</span>
+    </div>
+  </div>
+</footer>

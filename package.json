@@ -1,0 +1,33 @@
+{
+  "name": "termsapply",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "check": "ASTRO_TELEMETRY_DISABLED=1 astro check && npm run check:clean",
+    "astro": "ASTRO_TELEMETRY_DISABLED=1 astro",
+    "check:links": "node scripts/check-links.mjs",
+    "check:render": "node scripts/check-render.mjs",
+    "policy:sha": "node scripts/policy-sha.mjs",
+    "check:og": "node scripts/check-og.mjs",
+    "check:clean": "node scripts/check-clean.mjs"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^8.0.3",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/literata": "^5.3.0",
+    "astro": "^7.3.6"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@resvg/resvg-js": "2.6.2",
+    "satori": "0.41.0",
+    "typescript": "^6.0.3"
+  }
+}

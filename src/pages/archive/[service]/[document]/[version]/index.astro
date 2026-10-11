@@ -1,0 +1,90 @@
+---
+/**
+ * One archived version of one policy document: /archive/<service>/<document>/<version>/.
+ * The file bar ("ARCHIVE / QUILL NOTES / PRIVACY POLICY v4.2"); our h1 and one-line dek; the
+ * metadata as a mono fact grid (service, document, version and effective date, retrieved, source
+ * URL as text, the plain-text file and its size, the SHA-256 in full); the other versions on file;
+ * then the text itself, all of it,
+ * in a single mono column: it is all their words. Blank lines in the file part paragraphs, numbered
+ * clause headings become headings anchored #s-3-1 (policyBlocks in src/lib/archive.ts), and long
+ * lines wrap. The raw .txt is served next to the page, byte for byte ([file].txt.ts).
+ */
+import { getEntry } from 'astro:content';
+import Base from '../../../../../layouts/Base.astro';
+import FileHeader from '../../../../../components/FileHeader.astro';
+import { getPolicies, policyBlocks, type ArchivedPolicy } from '../../../../../lib/archive';
+import type { FileField } from '../../../../../lib/cases';
+import { iso, long } from '../../../../../lib/format';
+
+export async function getStaticPaths() {
+  const policies = await getPolicies();
+  return policies.map((p) => ({
+    params: { service: p.serviceId, document: p.documentSlug, version: p.version },
+    props: { policy: p },
+  }));
+}
+
+const { policy: p } = Astro.props as { policy: ArchivedPolicy };
+const service = await getEntry('services', p.serviceId);
+if (!service) throw new Error(`Unknown service "${p.serviceId}" in the policy archive`);
+const versions = (await getPolicies()).filter((x) => x.serviceId === p.serviceId && x.documentSlug === p.documentSlug);
+const blocks = policyBlocks(p.text);
+const name = `${p.serviceName} ${p.document} ${p.version}`;
+// The file bar's reference, also the card's and the printed running head's: "v4.2", never "V4.2".
+const ref = `ARCHIVE / ${p.serviceName.toUpperCase()} / ${p.document.toUpperCase()} ${p.version}`;
+
+const fields: FileField[] = [
+  { label: 'Service', value: p.serviceName, sub: service.data.kind, href: `/services/${p.serviceId}/` },
+  { label: 'Document', value: p.document, sub: `${p.words.toLocaleString('en-GB')} words` },
+  { label: 'Version', value: p.version, sub: p.effective ? ['effective ', p.effective] : 'effective date not stated' },
+  { label: 'Retrieved', value: p.retrieved, sub: 'as retrieved on this date' },
+  { label: 'Source', value: p.sourceUrl ?? 'not recorded', sub: p.sourceUrl ? 'as text: this site links to no other host' : undefined },
+  { label: 'Plain text', value: p.textFile, sub: `${p.bytes.length.toLocaleString('en-GB')} bytes, UTF-8, unchanged`, href: p.txtHref },
+  { label: 'SHA-256', value: p.sha256, sub: 'of the plain-text file, checked at every build' },
+];
+const titleLine = blocks.find((b) => b.kind === 'title')?.text ?? name;
+const description = `The ${p.serviceName} ${p.document.toLowerCase()}, version ${p.version.replace(/^v/, '')}, in full, as we retrieved it on ${long(p.retrieved)}. Their words, unedited.`;
+---
+<Base title={`${name} / Archive`} description={description} fileRef={ref} og={{ verso: titleLine, versoLabel: `Retrieved ${iso(p.retrieved)}`, source: name, rectoLabel: 'In the archive', mark: false, plain: false }}>
+  <div class="wrap">
+    <article aria-labelledby="arch-title">
+      <FileHeader
+        ref={ref}
+        side={['RETRIEVED ', p.retrieved]}
+        fields={[]}
+      />
+      <div class="art-head part-head">
+        <p class="part-head__over"><a href={`/archive/${p.serviceId}/`}>{p.serviceName}: policies on file</a></p>
+        <h1 id="arch-title">{p.document} {p.version}</h1>
+        <p class="dek">{description}</p>
+      </div>
+      <div class="arch-meta">
+        <FileHeader part="grid" fields={fields} />
+      </div>
+
+      <div class="arch-links">
+        <nav class="arch-links__row" aria-labelledby="arch-v">
+          <p class="label" id="arch-v">Versions on file</p>
+          <ul>
+            {versions.map((v) => (
+              <li>{v === p
+                ? <span aria-current="page"><b>{v.version}</b> (this version)</span>
+                : <a href={v.href}>{v.version}</a>}{v.effective && <span class="arch-links__d"> <time datetime={iso(v.effective)}>{iso(v.effective)}</time></span>}</li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      <section class="arch-text" aria-label={`The text of ${name}`}>
+        <p class="label arch-text__label">The text, as retrieved <span class="arch-text__dl"><a class="go" href={p.txtHref}><span class="go__w">Plain text</span><span class="go__ar" aria-hidden="true">{' '}→</span></a></span></p>
+        {blocks.map((b) =>
+          b.kind === 'h' ? (b.level === 2 ? <h2 id={b.id}>{b.text}</h2> : <h3 id={b.id}>{b.text}</h3>)
+          : b.kind === 'title' ? <p class="arch-text__title">{b.text}</p>
+          : <p>{b.lines.map((l, i) => <>{i > 0 && <br />}{l}</>)}</p>
+        )}
+        <p class="arch-text__end">End of {p.document} {p.version} / SHA-256 <span class="arch-text__sha">{p.sha256}</span></p>
+      </section>
+      <p class="file-back"><a class="go" href={`/archive/${p.serviceId}/`}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">All {p.serviceName} documents on file</span></a></p>
+    </article>
+  </div>
+</Base>

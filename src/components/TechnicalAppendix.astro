@@ -1,0 +1,25 @@
+---
+/**
+ * TechnicalAppendix: collapsed <details> in mono at the end of an article, for the evidence
+ * engineers want and readers can skip. Opens smoothly where ::details-content and
+ * interpolate-size are supported (CSS only, see global.css "Motion"). Inside, use ### headings,
+ * <dl>, lists, and wrap wide tables in <div class="scroll" tabindex="0" role="region" aria-label="…">.
+ *
+ * Props:
+ *   title  summary text (default "Technical appendix")
+ *   id     anchor id (default "appendix")
+ *   open   start expanded
+ */
+interface Props {
+  title?: string;
+  id?: string;
+  open?: boolean;
+}
+const { title = 'Technical appendix', id = 'appendix', open = false } = Astro.props;
+---
+<details class="appendix" id={id} open={open}>
+  <summary>{title}</summary>
+  <div class="inner">
+    <slot />
+  </div>
+</details>

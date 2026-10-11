@@ -1,0 +1,108 @@
+---
+/**
+ * Investigation file, the evidence: /publications/<slug>/evidence/. Built only for investigations
+ * with a file in src/content/evidence/ (its `file` names the investigation). Same file bar and tab
+ * row as the story; the story's title as a serif over-line linking back; the h1 "Evidence"; the
+ * evidence file's `summary`; the capture metadata (`captures`: device, OS, app build, first and
+ * last day) as a table; then the evidence body in the margin-note grid: exhibits (logs, described
+ * screenshots), the data-flow drawing inside its exhibit, and the technical appendix. Exhibits are
+ * anchored #exh-1, #exh-2, … (Exhibit.astro), which is where the story's <ExhibitRef> links land.
+ *
+ * In the evidence .mdx body these are available without imports:
+ *   Note, Exhibit, DataFlow, RoundTrip, Timeline, TechnicalAppendix, Diff, CategoryTag, Asterisk
+ * and props.findings (the investigation's findings) and props.service (service data).
+ */
+import { getCollection, getEntry, render } from 'astro:content';
+import Inline from '../../../components/Inline.astro';
+import Base from '../../../layouts/Base.astro';
+import FileHeader from '../../../components/FileHeader.astro';
+import FileTabs from '../../../components/FileTabs.astro';
+import Note from '../../../components/Note.astro';
+import Exhibit from '../../../components/Exhibit.astro';
+import DataFlow from '../../../components/DataFlow.astro';
+import RoundTrip from '../../../components/RoundTrip.astro';
+import Timeline from '../../../components/Timeline.astro';
+import TechnicalAppendix from '../../../components/TechnicalAppendix.astro';
+import Diff from '../../../components/Diff.astro';
+import CategoryTag from '../../../components/CategoryTag.astro';
+import Asterisk from '../../../components/Asterisk.astro';
+import { exhibitsIn, fileHref, fileOgVerso, fileRefOf } from '../../../lib/cases';
+import { iso, range } from '../../../lib/format';
+
+export async function getStaticPaths() {
+  const files = await getCollection('evidence');
+  return Promise.all(
+    files.map(async (evidence) => {
+      const entry = await getEntry(evidence.data.file);
+      if (!entry) throw new Error(`Evidence ${evidence.id}: no investigation "${evidence.data.file.id}"`);
+      return { params: { slug: entry.id }, props: { entry, evidence } };
+    }),
+  );
+}
+
+const { entry, evidence } = Astro.props;
+const d = entry.data;
+const service = await getEntry(d.service);
+if (!service) throw new Error(`Unknown service "${d.service.id}" in ${entry.id}`);
+const story = fileHref('investigations', entry.id);
+const { Content } = await render(evidence);
+const exhibits = exhibitsIn(evidence.body);
+const captures = evidence.data.captures ?? [];
+const description =
+  evidence.data.summary ?? `The exhibits, the data flow and the technical appendix for file ${d.fileNo}: ${d.title}`;
+const count = `${exhibits.length}\u00a0${exhibits.length === 1 ? 'exhibit' : 'exhibits'}`;
+const components = { Note, Exhibit, DataFlow, RoundTrip, Timeline, TechnicalAppendix, Diff, CategoryTag, Asterisk };
+---
+<Base title={`Evidence / ${d.title}`} description={description} type="article" published={d.date} fileRef={fileRefOf(d, 'evidence')} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: evidence.data.summary ?? d.title, rectoLabel: 'Evidence' }}>
+  <div class="wrap">
+    <article aria-labelledby="part-title">
+      <FileHeader
+        fileNo={d.fileNo}
+        rev={d.revised ?? d.date}
+        side={`PUBLICATIONS / ${service.data.name.toUpperCase()}`}
+        category={d.category}
+        fields={[]}
+      />
+      <FileTabs collection="investigations" slug={entry.id} current="evidence" evidence reply={Boolean(d.reply)} />
+
+      <div class="art-head part-head">
+        <p class="part-head__over"><a href={story}>{d.title}</a></p>
+        <h1 id="part-title">Evidence</h1>
+        <p class="dek"><Inline text={description} /></p>
+        <p class="byline">
+          {count}&nbsp;/ Tested {range(d.testedFrom, d.testedTo)}&nbsp;/ {d.platforms.length}&nbsp;{d.platforms.length === 1 ? 'platform' : 'platforms'}
+          {'\u00a0'}/ policy {d.policyVersion}, eff. <time datetime={iso(d.policyDate)}>{iso(d.policyDate)}</time>
+        </p>
+      </div>
+
+      {captures.length > 0 && (
+        <section class="captures" aria-labelledby="cap-h">
+          <h2 id="cap-h" class="label">Capture</h2>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Devices captured, scrolls horizontally">
+            <table class="ltable ctable">
+              <thead>
+                <tr><th scope="col">Device</th><th scope="col">System</th><th scope="col">App build</th><th scope="col" class="r">From</th><th scope="col" class="r">To</th></tr>
+              </thead>
+              <tbody>
+                {captures.map((c) => (
+                  <tr>
+                    <th scope="row">{c.device}</th>
+                    <td>{c.os}</td>
+                    <td>{c.app}</td>
+                    <td class="r"><time datetime={iso(c.from)}>{iso(c.from)}</time></td>
+                    <td class="r ctable__to"><time datetime={iso(c.to)}>{iso(c.to)}</time></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      <div class="body">
+        <Content components={components} findings={d.findings} service={service.data} />
+      </div>
+      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the story</span></a></p>
+    </article>
+  </div>
+</Base>

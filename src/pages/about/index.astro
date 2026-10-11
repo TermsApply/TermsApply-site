@@ -1,0 +1,23 @@
+---
+/**
+ * About: /about/. The page head with one sentence on who we are, and how to write to us (the
+ * publisher's address from src/lib/contact.ts); the masthead links here.
+ */
+import Base from '../../layouts/Base.astro';
+import { PUBLISHER } from '../../lib/contact';
+
+const about = 'Just a few curious people from the internet.';
+---
+<Base title="About" description={about} fileRef="ABOUT" og={{ verso: 'About', versoLabel: 'About' }}>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>About</h1>
+      <p class="dek">{about}</p>
+    </div>
+    <section class="section" aria-label="Contact">
+      <div class="prose">
+        <p>You can write to us at <a class="addr" href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>.</p>
+      </div>
+    </section>
+  </div>
+</Base>

@@ -1,0 +1,39 @@
+---
+/**
+ * Masthead: optional sample-content notice bar, the wordmark and the section nav, sharing a
+ * baseline. The motto (SITE.motto) is not in the masthead: it is the start page's sentence and the
+ * home page <title>.
+ * The notice bar (SITE.sampleNotice) is the only per-page notice that the content is fictional (the
+ * legal notice, /legal/#sample, states it once more, as a legal statement, while the flag is on):
+ * two spans from 40rem, one short line below that, so it never takes more than one line on a phone.
+ * Sections come from NAV in src/lib/site.ts. The current section gets aria-current:
+ * "page" on its own index, "true" anywhere below it.
+ *
+ * One row of links at every width: two links fit beside the wordmark on a phone, and on a very
+ * narrow screen the row wraps under it (global.css, .masthead__row). No menu, no script.
+ */
+import Wordmark from './Wordmark.astro';
+import { NAV, SITE } from '../lib/site';
+
+const path = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const current = (href: string) => (path === href ? 'page' : path.startsWith(href) ? 'true' : undefined);
+---
+{SITE.sampleNotice && (
+  <div class="notice">
+    <div class="wrap">
+      <span class="notice__long">Sample edition</span>
+      <span class="notice__long">All services and findings on this site are fictional samples.</span>
+      <span class="notice__short">Sample edition: services and findings are fictional.</span>
+    </div>
+  </div>
+)}
+<header class="masthead">
+  <div class="wrap masthead__row">
+    <Wordmark />
+    <nav class="nav" aria-label="Main">
+      <ul class="nav__row">
+        {NAV.map((n) => <li><a href={n.href} aria-current={current(n.href)}>{n.label}</a></li>)}
+      </ul>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,135 @@
+---
+/**
+ * Base: every page's shell: <head> (title, description, canonical, Open Graph, favicons),
+ * global.css, self-hosted fonts (IBM Plex Mono vendored from IBM's package into public/fonts/plex/ and the arrow-only
+ * "termsapply Arrows" cut in public/fonts/, both declared in global.css; Literata from
+ * @fontsource-variable), skip link, Masthead, <main id="main">, Footer.
+ * Ships no JavaScript and references no external URL except this site's own canonical/OG URLs.
+ *
+ * Props:
+ *   title        page title; "termsapply" is appended unless the title is the site name itself
+ *   description  meta/OG description (default SITE.description)
+ *   type         Open Graph type: "website" (default) or "article"
+ *   published    article publish date (adds article:published_time)
+ *   noindex      true for pages that should stay out of search (e.g. 404)
+ *   prev, next   on a paginated index, the addresses of the previous and next pages, advertised
+ *                as <link rel="prev"> / <link rel="next"> (the Pager at the foot links the same)
+ *   og           the page's Open Graph card (block C, src/lib/og.ts): { verso, versoLabel, source,
+ *                recto, rectoLabel, mark, plain }. Their sentence (mono, left page; on a plain card
+ *                the page name, set on the right) defaults to the title, ours (serif, right page)
+ *                to the description. Base prints og:image (1200 x 630,
+ *                /og/<route>.png), its alt text and the large Twitter card, and during `astro
+ *                build` records the card for src/integrations/og.ts, which draws the PNG.
+ *   fileRef      the page's file reference as its file bar prints it ("FILE 0042 / REV 2026-09-14",
+ *                "DICTIONARY / 12 ENTRIES"): the foot of the OG card, and the running head of a
+ *                printed page (.print-head, hidden on screen) next to the page's address
+ */
+// global.css declares every mono face: "termsapply Arrows" (public/fonts/), first in --mono, and
+// IBM Plex Mono 400/500/600 from IBM's own split woff2 files, vendored in public/fonts/plex/.
+import '../styles/global.css';
+import '@fontsource-variable/literata/opsz.css';
+import '@fontsource-variable/literata/opsz-italic.css';
+import Masthead from '../components/Masthead.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../lib/site';
+import { plain } from '../lib/format';
+import { OG_HEIGHT, OG_WIDTH, ogAlt, ogImagePath, ogPlain, recordCard, type OgInput } from '../lib/og';
+
+interface Props {
+  title?: string;
+  description?: string;
+  type?: 'website' | 'article';
+  published?: Date;
+  noindex?: boolean;
+  prev?: string;
+  next?: string;
+  og?: OgInput;
+  fileRef?: string;
+  /** The footer's sign under the asterisk; the start page sets "and verify." */
+  footerSign?: string;
+}
+const { type = 'website', published, noindex = false, prev, next, og: ogIn = {}, fileRef, footerSign } = Astro.props;
+// Backticked names (Inline.astro) are plain text in the head and on the share card.
+const title = Astro.props.title && plain(Astro.props.title);
+const description = plain(Astro.props.description ?? SITE.description);
+const og: OgInput = { ...ogIn, verso: ogIn.verso && plain(ogIn.verso), recto: ogIn.recto && plain(ogIn.recto) };
+const fullTitle = !title || title === SITE.name ? `${SITE.name}: ${SITE.motto}` : `${title} / ${SITE.name}`;
+// noindex pages (the 404) have no address of their own, so they get no canonical or og:url.
+// theme-color below cannot read CSS tokens: its value mirrors --paper in global.css. Light only, always.
+const canonical = noindex ? undefined : new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
+
+// Open Graph card (src/lib/og.ts): one PNG per page, drawn after the build from what is recorded here.
+const ogVerso = og.verso ?? title ?? SITE.name;
+const ogRecto = og.recto ?? description;
+const ogImage = ogImagePath(Astro.url.pathname);
+const ogImageUrl = new URL(ogImage, Astro.site ?? SITE.url).href;
+const ogImageAlt = ogAlt(ogVerso, ogRecto, { plain: og.plain, versoLabel: og.versoLabel });
+recordCard({
+  verso: ogVerso,
+  versoLabel: og.versoLabel,
+  source: og.source,
+  recto: ogRecto,
+  rectoLabel: og.rectoLabel,
+  mark: og.mark ?? true,
+  plain: ogPlain(ogVerso, og.plain),
+  bar: fileRef ?? SITE.domain.toUpperCase(),
+  page: Astro.url.pathname,
+  image: ogImage,
+  alt: ogImageAlt,
+});
+// Running head of a printed page: the address without the scheme, and the file reference. The first
+// sheet prints .print-head in the flow; later sheets get the same two strings in the page's top
+// margin boxes (@page @top-left / @top-right, styled in global.css), which only an inline print
+// rule can fill per page. Nothing here runs: it is a stylesheet of two strings.
+const printAddress = canonical?.replace(/^https?:\/\//, '');
+const cssString = (s: string) => `"${s.replace(/[\\"]/g, '\\$&').replace(/\n/g, ' ')}"`;
+const printMargins = [
+  printAddress && `@top-left { content: ${cssString(printAddress)}; }`,
+  fileRef && `@top-right { content: ${cssString(fileRef)}; }`,
+].filter(Boolean).join(' ');
+---
+<!doctype html>
+<html lang="en" style={`--site-host: "${SITE.domain}"`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#F0E9DA" />
+    <meta name="referrer" content="no-referrer" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title ?? SITE.name} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:locale" content="en_GB" />
+    {published && <meta property="article:published_time" content={published.toISOString()} />}
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content={String(OG_WIDTH)} />
+    <meta property="og:image:height" content={String(OG_HEIGHT)} />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {prev && <link rel="prev" href={prev} />}
+    {next && <link rel="next" href={next} />}
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {printMargins && <style is:inline media="print" set:html={`@page { ${printMargins} } @page :first { @top-left { content: none; } @top-right { content: none; } }`} />}
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    {(printAddress || fileRef) && <p class="print-head" aria-hidden="true">{printAddress && <span>{printAddress}</span>}{fileRef && <span>{fileRef}</span>}</p>}
+    <Masthead />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer sign={footerSign} />
+  </body>
+</html>

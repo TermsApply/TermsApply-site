@@ -1,0 +1,44 @@
+---
+/**
+ * One service's archived policies: /archive/<service>/. Every document we hold for the service,
+ * each with its versions newest first (ArchiveRows), under a SectionHead per document. Built for
+ * every service with at least one archived version. Links back to the service profile.
+ */
+import { getEntry } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import FileHeader from '../../../components/FileHeader.astro';
+import SectionHead from '../../../components/SectionHead.astro';
+import ArchiveRows from '../../../components/ArchiveRows.astro';
+import { getPolicies, groupPolicies } from '../../../lib/archive';
+import type { Part } from '../../../lib/cases';
+
+export async function getStaticPaths() {
+  const services = groupPolicies(await getPolicies());
+  return services.map((s) => ({ params: { service: s.id }, props: { group: s } }));
+}
+
+const { group } = Astro.props;
+const service = await getEntry('services', group.id);
+if (!service) throw new Error(`Unknown service "${group.id}" in the policy archive`);
+const count = group.documents.reduce((n, d) => n + d.versions.length, 0);
+const newest = group.documents.flatMap((d) => d.versions).map((p) => p.retrieved).sort((a, b) => b.valueOf() - a.valueOf())[0];
+const side: Part = [...(newest ? ['NEWEST ', newest, ' / '] : []), `${count} ${count === 1 ? 'VERSION' : 'VERSIONS'}`];
+const description = `The ${group.name} policies we hold, every version in full, with the date we retrieved it and its SHA-256 checksum.`;
+---
+<Base title={`${group.name} / Policy archive`} description={description} fileRef={`ARCHIVE / ${group.name.toUpperCase()}`} og={{ verso: `${group.name} policies`, versoLabel: 'Archive', mark: false }}>
+  <div class="wrap">
+    <FileHeader ref={`ARCHIVE / ${group.name.toUpperCase()}`} side={side} fields={[]} />
+    <div class="page-head page-head--filed">
+      <h1>{group.name}: policies on file</h1>
+      <p class="dek">{description}</p>
+      <p class="byline"><a href={`/services/${group.id}/`}>{group.name} profile</a> / <a href="/archive/">All services in the archive</a></p>
+    </div>
+
+    {group.documents.map((doc) => (
+      <section class="section" aria-labelledby={`d-${doc.slug}`}>
+        <SectionHead title={doc.name} id={`d-${doc.slug}`} />
+        <ArchiveRows items={doc.versions} label={`${group.name} ${doc.name}, newest version first`} />
+      </section>
+    ))}
+  </div>
+</Base>

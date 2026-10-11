@@ -1,0 +1,109 @@
+---
+/**
+ * Legal notice: /legal/ (block D). A plain page: the bar-only
+ * FileHeader ("LEGAL / PUBLISHER AND RIGHT OF REPLY"), one h1, short sections in .prose.
+ *
+ *   #publisher    the publisher's details as a mono list (name, region, contact); every unknown
+ *                 is "[PLACEHOLDER: …]"
+ *   #corrections  how a company or a person named in a file asks for a correction, what we do and
+ *                 what we do not do (CORRECTIONS_EMAIL, text and mailto)
+ *   #reply        the right of reply: printed in full, unedited, on the file's Reply page, with our
+ *                 note beside it; no length limit; every message is printed with its date
+ *   #sample       only while SITE.sampleNotice is on: every service and finding is fictional. When
+ *                 the notice is off this section is not rendered at all
+ *   #hosting      PRIVACY_POLICY (our two sentences) and where the site is hosted (the data region
+ *                 is optional: unset, the page says so in prose, without a placeholder marker)
+ *   #licence      placeholder pending the collective's decision, with the recommendation (CC BY 4.0
+ *                 for our words; quoted policy text stays its owner's)
+ *
+ * Values and placeholders come from src/lib/contact.ts (PUBLISHER, CORRECTIONS_EMAIL). Information,
+ * not legal advice. Linked from the corrections register.
+ */
+import Base from '../../layouts/Base.astro';
+import FileHeader from '../../components/FileHeader.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import Placeholder from '../../components/Placeholder.astro';
+import { PRIVACY_POLICY, SITE } from '../../lib/site';
+import { CORRECTIONS_EMAIL, LEGAL_REVISED, PUBLISHER, assertLaunchReady } from '../../lib/contact';
+
+assertLaunchReady();
+const description =
+  'Who publishes termsapply, how to ask for a correction or a reply, how the site is hosted, and on what terms you may reuse what we write.';
+const rows: { label: string; value: string | string[] | null; what: string }[] = [
+  { label: 'Publisher', value: PUBLISHER.name, what: 'name of the collective or association' },
+  { label: 'Region', value: PUBLISHER.region, what: 'region of the editors' },
+];
+---
+<Base title="Legal notice" description={description} fileRef="LEGAL / PUBLISHER AND RIGHT OF REPLY" og={{ verso: 'Legal notice', versoLabel: 'Legal', mark: false }}>
+  <div class="wrap">
+    <FileHeader ref="LEGAL / PUBLISHER AND RIGHT OF REPLY" side="CORRECTIONS / HOSTING / LICENCE" fields={[]} />
+    <div class="page-head page-head--filed">
+      <h1>Legal notice</h1>
+      <p class="dek">Who publishes termsapply, how to ask for a correction or a reply, and on what terms you may reuse what we write.</p>
+      <p class="byline"><strong>termsapply</strong>&nbsp;/ <span class="nw">Revised <time datetime={LEGAL_REVISED}>{LEGAL_REVISED}</time></span></p>
+    </div>
+
+    <section class="section" id="publisher" aria-labelledby="publisher-h">
+      <SectionHead title="Publisher" id="publisher-h" />
+      <ul class="facts channels">
+        {rows.map((r) => (
+          <li><span class="label">{r.label}</span><span class="who">{r.value === null
+            ? <Placeholder what={r.what} />
+            : Array.isArray(r.value) ? r.value.map((l, i) => <>{i > 0 && <br />}{l}</>) : r.value}</span></li>
+        ))}
+        <li><span class="label">Contact</span><span class="who"><a class="addr" href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>{!PUBLISHER.emailConfirmed && <span class="sub"><Placeholder what="confirm this mailbox before launch" /></span>}</span></li>
+      </ul>
+    </section>
+
+    <section class="section" id="corrections" aria-labelledby="corrections-h">
+      <SectionHead title="Corrections" id="corrections-h" />
+      <div class="prose">
+        <p>If a file names your company or you, and you think a sentence in it is wrong, write to <a class="addr" href={`mailto:${CORRECTIONS_EMAIL}`}>{CORRECTIONS_EMAIL}</a>. Give the file number, the sentence as it stands, and the evidence that it is wrong. We answer within five working days.</p>
+        <ul>
+          <li><b>What we will do.</b> If the sentence is wrong, we correct it in the open: the file’s revision date changes, and the <a href="/corrections/">corrections register</a> prints the sentence as published, as corrected, and why. If the sentence stands and you disagree with it, we print your reply in full on the file’s Reply page.</li>
+          <li><b>What we will not do.</b> Remove a file, or a finding, because it is inconvenient. We do not change a published sentence silently, and we do not take a file down to make an error disappear.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="reply" aria-labelledby="reply-h">
+      <SectionHead title="Right of reply" id="reply-h" />
+      <div class="prose">
+        <p>Any company whose service is the subject of a file may have a reply printed in full and unedited on that file’s Reply page, with our note beside it saying what the reply does and does not address. The file’s header and its revision log record the reply and the date it arrived.</p>
+        <ul>
+          <li><b>In full.</b> Every message the company sends in reply is printed in full, whatever its length, with the date it arrived. We do not cut, shorten or edit it.</li>
+          <li><b>Subject.</b> A reply answers the findings of the file: the sentence we quote, what the app did, and the evidence. Our note beside it says which findings it addresses.</li>
+          <li><b>Timing.</b> We send our findings before publication and wait at least five working days. A reply, or a further message, that arrives later is added with its date, and the file’s revision date changes.</li>
+        </ul>
+      </div>
+    </section>
+
+    {SITE.sampleNotice && (
+      <section class="section" id="sample" aria-labelledby="sample-h">
+        <SectionHead title="Sample notice" id="sample-h" />
+        <div class="prose">
+          <p>Every service, finding, policy text and company reply on this site is fictional, written to show how the site works. No real company is described, and the hosts in the logs end in .example, a name reserved for examples that no one can own. The notice at the top of every page stays until the sample files are gone.</p>
+        </div>
+      </section>
+    )}
+
+    <section class="section" id="hosting" aria-labelledby="hosting-h">
+      <SectionHead title="Hosting and data" id="hosting-h" />
+      <div class="prose">
+        <p>{PRIVACY_POLICY}</p>
+        <p>The site is a set of static files hosted on Cloudflare Pages and served from Cloudflare’s network. {PUBLISHER.hostingRegion ? `Data region: ${PUBLISHER.hostingRegion}.` : 'The host’s data region is not set.'}</p>
+      </div>
+    </section>
+
+    <section class="section" id="licence" aria-labelledby="licence-h">
+      <SectionHead title="Licence of the content" id="licence-h" />
+      <div class="prose">
+        <p>{PUBLISHER.licence ?? <Placeholder what="licence, pending the collective’s decision" />}</p>
+        {!PUBLISHER.licence && (
+          <p>Our recommendation: our own words, the findings, notes and corrections, under the Creative Commons Attribution 4.0 International licence (CC BY 4.0), so that anyone may copy and adapt them with credit to termsapply and the address of the file.</p>
+        )}
+        <p>The policy text we quote, and the screens of their apps, remain their owners’. We reproduce them for the purpose of criticism and review, and no licence of ours covers them. The typefaces have their own licences.</p>
+      </div>
+    </section>
+  </div>
+</Base>

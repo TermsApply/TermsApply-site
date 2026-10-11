@@ -1,0 +1,102 @@
+---
+/**
+ * Exhibit: a hairline-framed piece of evidence with a numbered mono caption underneath:
+ * "EXHIBIT 1 / <caption> ........ <meta>". Three ways to fill it:
+ *
+ *   log   a request log as a plain string, rendered in a horizontally scrolling <pre class="log">.
+ *         Mini-markup: a line starting with # is a comment (muted); ==text== is highlighted;
+ *         !!text!! is red (the offending request); ~~text~~ is muted inline.
+ *         In MDX, define the string as a top-level `export const myLog = \`…\`;` and pass
+ *         log={myLog}: text inside a JSX attribute loses two spaces of indentation per line.
+ *   shot  a described screenshot placeholder: { alt, rows?: (string | [left, right])[],
+ *         before?: string, after?: string }. `alt` becomes the accessible description. Drawn as
+ *         one recessed panel (28rem) inside the exhibit frame, which narrows to hug it.
+ *   image a screenshot as a file: { src, alt, width, height }. `src` is a path on this site
+ *         (/exhibits/…, uploaded to public/exhibits/), PNG or SVG with no metadata; width and height
+ *         are the file's own pixels, so the page reserves the space before it loads. Rendered as
+ *         <img loading="lazy" decoding="async"> inside the hairline frame, which hugs the image
+ *         (never wider than the column; the image scales down at 400 px). Never filtered.
+ *         A lazy image prints only once it has loaded (a reader who wants the exhibits on paper
+ *         scrolls through the evidence page first); pass `eager` for an image that must always
+ *         print, at the cost of loading it with the page.
+ *   slot  anything else, e.g. <DataFlow … />.
+ *
+ * redactions  with an image: what was painted over and how, printed as a mono line under the
+ *         caption, "Redactions: account name, ink rectangle". Every redaction is listed (README,
+ *         "Screenshots and redaction").
+ *
+ * Props: n (exhibit number), caption, meta (right-hand note, optional), log?, logLabel?, shot?,
+ *        image?, eager? (image only: loading="eager"), redactions?, id?
+ * The id defaults to exh-<n> (#exh-1), the anchor a story's <ExhibitRef n={1} /> links to.
+ */
+import { exhibitId } from '../lib/cases';
+
+interface Shot {
+  alt: string;
+  rows?: (string | [string, string])[];
+  before?: string;
+  after?: string;
+}
+interface Image {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+interface Props {
+  n: number | string;
+  caption: string;
+  meta?: string;
+  log?: string;
+  logLabel?: string;
+  shot?: Shot;
+  image?: Image;
+  eager?: boolean;
+  redactions?: string;
+  id?: string;
+}
+const { n, caption, meta, log, logLabel = 'Request log, scrolls horizontally', shot, image, eager = false, redactions, id = exhibitId(n) } = Astro.props;
+if (image && !image.alt.trim()) throw new Error(`Exhibit ${n}: an image needs alt text`);
+const capId = `${id}-cap`;
+
+type Seg = { t: 'text' | 'mark' | 'bad' | 'c'; s: string };
+const parseLine = (line: string): Seg[] => {
+  if (/^\s*#/.test(line)) return [{ t: 'c', s: line }];
+  const segs: Seg[] = [];
+  const re = /==(.+?)==|!!(.+?)!!|~~(.+?)~~/g;
+  let last = 0;
+  for (const m of line.matchAll(re)) {
+    if (m.index! > last) segs.push({ t: 'text', s: line.slice(last, m.index) });
+    segs.push(m[1] !== undefined ? { t: 'mark', s: m[1] } : m[2] !== undefined ? { t: 'bad', s: m[2] } : { t: 'c', s: m[3]! });
+    last = m.index! + m[0].length;
+  }
+  if (last < line.length) segs.push({ t: 'text', s: line.slice(last) });
+  return segs;
+};
+const lines = log ? log.replace(/^\n+|\s+$/g, '').split('\n').map(parseLine) : [];
+---
+<figure class:list={['exhibit', { 'exhibit--shot': shot, 'exhibit--img': image }]} id={id} aria-labelledby={capId} style={image ? `--exh-w:${image.width}px` : undefined}>
+  {log && (
+    <pre class="log" tabindex="0" role="region" aria-label={logLabel}>{lines.map((segs, i) => <>{i > 0 && '\n'}{segs.map((g) => g.t === 'text' ? g.s : g.t === 'mark' ? <mark>{g.s}</mark> : <span class={g.t}>{g.s}</span>)}</>)}</pre>
+  )}
+  {shot && (
+    <div class="shot" role="img" aria-label={shot.alt}>
+      {shot.before && <p>{shot.before}</p>}
+      {shot.rows && (
+        <div class="ui">
+          {shot.rows.map((r) => (
+            <div class="row">{Array.isArray(r) ? <><span>{r[0]}</span><span>{r[1]}</span></> : <span>{r}</span>}</div>
+          ))}
+        </div>
+      )}
+      {shot.after && <p>{shot.after}</p>}
+    </div>
+  )}
+  {image && <img class="exhibit__img" src={image.src} alt={image.alt} width={image.width} height={image.height} loading={eager ? 'eager' : 'lazy'} decoding="async" />}
+  <slot />
+  <figcaption class="exhibit__cap" id={capId}>
+    <span class="t"><b>Exhibit {n}</b> / {caption}</span>
+    {meta && <span>{meta}</span>}
+    {redactions && <span class="exhibit__red">Redactions: {redactions}</span>}
+  </figcaption>
+</figure>

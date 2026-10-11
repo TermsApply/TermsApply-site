@@ -1,0 +1,237 @@
+---
+/**
+ * DataFlow: inline SVG of where data goes from one point in an app. Plain text labels, no icons.
+ * Disclosed flows: solid ink. Undisclosed flows: dashed red. Two drawings are emitted: a wide one
+ * (≥40rem) with a vertical "on your device | leaves your device" divider, and a tall one for narrow
+ * screens with a horizontal device boundary; CSS shows one. Colours come from tokens, so both
+ * themes work. Put it inside an <Exhibit> for the numbered caption.
+ *
+ * Props:
+ *   app         service name, used in the accessible description ("Quill Notes")
+ *   origin      { name, sub? }: where the data starts ("Editor", "what you type")
+ *   recipients  [{ name, disclosed, data?, sub?, note?, via? }]
+ *                 name       host or company receiving data
+ *                 disclosed  true if the policy names this flow
+ *                 data       what travels ("draft text + install ID")
+ *                 sub        line under the name (default for undisclosed: "not listed in the policy")
+ *                 note       second line under the flow (e.g. "readable, ~1.5 s after typing")
+ *                 via        { name, sub?, data? }: an on-device step first (e.g. "Encryption");
+ *                            `data` labels the leg after it. Use for one recipient at most.
+ *   label       override the generated aria-label
+ *   neutral     draw undisclosed flows dashed in ink, not red (the service profile uses it)
+ *
+ * Layout is computed: recipients with `via` come first, then disclosed, then undisclosed, so ink and
+ * red trunks never overlap. Keep names under ~26 characters. In the wide drawing a `note` too long
+ * for the gap before the divider moves under the recipient's name.
+ *
+ * Arrowheads: variant 05 "Engraver's half-barb" (design/explorations/arrows.html). One filled barb
+ * on one side of the line, in diagram units, the same in both layouts: the tip sits on the line's
+ * lower edge (h = half the stroke) and the barb trails 3 behind the notch. Each stem stops 8 short
+ * of the tip, where the head takes over at the line's own width, so no stroke pokes through and the
+ * head is never heavier than its line. Ink lines (1.5) get an ink barb, the dashed red line (1.75)
+ * a red one. Dash phase: stroke-dashoffset = (6 - L) mod 10, L the stem's length (paths are
+ * orthogonal, so L = sum of |dx| + |dy|), so a dashed line always arrives on a whole dash.
+ */
+interface Via {
+  name: string;
+  sub?: string;
+  data?: string;
+}
+interface Recipient {
+  name: string;
+  disclosed: boolean;
+  data?: string;
+  sub?: string;
+  note?: string;
+  via?: Via;
+}
+interface Props {
+  app: string;
+  origin: { name: string; sub?: string };
+  recipients: Recipient[];
+  label?: string;
+  neutral?: boolean;
+}
+const { app, origin, recipients, label, neutral = false } = Astro.props;
+// Text and barb colour of an undisclosed flow: red, or ink-2 / ink when drawn neutral.
+const RED_FILL = neutral ? undefined : 'svg-red-fill';
+const RED_SUB = neutral ? 'svg-sub' : 'svg-red-fill';
+
+const rank = (r: Recipient) => (r.via ? 0 : r.disclosed ? 1 : 2);
+const rows = [...recipients].sort((a, b) => rank(a) - rank(b));
+const subOf = (r: Recipient) => r.sub ?? (r.disclosed ? undefined : 'not listed in the policy');
+const cw = (chars: number, px: number) => chars * px * 0.6; // Plex Mono advance = 0.6em
+
+/* Half-barb heads. HEAD is how much of the line the head carries; stems end that far before the tip. */
+const HEAD = 8;
+const barb = (h: number) => `M0,${h} L-11,-5 L-8,-${h} L-8,${h} Z`;
+type Pt = [number, number];
+/** An orthogonal stem through `pts`, as path data, with its length (for the dash phase). */
+const stem = (pts: Pt[]) => ({
+  d: pts.map(([x, y], i) => `${i ? 'L' : 'M'}${+x.toFixed(2)},${+y.toFixed(2)}`).join(' '),
+  len: pts.slice(1).reduce((n, [x, y], i) => n + Math.abs(x - pts[i][0]) + Math.abs(y - pts[i][1]), 0),
+});
+/** Stem from `pts` (the last point is the tip): shortened by HEAD, plus the head's placement. */
+const leg = (pts: Pt[]) => {
+  const [tx, ty] = pts[pts.length - 1];
+  const [px, py] = pts[pts.length - 2];
+  const down = px === tx; // vertical last segment (the tall drawing's via leg); otherwise rightward
+  const end: Pt = down ? [tx, ty - Math.sign(ty - py) * HEAD] : [tx - Math.sign(tx - px) * HEAD, ty];
+  return { ...stem([...pts.slice(0, -1), end]), tip: { x: tx, y: ty, rotate: down ? (ty > py ? 90 : -90) : tx > px ? 0 : 180 } };
+};
+/** stroke-dashoffset that ends a 6 4 dash pattern on a whole dash at the end of a stem of length L. */
+const dashPhase = (len: number) => +((((6 - len) % 10) + 10) % 10).toFixed(2);
+
+// Stroke for a stem: ink 1.5 solid, or red 1.75 dashed with the phase that ends it on a whole dash.
+const stroke = (disclosed: boolean, len: number) =>
+  disclosed
+    ? { stroke: 'currentColor', 'stroke-width': '1.5' }
+    : { ...(neutral ? { stroke: 'currentColor' } : { class: 'svg-red' }), 'stroke-width': '1.75', 'stroke-dasharray': '6 4', 'stroke-dashoffset': String(dashPhase(len)) };
+
+const listNames = (rs: Recipient[]) => rs.map((r) => r.name + (r.data ? ` (${r.data})` : '')).join('; ');
+const disclosed = rows.filter((r) => r.disclosed);
+const hidden = rows.filter((r) => !r.disclosed);
+const aria =
+  label ??
+  `Data flows from the ${app} ${origin.name.toLowerCase()}. ` +
+    (disclosed.length ? `Disclosed in the policy: ${listNames(disclosed)}. ` : '') +
+    (hidden.length ? `Not disclosed in the policy: ${listNames(hidden)}.` : '');
+
+/* ---------- Wide layout (viewBox 760 wide) ---------- */
+const W = 760;
+const RX = 516; // recipient label x
+const DIV = 400; // device divider x
+const x0 = Math.max(110, 20 + Math.max(cw(origin.name.length, 15), cw(origin.sub?.length ?? 0, 12)) + 10);
+const tx = x0 + 40; // trunk x
+const lastDisclosed = rows.map((r) => r.disclosed).lastIndexOf(true);
+const originRow = Math.max(0, lastDisclosed);
+const wy = (i: number) => 76 + i * 74;
+const wideH = wy(rows.length - 1) + 66;
+const wide = rows.map((r, i) => {
+  const y = wy(i);
+  const yo = wy(originRow);
+  const start: Pt[] = i === originRow ? [[x0, y]] : [[tx, yo], [tx, y]];
+  const viaX = tx + 100;
+  const viaEnd = r.via ? viaX + Math.max(cw(r.via.name.length, 14), cw(r.via.sub?.length ?? 0, 12)) + 12 : 0;
+  // Tips land where the old chevrons did: 10 before the label (the via label, or the recipient's).
+  const first = leg([...start, [r.via ? viaX - 10 : RX - 10, y]]);
+  // A note that would run into the divider (and the next zone's text) sits under the recipient instead.
+  const noteRight = Boolean(r.note) && cw(r.note!.length, 12) > DIV - (tx + 20) - 40;
+  return { r, y, legs: r.via ? [first, leg([[viaEnd, y], [RX - 10, y]])] : [first], viaX, viaEnd, noteRight };
+});
+
+/* ---------- Tall layout (viewBox 380 wide) ---------- */
+const TW = 380;
+const TX = 150; // label x
+const trunk = (r: Recipient) => (r.disclosed ? 44 : 24);
+const viaRows = rows.filter((r) => r.via);
+const viaY = (k: number) => 110 + k * 60;
+const boundary = viaRows.length ? viaY(viaRows.length - 1) + 54 : 84;
+const ty = (i: number) => boundary + 76 + i * 80;
+const tall = rows.map((r, i) => {
+  const y = ty(i);
+  const t = trunk(r);
+  const k = viaRows.indexOf(r);
+  const nameSize = r.name.length > 28 ? 12 : r.name.length > 26 ? 13 : 14;
+  const dataFits = r.data ? cw(r.data.length, 12) <= TX - 10 - (t + 12) : true;
+  if (k >= 0) {
+    const vy = viaY(k);
+    return {
+      r, y, nameSize,
+      legs: [leg([[t, 62], [t, vy], [TX - 10, vy]]), leg([[TX + 20, vy + 26], [TX + 20, y - 22]])],
+      via: { y: vy },
+      dataPos: { x: t + 12, y: vy - 8 },
+      viaDataPos: { x: TX + 30, y: y - 40 },
+    };
+  }
+  return {
+    r, y, nameSize,
+    legs: [leg([[t, 62], [t, y], [TX - 10, y]])],
+    via: undefined,
+    dataPos: dataFits ? { x: t + 12, y: y - 8 } : { x: t + 12, y: y - 24 },
+    viaDataPos: undefined,
+  };
+});
+const tallH = (() => {
+  const last = tall[tall.length - 1];
+  return last ? last.y + 34 + (last.r.note ? 18 : 0) + 14 : boundary + 40;
+})();
+---
+<div class="flow">
+  <svg class="flow-wide" viewBox={`0 0 ${W} ${wideH}`} role="img" aria-label={aria} fill="currentColor">
+    <text x="20" y="26" font-size="11" letter-spacing="1.2" class="svg-sub">ON YOUR DEVICE</text>
+    <text x={DIV + 20} y="26" font-size="11" letter-spacing="1.2" class="svg-sub">LEAVES YOUR DEVICE</text>
+    <line x1={DIV} y1="14" x2={DIV} y2={wideH - 8} class="svg-rule" stroke-width="1" stroke-dasharray="2 4" />
+
+    <text x="20" y={wy(originRow)} font-size="15" font-weight="600">{origin.name}</text>
+    {origin.sub && <text x="20" y={wy(originRow) + 20} font-size="12" class="svg-sub">{origin.sub}</text>}
+
+    {wide.map(({ r, y, legs, viaX, viaEnd, noteRight }) => {
+      const textCls = r.disclosed ? undefined : RED_FILL;
+      return (
+        <g>
+          {legs.map((l) => (
+            <>
+              <path d={l.d} fill="none" {...stroke(r.disclosed, l.len)} />
+              <path
+                d={barb(r.disclosed ? 0.75 : 0.875)}
+                transform={`translate(${+l.tip.x.toFixed(2)},${+l.tip.y.toFixed(2)})${l.tip.rotate ? ` rotate(${l.tip.rotate})` : ''}`}
+                class={r.disclosed ? undefined : RED_FILL}
+              />
+            </>
+          ))}
+          {r.data && <text x={r.via ? tx + 12 : tx + 20} y={y - 10} font-size="12" class={textCls}>{r.data}</text>}
+          {r.note && !noteRight && <text x={tx + 20} y={y + 20} font-size="12" class={textCls}>{r.note}</text>}
+          {r.via && (
+            <>
+              <text x={viaX} y={y + 4} font-size="14" font-weight="600">{r.via.name}</text>
+              {r.via.sub && <text x={viaX} y={y + 22} font-size="12" class="svg-sub">{r.via.sub}</text>}
+              {r.via.data && <text x={Math.max(viaEnd + 12, DIV + 18)} y={y - 10} font-size="12" class={textCls}>{r.via.data}</text>}
+            </>
+          )}
+          <text x={RX} y={y + 4} font-size="14" font-weight="600">{r.name}</text>
+          {subOf(r) && <text x={RX} y={y + 22} font-size="12" class={r.disclosed ? 'svg-sub' : RED_SUB}>{subOf(r)}</text>}
+          {r.note && noteRight && <text x={RX} y={y + (subOf(r) ? 40 : 22)} font-size="12" class={textCls}>{r.note}</text>}
+        </g>
+      );
+    })}
+  </svg>
+
+  <svg class="flow-tall" viewBox={`0 0 ${TW} ${tallH}`} role="img" aria-label={aria} fill="currentColor">
+    <text x="16" y="34" font-size="15" font-weight="600">{origin.name}</text>
+    {origin.sub && <text x="16" y="52" font-size="12" class="svg-sub">{origin.sub}</text>}
+
+    <line x1="0" y1={boundary} x2={TW} y2={boundary} class="svg-rule" stroke-width="1" stroke-dasharray="2 4" />
+    <text x={TW - 8} y={boundary - 8} font-size="11" letter-spacing="1" text-anchor="end" class="svg-sub">ON DEVICE</text>
+    <text x={TW - 8} y={boundary + 16} font-size="11" letter-spacing="1" text-anchor="end" class="svg-sub">LEAVES IT</text>
+
+    {tall.map(({ r, y, nameSize, legs, via, dataPos, viaDataPos }) => {
+      const textCls = r.disclosed ? undefined : RED_FILL;
+      return (
+        <g>
+          {legs.map((l) => (
+            <>
+              <path d={l.d} fill="none" {...stroke(r.disclosed, l.len)} />
+              <path
+                d={barb(r.disclosed ? 0.75 : 0.875)}
+                transform={`translate(${+l.tip.x.toFixed(2)},${+l.tip.y.toFixed(2)})${l.tip.rotate ? ` rotate(${l.tip.rotate})` : ''}`}
+                class={r.disclosed ? undefined : RED_FILL}
+              />
+            </>
+          ))}
+          {r.data && <text x={dataPos.x} y={dataPos.y} font-size="12" class={textCls}>{r.data}</text>}
+          {via && r.via && (
+            <>
+              <text x={TX} y={via.y - 2} font-size="14" font-weight="600">{r.via.name}</text>
+              {r.via.sub && <text x={TX} y={via.y + 16} font-size="12" class="svg-sub">{r.via.sub}</text>}
+              {r.via.data && viaDataPos && <text x={viaDataPos.x} y={viaDataPos.y} font-size="12" class={textCls}>{r.via.data}</text>}
+            </>
+          )}
+          <text x={TX} y={y - 2} font-size={nameSize} font-weight="600">{r.name}</text>
+          {subOf(r) && <text x={TX} y={y + 16} font-size="12" class={r.disclosed ? 'svg-sub' : RED_SUB}>{subOf(r)}</text>}
+          {r.note && <text x={TX} y={y + 34} font-size="12" class={textCls}>{r.note}</text>}
+        </g>
+      );
+    })}
+  </svg>
+</div>

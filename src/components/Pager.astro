@@ -1,0 +1,30 @@
+---
+/**
+ * Pager: the foot of a paginated index, set like the file bar that opens it, upside down: an ink
+ * hairline above, a mono row "← PREVIOUS ...... PAGE 2 OF 3 ...... NEXT →", the double rule
+ * below, closing the file as the bar opened it. Plain links (rel="prev" / rel="next"); the page's
+ * <head> carries the same two as <link> elements (Base `prev` / `next`). Renders nothing on a
+ * one-page index, so with today's sample content no pager is shown anywhere.
+ *
+ * Props:
+ *   page   an IndexPage from paginatePaths() in src/lib/cases.ts ({ current, last, prevUrl, nextUrl })
+ *   label  what is paged, for the nav's accessible name (default "Pages")
+ */
+import type { IndexPage } from '../lib/cases';
+interface Props {
+  page: Pick<IndexPage<unknown>, 'current' | 'last' | 'prevUrl' | 'nextUrl'>;
+  label?: string;
+}
+const { page, label = 'Pages' } = Astro.props;
+---
+{page.last > 1 && (
+  <nav class="pager" aria-label={label}>
+    <span class="pager__prev">
+      {page.prevUrl && <a class="go" href={page.prevUrl} rel="prev"><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Previous</span></a>}
+    </span>
+    <span class="pager__at">Page {page.current} of {page.last}</span>
+    <span class="pager__next">
+      {page.nextUrl && <a class="go" href={page.nextUrl} rel="next"><span class="go__w">Next</span><span class="go__ar" aria-hidden="true">{' '}→</span></a>}
+    </span>
+  </nav>
+)}

@@ -1,0 +1,42 @@
+---
+/**
+ * RevisionLog: a file's own log on its History page, oldest first, one ruled line per event.
+ * The date is structure (mono, tabular), what happened is ours (serif), and where the gap between
+ * a policy taking effect and our observation is known, the interval row's khaki count follows
+ * ("+ 33 days after v4.2 took effect"). Build `lines` with investigationLog() from
+ * src/lib/cases.ts.
+ *
+ * A line with a `ref` starts with that link: corrections read "Correction CR-0002: <why>", the
+ * label linking to the entry in the corrections register (/corrections/#cr-0002).
+ *
+ * Props:
+ *   lines  LogLine[]: { date, what, ref?: { label, href }, interval?: { from, to, label } }
+ *   title  heading (default "Revision log")
+ *   sub    mono label after the heading ("/ file 0042")
+ *   id     heading id (default "revision-log")
+ */
+import Inline from './Inline.astro';
+import { interval as fmtInterval, iso } from '../lib/format';
+import type { LogLine } from '../lib/cases';
+interface Props {
+  lines: LogLine[];
+  title?: string;
+  sub?: string;
+  id?: string;
+}
+const { lines, title = 'Revision log', sub, id = 'revision-log' } = Astro.props;
+---
+<section class="flog" aria-labelledby={id}>
+  <h2 id={id}>{title}{sub && <> <span class="label">{sub}</span></>}</h2>
+  <ol>
+    {lines.map((l) => (
+      <li>
+        <time datetime={iso(l.date)}>{iso(l.date)}</time>
+        <span class="flog__what">
+          {l.ref && <><a href={l.ref.href}>{l.ref.label}</a>: </>}<Inline text={l.what} />
+          {l.interval && <> <span class="flog__int"><b>{fmtInterval(l.interval.from, l.interval.to)}</b> {l.interval.label}</span></>}
+        </span>
+      </li>
+    ))}
+  </ol>
+</section>

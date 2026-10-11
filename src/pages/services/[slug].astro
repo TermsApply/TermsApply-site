@@ -1,0 +1,297 @@
+---
+/**
+ * Service profile: everything on file about one service: FileHeader (name and kind, platforms,
+ * current and earlier policy versions with the dates we know from investigations and the archive,
+ * number of files), what it collects, who receives it (a
+ * table; undisclosed recipients in plain ink, marked "No" / "not listed", no red) and a DataFlow drawing of the same, every Declared /
+ * Observed finding from files about the service as a stack of pairs (each pointing at its file,
+ * with the interval row for investigations), the files themselves as index pairs, the policy
+ * versions we hold in the archive (ArchiveRows, linking to /archive/<service>/…).
+ * Order as on a story (round 5): the file bar, the headline and dek (with the profile's
+ * own Markdown body under them), then the fact grid.
+ *
+ * "What it collects" (block B, CHARACTER-AUDIT part 2A): when the profile has `declaredCollects`, it
+ * is one body-size Spread: on the left page the policy's own list, verbatim, in mono, with its clause
+ * (`collectsClause`) and the policy version (linked to the archived text when it is on file); on the
+ * right page `observedLeaves`, what our captures saw leave the device, in serif, with `observedNote`
+ * under it and a link to the evidence page of `observedFile` in its corner; the asterisk in the
+ * gutter. Observed lines rest only on published evidence: `observedFile` must be an investigation
+ * about this service with an evidence page, or the build fails. A service we have read but not captured (no observedLeaves)
+ * says so on the right page, without the asterisk: nothing has been set against the list yet. Every
+ * declared phrase must appear word for word in what we hold or quote of the privacy policy (the
+ * newest archived version, our investigations' findings); a profile with declared phrases and none of these fails the build. Without `declaredCollects` the old two-column block stays: `collects` (our
+ * summary list) beside "Who receives it". With the pair, "Who receives it" runs full width below.
+ */
+import { getCollection, render } from 'astro:content';
+import Inline from '../../components/Inline.astro';
+import Base from '../../layouts/Base.astro';
+import FileHeader from '../../components/FileHeader.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import CaseIndex from '../../components/CaseIndex.astro';
+import Exhibit from '../../components/Exhibit.astro';
+import DataFlow from '../../components/DataFlow.astro';
+import DeclaredObserved from '../../components/DeclaredObserved.astro';
+import ArchiveRows from '../../components/ArchiveRows.astro';
+import Spread from '../../components/Spread.astro';
+import { archiveHref, byNewest, policiesFor } from '../../lib/archive';
+import { iso } from '../../lib/format';
+import type { OgInput } from '../../lib/og';
+import {
+  fileHref, getEvidence, getInvestigations, investigationItem,
+  type CaseItem, type FileField, type Part,
+} from '../../lib/cases';
+
+export async function getStaticPaths() {
+  const services = await getCollection('services');
+  return services.map((service) => ({ params: { slug: service.id }, props: { service } }));
+}
+
+const { service } = Astro.props;
+const s = service.data;
+const { Content } = await render(service);
+const hasNote = Boolean(service.body?.trim());
+
+const inv = (await getInvestigations()).filter((e) => e.data.service.id === service.id);
+const archived = await policiesFor(service.id);
+const files: CaseItem[] = (await Promise.all(inv.map(investigationItem))).sort(
+  (a, b) => (b.date?.valueOf() ?? 0) - (a.date?.valueOf() ?? 0),
+);
+
+/* Policy versions known from any file, with effective dates where one says so. */
+const versions = new Map<string, Date | undefined>();
+const addVersion = (v: string, d?: Date) => {
+  if (!versions.has(v) || (!versions.get(v) && d)) versions.set(v, d);
+};
+for (const e of inv) {
+  addVersion(e.data.policyVersion, e.data.policyDate);
+  const prev = e.data.policyPrev?.match(/^(\S+?),?\s+(\d{4}-\d{2}-\d{2})/);
+  if (prev) addVersion(prev[1], new Date(`${prev[2]}T00:00:00Z`));
+  else if (e.data.policyPrev) addVersion(e.data.policyPrev.trim());
+}
+for (const p of archived) addVersion(p.version, p.effective);
+const known = [...versions].sort(([a], [b]) => b.localeCompare(a, 'en', { numeric: true }));
+const [current, ...earlier] = known;
+const earlierPart: Part = earlier.flatMap(([v, d], i) => [
+  ...(i > 0 ? ['; '] : []),
+  ...(d ? [`${v}, `, d] : [v]),
+]);
+
+const newestFile = files[0]?.date;
+const rev = newestFile;
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+const fields: FileField[] = [
+  { label: 'Service', value: s.name, sub: s.kind },
+  { label: 'Platforms', value: s.platforms.join(', ') },
+  current
+    ? { label: 'Policy', value: current[1] ? [`${current[0]}, eff. `, current[1]] : current[0], sub: 'newest version on file' }
+    : { label: 'Policy', value: 'not yet read' },
+  { label: 'Earlier versions', value: earlier.length ? earlierPart : 'none on file' },
+  { label: 'Files', value: plural(files.length, 'file', 'files'), sub: newestFile ? ['newest ', newestFile] : undefined },
+  { label: 'Archived texts', value: plural(archived.length, 'version', 'versions') },
+];
+
+/* Every Declared / Observed pair filed about this service. */
+const findings = inv.flatMap((e) => e.data.findings.map((f) => ({
+  f, file: investigationItem(e), declared: e.data.policyDate as Date | undefined, observed: e.data.testedFrom as Date | undefined,
+})));
+const rows = await Promise.all(findings.map(async (r) => ({ ...r, file: await r.file })));
+rows.sort((a, b) => (b.file.date?.valueOf() ?? 0) - (a.file.date?.valueOf() ?? 0));
+
+/* DataFlow from the recipients list: "Name (detail)" splits into name and sub line. */
+const splitName = (n: string) => {
+  const m = n.match(/^(.+?)\s*\((.+)\)$/);
+  return m ? { name: m[1], detail: m[2] } : { name: n, detail: undefined };
+};
+const flow = s.recipients.map((r) => {
+  const { name, detail } = splitName(r.name);
+  const where = r.where ? `policy ${r.where}` : 'in the policy';
+  // Undisclosed: the default sub line ("not listed in the policy") and the detail under the arrow.
+  return r.disclosed
+    ? { name, disclosed: true, sub: detail ? `${detail} / ${where}` : where }
+    : { name, disclosed: false, note: detail };
+});
+const undisclosed = s.recipients.filter((r) => !r.disclosed).length;
+
+/* What it collects (their list) facing what leaves the device (our captures). */
+const declared = s.declaredCollects ?? [];
+const leaves = s.observedLeaves ?? [];
+const squash = (t: string) => t.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
+// Verbatim check. The reference text is everything we hold or quote of this service's privacy
+// policy: the newest archived version of that document and the findings of our investigations. Each declared phrase must be in it word for
+// word; a profile with declared phrases and nothing to check them against fails the build.
+const DOCUMENT = 'Privacy Policy';
+const newestText = archived.filter((p) => p.document.toLowerCase() === DOCUMENT.toLowerCase()).sort(byNewest)[0];
+const references = [
+  ...(newestText ? [newestText.text] : []),
+  ...inv.flatMap((e) => e.data.findings.map((f) => f.quote)),
+].map(squash);
+if (declared.length && !references.length)
+  throw new Error(`services/${service.id}: declaredCollects needs an archived policy text or an investigation with findings to check against`);
+for (const phrase of declared) {
+  if (!references.some((t) => t.includes(squash(phrase))))
+    throw new Error(`services/${service.id}: declaredCollects "${phrase}" is not word for word in the ${DOCUMENT} text we hold or quote (${newestText ? `archived ${newestText.version}, ` : ''}our investigations' findings). Quote it exactly.`);
+}
+
+// What leaves the device rests only on a published file's evidence: `observedFile` must be an
+// investigation about this service with an evidence page; the right page links to it.
+let observed: { href: string; label: string } | undefined;
+if (leaves.length) {
+  if (!s.observedFile) throw new Error(`services/${service.id}: observedLeaves needs observedFile, the investigation whose evidence shows them`);
+  const file = inv.find((e) => e.id === s.observedFile!.id);
+  if (!file) throw new Error(`services/${service.id}: observedFile "${s.observedFile.id}" is not an investigation about ${s.name}`);
+  if (!(await getEvidence(file.id))) throw new Error(`services/${service.id}: observedFile "${file.id}" has no evidence page; observedLeaves must rest on published evidence`);
+  observed = { href: fileHref('investigations', file.id, 'evidence'), label: `File ${file.data.fileNo} / Evidence` };
+}
+const policyVersion = current?.[0];
+const collectsHref = policyVersion ? await archiveHref(service.id, DOCUMENT, policyVersion, s.collectsClause) : undefined;
+
+const description = `What ${s.name} collects, who receives it, and where its privacy policy and its behaviour part ways.`;
+const fileRef = `PROFILE ${s.name.toUpperCase()}${rev ? ` / REV ${iso(rev)}` : ''}`;
+// The card (round 5) is the page's own pair: the first phrase of the policy's list facing the first
+// line our captures saw leave the device, the asterisk only when a capture is on file; a service we
+// have not captured says so on the right page. Without the pair, a plain card: Services, then the
+// name and the description.
+const og: OgInput = declared.length > 0
+  ? {
+      verso: `"${declared[0]}"`,
+      versoLabel: 'What it collects',
+      source: `${s.name} Privacy Policy${policyVersion ? ` ${policyVersion}` : ''}${s.collectsClause ? `, ${s.collectsClause}` : ''}`,
+      recto: observed ? leaves[0] : 'Not captured yet.',
+      rectoLabel: 'What leaves the device',
+      mark: Boolean(observed),
+    }
+  : { verso: s.name, versoLabel: 'Services', recto: description, mark: false };
+---
+<Base title={s.name} description={description} fileRef={fileRef} og={og}>
+  <div class="wrap">
+    <FileHeader
+      part="bar"
+      ref={`PROFILE ${s.name.toUpperCase()}`}
+      rev={rev}
+      side="SERVICES"
+      fields={fields}
+    />
+
+    <div class="art-head">
+      <h1>{s.name}</h1>
+      <p class="dek">{description}</p>
+      {hasNote && <div class="svc-note"><Content /></div>}
+    </div>
+    <FileHeader part="grid" fields={fields} />
+
+    <div class:list={['profile', 'profile--svc', { 'profile--pair': declared.length > 0 }]}>
+      {declared.length > 0 ? (
+        <section class="section" aria-labelledby="collects-h">
+          <SectionHead title="What it collects, and what leaves the device" id="collects-h" />
+          <Spread
+            size="body"
+            class="collects-pair"
+            mark={Boolean(observed)}
+            labels={['What it collects', 'What leaves the device']}
+            refs={[s.collectsClause, undefined]}
+            label={observed
+              ? `What the ${s.name} policy says it collects, and what our captures saw leave the device`
+              : `What the ${s.name} policy says it collects; the app has not been captured yet`}
+          >
+            {observed && <a slot="recto-ref" href={observed.href}>{observed.label}</a>}
+            <ul slot="verso" class="spread__q collects__list">
+              {declared.map((c) => <li>"{c}"</li>)}
+            </ul>
+            <p slot="source">
+              {collectsHref ? <a href={collectsHref}><cite>{s.name} Privacy Policy {policyVersion}</cite></a> : <cite>{s.name} Privacy Policy{policyVersion && ` ${policyVersion}`}</cite>}{s.collectsClause && `, ${s.collectsClause}`}
+            </p>
+            <Fragment slot="recto">
+              {observed ? (
+                <>
+                  <ul class="leaves__list">{leaves.map((l) => <li><Inline text={l} /></li>)}</ul>
+                  {s.observedNote && <p class="leaves__note"><Inline text={s.observedNote} /></p>}
+                </>
+              ) : (
+                <p class="leaves__note leaves__none">Not captured yet. We have read this policy but have not run the app through our capture, so nothing is set against the list.</p>
+              )}
+            </Fragment>
+          </Spread>
+        </section>
+      ) : (
+        <section class="section" aria-labelledby="collects-h">
+          <SectionHead title="What it collects" id="collects-h" />
+          {s.collects.length > 0
+            ? <ul class="facts">{s.collects.map((c) => <li><Inline text={c} /></li>)}</ul>
+            : <p class="empty">Nothing recorded yet.</p>}
+        </section>
+      )}
+
+      <section class="section" aria-labelledby="who-h">
+        <SectionHead title="Who receives it" id="who-h" />
+        {s.recipients.length > 0 ? (
+          <div class="table-wrap">
+            <table class="ltable rtable">
+              <thead>
+                <tr><th scope="col">Recipient</th><th scope="col">Role</th><th scope="col">Disclosed</th><th scope="col">Where</th></tr>
+              </thead>
+              <tbody>
+                {s.recipients.map((r) => (
+                  <tr class:list={{ 'is-undisclosed': !r.disclosed }}>
+                    <th scope="row">{splitName(r.name).name}{splitName(r.name).detail && <span class="sub">{splitName(r.name).detail}</span>}</th>
+                    <td class="role" data-label="Role">{r.role}</td>
+                    <td class="yn" data-label="Disclosed">{r.disclosed ? 'Yes' : 'No'}</td>
+                    <td class="where" data-label="Where">{r.where ?? (r.disclosed ? 'no clause given' : 'not listed')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <p class="empty">Nothing recorded yet.</p>}
+        {undisclosed > 0 && (
+          <p class="legend svc-legend">{plural(undisclosed, 'recipient', 'recipients')} {undisclosed === 1 ? 'is' : 'are'} not named in the policy.</p>
+        )}
+      </section>
+    </div>
+
+    {flow.length > 0 && (
+      <div class="svc-flow">
+        <Exhibit
+          n={1}
+          id="data-flow"
+          caption={`where data from ${s.name} goes. Solid line: disclosed in the policy. Dashed line: not named in the policy.`}
+          meta="drawn from the table above"
+        >
+          <DataFlow app={s.name} origin={{ name: 'App', sub: 'on your device' }} recipients={flow} neutral />
+        </Exhibit>
+      </div>
+    )}
+
+    <section class="section" aria-labelledby="do-h">
+      <SectionHead title="What the policy says, and what we found" id="do-h" />
+      {rows.length > 0 ? (
+        <ol class="do-list" aria-label={`What the ${s.name} policy says, set against what we found, newest file first`}>
+          {rows.map(({ f, file, declared, observed }) => (
+            <li>
+              <DeclaredObserved
+                finding={f}
+                declared={declared}
+                observed={observed}
+                file={{ href: file.href, label: `${file.ref} / ${file.kind}` }}
+              />
+            </li>
+          ))}
+        </ol>
+      ) : <p class="empty">No findings filed on {s.name} yet.</p>}
+    </section>
+
+    <section class="section" aria-labelledby="files-h">
+      <SectionHead title="Files on this service" id="files-h" href="/publications/" linkText="All files →" />
+      {files.length > 0
+        ? <CaseIndex items={files} label={`Files on ${s.name}, newest first`} />
+        : <p class="empty">No files on {s.name} yet.</p>}
+    </section>
+
+    <section class="section" aria-labelledby="versions-h">
+      <SectionHead title="Policy versions on file" id="versions-h" href={archived.length ? `/archive/${service.id}/` : '/archive/'} linkText="Archive →" />
+      {archived.length > 0
+        ? <ArchiveRows items={archived} label={`${s.name} policy versions in the archive, newest first`} />
+        : <p class="empty">No {s.name} policy text archived yet.</p>}
+    </section>
+  </div>
+</Base>

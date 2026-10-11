@@ -1,0 +1,112 @@
+---
+/**
+ * How to read a file: /how-to-read/. A plain page (bar-only FileHeader, page head, sections in
+ * .prose), explaining the grammar of a file with live examples built from the real components,
+ * never screenshots: a Spread with its two pages labelled, a small Exhibit with a three-line log
+ * in the mini-markup, a static copy of the tab row, a file bar with its number and REV, and the
+ * corrections rule.
+ *
+ * Every example quote is a composite in the manner of the home page's opening sentence: labelled
+ * "Composite", written for this page, quoted from no service, about no real or sample company.
+ * Linked from the tab row of every file ("How to read this file").
+ */
+import Base from '../../layouts/Base.astro';
+import FileHeader from '../../components/FileHeader.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import Spread from '../../components/Spread.astro';
+import Exhibit from '../../components/Exhibit.astro';
+
+const description =
+  'The grammar of a termsapply file: their words on the left, ours on the right, the asterisk where they part, and what the numbers, tabs and labels around them mean.';
+const composite = 'Composite example, quoted from no service';
+const log = `# composite example: three lines in the form of a capture log, from no real capture
+03:12:04 UTC  POST https://sync.app.example/v2/notes  ~~200, 1.2 kB, ciphertext~~
+03:12:05 UTC  !!POST https://words.vendor.example/check!!  ==text="meet me at the clinic"==`;
+---
+<Base title="How to read a file" description={description} fileRef="HOW TO READ A FILE" og={{ verso: 'How to read a file', versoLabel: 'How to read' }}>
+  <div class="wrap">
+    <FileHeader ref="HOW TO READ A FILE" side="APPLIES TO EVERY FILE / EXAMPLES ARE COMPOSITES" fields={[]} />
+    <div class="page-head page-head--filed">
+      <h1>How to read a file</h1>
+      <p class="dek">Every file is built from the same few parts. Once you know them, a file reads itself.</p>
+      <p class="page-note">The examples on this page are composites, written for it and quoted from no service.</p>
+      <p class="byline"><strong>termsapply</strong>&nbsp;/ <span class="nw">Examples: composites</span></p>
+    </div>
+
+    <section class="section" id="pages" aria-labelledby="pages-h">
+      <SectionHead title="Two pages" id="pages-h" />
+      <div class="prose">
+        <p>A file is set like a book in two languages. The left page, Declared, is the company, word for word, in a fixed-width face, with the clause, the version of the document and its date. The right page, Observed, is us: what we saw when we ran the app. On a phone the two pages stack, left page first.</p>
+      </div>
+      <Spread size="body" class="howto-ex" labels={['Declared', 'Observed']} refs={['Composite', undefined]} label="Example: the two pages">
+        <blockquote slot="verso" class="spread__q"><p>"We only collect the information we need to <mark>provide the service</mark>."</p></blockquote>
+        <p slot="source">{composite}, with the clause, version and date where a real file has them</p>
+        <Fragment slot="recto">
+          <p class="spread__a">The app sent each note to a second company as it was typed.</p>
+          <p class="spread__evidence">40 of 40 notes / 2 phones / 2 days</p>
+        </Fragment>
+      </Spread>
+      <div class="prose howto-after">
+        <p>The highlighted words are the ones the finding turns on. A quotation that is not word for word in the archived document fails our build. The evidence line under our sentence gives the counts, the devices and the days.</p>
+      </div>
+    </section>
+
+    <section class="section" id="asterisk" aria-labelledby="asterisk-h">
+      <SectionHead title="The asterisk" id="asterisk-h" />
+      <div class="prose">
+        <p>The red asterisk between the two pages marks where they part: the policy says one thing, the app was seen to do another. Where the two pages agree, the gutter is empty.</p>
+      </div>
+    </section>
+
+    <section class="section" id="exhibits" aria-labelledby="exhibits-h">
+      <SectionHead title="Exhibits" id="exhibits-h" />
+      <div class="prose">
+        <p>The evidence sits in numbered exhibits on the file's Evidence page, and the story points to each one by number. A request log is printed as the capture recorded it: grey lines are comments, a highlighted phrase is what the finding is about, red is the request the policy does not cover.</p>
+      </div>
+      <div class="howto-ex howto-exhibit">
+        <Exhibit n="A" id="exh-example" caption="composite log excerpt, three lines, in the form of a capture" meta="example, from no capture" log={log} logLabel="Composite request log, scrolls horizontally" />
+      </div>
+    </section>
+
+    <section class="section" id="tabs" aria-labelledby="tabs-h">
+      <SectionHead title="One file, several pages" id="tabs-h" />
+      <div class="prose">
+        <p>A publication is one file at several addresses. The tabs under the file bar move between them; the one you are on is underlined.</p>
+      </div>
+      <div class="tabs tabs--example howto-ex" aria-label="Example of the tab row (not links)" role="img">
+        <ul>
+          <li><span class="is-current">Story</span></li>
+          <li><span>Evidence</span></li>
+          <li><span>Reply</span></li>
+          <li><span>History</span></li>
+        </ul>
+      </div>
+      <dl class="howto-dl">
+        <dt class="label">Story</dt><dd>The finding, the article, and what it means for you.</dd>
+        <dt class="label">Evidence</dt><dd>The exhibits, the data-flow drawing, the devices and days of the capture, and the technical appendix.</dd>
+        <dt class="label">Reply</dt><dd>The company's reply, printed in full as received, facing our note. A file with no reply has no Reply tab; its status line says why.</dd>
+        <dt class="label">History</dt><dd>The file's revision log, corrections included.</dd>
+      </dl>
+    </section>
+
+    <section class="section" id="file-number" aria-labelledby="file-number-h">
+      <SectionHead title="File number and REV" id="file-number-h" />
+      <div class="prose">
+        <p>Every file opens with a bar like this one: its number and revision date on the left; the section and the service on the right.</p>
+      </div>
+      <div class="howto-ex howto-bar">
+        <FileHeader fileNo="0000" rev={new Date('2026-02-07T00:00:00Z')} side="PUBLICATIONS / COMPOSITE EXAMPLE" fields={[]} />
+      </div>
+      <div class="prose howto-after">
+        <p>A file number is given once and never reused. REV is the date the file last changed: when a reply arrives, when we rerun a test after an update, and when we correct a mistake. The History tab says which.</p>
+      </div>
+    </section>
+
+    <section class="section" id="corrections" aria-labelledby="corrections-h">
+      <SectionHead title="Corrections" id="corrections-h" href="/corrections/" linkText="Corrections →" />
+      <div class="prose">
+        <p>We never change a published sentence silently. A correction changes the file's REV, is logged in its history, and is entered in the <a href="/corrections/">corrections register</a>: the sentence as published facing the sentence as corrected.</p>
+      </div>
+    </section>
+  </div>
+</Base>

@@ -1,0 +1,57 @@
+---
+/**
+ * Investigation file, the history: /publications/<slug>/history/. Built for every investigation.
+ * Same file bar and tab row as the story; the story's title as a serif over-line linking back; the h1
+ * "History"; then, in .body:
+ *   Revision log    the file's own log, oldest first (investigationLog in src/lib/cases.ts): the
+ *                   policy versions examined, the test window, the first observation with the
+ *                   interval since the policy took effect ("+ 33 days"), the date the company was
+ *                   asked, the reply, publication, any revision, and every correction from the
+ *                   corrections register ("Correction CR-0002: …", linking to /corrections/#cr-0002).
+ */
+import { getEntry } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import FileHeader from '../../../components/FileHeader.astro';
+import FileTabs from '../../../components/FileTabs.astro';
+import RevisionLog from '../../../components/RevisionLog.astro';
+import { correctionsFor, fileHref, fileOgVerso, fileRefOf, getEvidence, getInvestigations, investigationLog } from '../../../lib/cases';
+
+export async function getStaticPaths() {
+  const entries = await getInvestigations();
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const service = await getEntry(d.service);
+if (!service) throw new Error(`Unknown service "${d.service.id}" in ${entry.id}`);
+const story = fileHref('investigations', entry.id);
+const evidence = await getEvidence(entry.id);
+const log = investigationLog(entry, service.data.name, await correctionsFor('investigations', entry.id));
+const description = `The revision log of file ${d.fileNo}: what happened, when, and every correction.`;
+---
+<Base title={`History / ${d.title}`} description={description} type="article" published={d.date} fileRef={fileRefOf(d, 'history')} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: d.title, rectoLabel: 'History' }}>
+  <div class="wrap">
+    <article aria-labelledby="part-title">
+      <FileHeader
+        fileNo={d.fileNo}
+        rev={d.revised ?? d.date}
+        side={`PUBLICATIONS / ${service.data.name.toUpperCase()}`}
+        category={d.category}
+        fields={[]}
+      />
+      <FileTabs collection="investigations" slug={entry.id} current="history" evidence={Boolean(evidence)} reply={Boolean(d.reply)} />
+
+      <div class="art-head part-head">
+        <p class="part-head__over"><a href={story}>{d.title}</a></p>
+        <h1 id="part-title">History</h1>
+        <p class="dek">{description}</p>
+      </div>
+
+      <div class="body">
+        <RevisionLog lines={log} sub={`/ file ${d.fileNo}`} />
+      </div>
+      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the story</span></a></p>
+    </article>
+  </div>
+</Base>

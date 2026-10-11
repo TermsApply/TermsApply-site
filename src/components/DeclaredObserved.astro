@@ -1,0 +1,151 @@
+---
+/**
+ * DeclaredObserved: the signature pair, built on <Spread>. Left page: the policy sentence,
+ * verbatim, in mono on the recessed panel, with the `mark` phrase highlighted, the clause ref and
+ * the source / effective / retrieved line pinned to the foot of the panel. Right page: what was
+ * observed, in bold serif, with the evidence line. The red asterisk sits in the gutter. When both
+ * dates are known and SHOW_INTERVAL (src/lib/site.ts) is on, the interval row ("+ 33 days") runs between the declared date and the
+ * observation. Optional "What this means for you" row under both pages. Stacks below 48rem.
+ *
+ * Props:
+ *   finding    one item of a `findings` array (schema `finding` in src/content.config.ts)
+ *   showMeans  render the "What this means for you" row when finding.means exists (default false;
+ *              articles put advice in <ForReaders> instead)
+ *   label      aria-label for the section (default "Declared versus observed: <clause title>")
+ *   heads      page labels [left, right] (default ["Declared", "Observed"])
+ *   size       'lead' (home lead, article head), 'body' (default), 'compact'
+ *   ruled      ink rules above and below (default true; heads under a file bar turn it off)
+ *   declared   fallback for finding.effective in the interval row (the piece's policyDate)
+ *   observed   fallback for finding.observedAt in the interval row (the piece's testedFrom)
+ *   pull       show this shorter verbatim sentence instead of the full quote (display heads); the
+ *              build fails if it is not part of the quote
+ *   file       { href, label }: link in the right page's top-right corner instead of evidenceRef
+ *              (the service profile points each pair at its file)
+ *
+ * finding.assessment (optional) prints a word after the right page's label, as a clause's flag:
+ * "Departs from the wording" (ink, underlined), "Open to interpretation" (khaki), "Consistent"
+ * (ink-2). A consistent pair is drawn without the asterisk: the two pages do not part. Without it
+ * the pair is drawn as before.
+ *
+ * A finding may arrive with `evidenceHref` (the story page sets it when the file has an evidence
+ * page): its evidenceRef ("Exh. 1") then links to that exhibit, /publications/<slug>/evidence/#exh-1.
+ *
+ * In MDX article bodies: <Finding finding={props.findings[0]} />  (Finding is this component)
+ * A finding the page already set as the display spread at the head of the file arrives with
+ * `inHead: true` and renders nothing, so it is never printed twice.
+ * The build fails if `mark` does not occur in `quote`: quotes must stay verbatim.
+ */
+import Spread from './Spread.astro';
+import Inline from './Inline.astro';
+import { iso } from '../lib/format';
+import { SHOW_INTERVAL } from '../lib/site';
+
+export interface Finding {
+  clause: string;
+  clauseTitle?: string;
+  source: string;
+  quote: string;
+  mark?: string;
+  effective?: Date;
+  retrieved?: Date;
+  observed: string;
+  observedAt?: Date;
+  evidence?: string;
+  evidenceRef?: string;
+  means?: string;
+  assessment?: 'parts' | 'interpretation' | 'agrees';
+  inHead?: boolean;
+  evidenceHref?: string;
+}
+interface Props {
+  finding: Finding;
+  showMeans?: boolean;
+  label?: string;
+  heads?: [string, string];
+  size?: 'lead' | 'body' | 'compact';
+  ruled?: boolean;
+  declared?: Date;
+  observed?: Date;
+  pull?: string;
+  file?: { href: string; label: string };
+}
+const {
+  finding: f, showMeans = false, label, heads = ['Declared', 'Observed'], size = 'body', ruled = true,
+  declared, observed, pull, file,
+} = Astro.props;
+
+if (pull && !f.quote.includes(pull)) {
+  throw new Error(`DeclaredObserved: pull "${pull}" is not part of the quote for ${f.source} ${f.clause}`);
+}
+const text = pull ?? f.quote;
+
+// Split each paragraph of the quote around the first occurrence of the marked phrase.
+const paras = text.split(/\n\s*\n/).map((p) => p.trim());
+let marked = false;
+const rendered = paras.map((p, i) => {
+  const open = i === 0 ? '"' : '';
+  const close = i === paras.length - 1 ? '"' : '';
+  const at = f.mark && !marked ? p.indexOf(f.mark) : -1;
+  if (at < 0) return { before: open + p + close, mark: '', after: '' };
+  marked = true;
+  return { before: open + p.slice(0, at), mark: f.mark!, after: p.slice(at + f.mark!.length) + close };
+});
+if (f.mark && !marked && !pull) {
+  throw new Error(`DeclaredObserved: mark "${f.mark}" not found in quote for ${f.source} ${f.clause}`);
+}
+// Inside the highlight a hyphenated word ("end-to-end") is kept whole (.nw), so the marker never
+// breaks at a hyphen and leaves "end-to-" highlighted alone at the end of a line.
+const markParts = (m: string) => m.split(/(\S*-\S*)/).filter(Boolean);
+const aria = label ?? `Declared versus observed: ${f.clauseTitle ?? f.clause}`;
+const from = f.effective ?? declared;
+const to = f.observedAt ?? observed;
+const gap = SHOW_INTERVAL && from && to ? { from, to, fromLabel: 'effective', toLabel: 'observed' } : undefined;
+const ASSESS = {
+  parts: { word: 'Departs from the wording', cls: 'flag--harmful' },
+  interpretation: { word: 'Open to interpretation', cls: 'flag--vague' },
+  agrees: { word: 'Consistent', cls: 'flag--fine' },
+} as const;
+const assess = f.assessment ? ASSESS[f.assessment] : undefined;
+---
+{!f.inHead && (
+  <Spread
+    as="section"
+    class="do"
+    size={size}
+    panel
+    ruled={ruled}
+    label={aria}
+    labels={[heads[0], heads[1]]}
+    refs={[f.clause, file || f.evidenceHref ? undefined : f.evidenceRef]}
+    interval={gap}
+    mark={f.assessment !== 'agrees'}
+  >
+    <blockquote slot="verso" class="spread__q">
+      {rendered.map((r) => <p>{r.before}{r.mark && <mark>{markParts(r.mark).map((t) => (t.includes('-') ? <span class="nw">{t}</span> : t))}</mark>}{r.after}</p>)}
+    </blockquote>
+    <p slot="source">
+      <cite>{f.source}</cite>, {f.clause}{f.clauseTitle && <> “{f.clauseTitle}”</>}
+      {(f.effective || f.retrieved) && (
+        <>
+          <br />
+          {f.effective && <>effective <time datetime={iso(f.effective)}>{iso(f.effective)}</time></>}
+          {f.effective && f.retrieved && ', '}
+          {f.retrieved && <>retrieved <time datetime={iso(f.retrieved)}>{iso(f.retrieved)}</time></>}
+        </>
+      )}
+    </p>
+    {file ? <a slot="recto-ref" href={file.href}>{file.label}</a>
+      : f.evidenceHref && f.evidenceRef && <a slot="recto-ref" href={f.evidenceHref}>{f.evidenceRef}</a>}
+    <Fragment slot="recto">
+      {assess && <p class="do__assess"><span class={`label flag ${assess.cls}`}>{assess.word}</span></p>}
+      <p class="spread__a"><Inline text={f.observed} /></p>
+      {f.evidence && <p class="spread__evidence"><Inline text={f.evidence} /></p>}
+    </Fragment>
+    {showMeans && f.means && (
+      <div slot="after" class="means">
+        <span class="label">What this means for you</span>
+        <p><Inline text={f.means} /></p>
+      </div>
+    )}
+  </Spread>
+)}

@@ -1,0 +1,16 @@
+---
+/**
+ * Placeholder: a value we do not have yet, printed where the value will go as a mono marker,
+ * "[PLACEHOLDER: name of the collective or association]", on the recessed paper, so it cannot be
+ * read as a real value or overlooked. Used on /legal/ for every `null` in
+ * src/lib/contact.ts (block D). Never red: a missing value is not a discrepancy.
+ *
+ * Props:
+ *   what   what goes here, in a few words
+ */
+interface Props {
+  what: string;
+}
+const { what } = Astro.props;
+---
+<span class="ph">[PLACEHOLDER: {what}]</span>

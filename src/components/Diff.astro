@@ -1,0 +1,90 @@
+---
+/**
+ * Diff: one policy change as facing pages (<Spread theirs>). Both pages are the company's own
+ * words, so both are mono: the old version on the left, the removed text struck through in red;
+ * the new version on the right, the added text underlined in khaki. Unchanged context lines appear
+ * on both pages in ink-2, so each page reads as that version of the clause. The interval row gives
+ * the days between the two effective dates ("+ 172 days"). Above: the file line (id / service /
+ * document / clause). Below: our note, in serif, and the notice flag (red when none was given).
+ *
+ * Props:
+ *   id, document, clause, fromVersion, fromDate?, toVersion, toDate, contextBefore?, removed?,
+ *   added?, contextAfter?, note, noticeGiven
+ *   service      a service reference ({ id }); with `document` it resolves each version
+ *                label to that version's text in the policy archive (/archive/…/<version>/#s-3-1,
+ *                at the clause when the text has it). A version not on file stays a plain label.
+ *   serviceName  display name of the service (resolve the `service` reference first)
+ *   serviceHref  optional link for the service name
+ *   compact      smaller type, and the file line shows only the clause (inside an article's or a
+ *                profile's Policy history, where id, service and document are implied)
+ */
+import Inline from './Inline.astro';
+import Spread from './Spread.astro';
+import { iso } from '../lib/format';
+import { archiveHref } from '../lib/archive';
+interface Props {
+  id: string;
+  service?: { id: string };
+  serviceName: string;
+  serviceHref?: string;
+  document: string;
+  clause: string;
+  fromVersion: string;
+  fromDate?: Date;
+  toVersion: string;
+  toDate: Date;
+  contextBefore?: string;
+  removed?: string;
+  added?: string;
+  contextAfter?: string;
+  note: string;
+  noticeGiven: boolean;
+  compact?: boolean;
+  [key: string]: unknown; // tolerate spread schema fields such as `service`
+}
+const {
+  id, service, serviceName, serviceHref, document, clause, fromVersion, fromDate, toVersion, toDate,
+  contextBefore, removed = '', added = '', contextAfter, note, noticeGiven, compact = false,
+} = Astro.props;
+const anchor = id.toLowerCase();
+const capId = `${anchor}-cap`;
+const fromHref = service ? await archiveHref(service.id, document, fromVersion, clause) : undefined;
+const toHref = service ? await archiveHref(service.id, document, toVersion, clause) : undefined;
+const gap = fromDate ? { from: fromDate, to: toDate, fromLabel: fromVersion, toLabel: toVersion } : undefined;
+---
+<Spread
+  as="figure"
+  class={compact ? 'diff diff--compact' : 'diff'}
+  id={anchor}
+  size={compact ? 'compact' : 'body'}
+  theirs
+  labelledby={capId}
+  labels={[`− ${fromVersion}`, `+ ${toVersion}`]}
+  labelHrefs={[fromHref, toHref]}
+  interval={gap}
+>
+  <p slot="head" class="diff__file">
+    {compact ? (
+      <span class="svc">{clause}</span>
+    ) : (
+      <span class="svc">{id} / {serviceHref ? <a href={serviceHref}>{serviceName}</a> : serviceName} / {document} {clause}</span>
+    )}
+  </p>
+  <Fragment slot="verso-ref">{fromDate ? <>eff. <time datetime={iso(fromDate)}>{iso(fromDate)}</time></> : 'date not on file'}</Fragment>
+  <Fragment slot="recto-ref">eff. <time datetime={iso(toDate)}>{iso(toDate)}</time></Fragment>
+  <div slot="verso" class="spread__q diff__text" role="group" aria-label={`Version ${fromVersion.replace(/^v/, '')}`}>
+    {contextBefore && <p class="diff__ctx">{contextBefore}</p>}
+    {removed ? <p><del><span class="sr-only">Removed: </span>{removed}</del></p> : <p class="diff__ctx">Nothing removed.</p>}
+    {contextAfter && <p class="diff__ctx">{contextAfter}</p>}
+  </div>
+  <div slot="recto" class="spread__q diff__text" role="group" aria-label={`Version ${toVersion.replace(/^v/, '')}`}>
+    {contextBefore && <p class="diff__ctx">{contextBefore}</p>}
+    {added ? <p><ins><span class="sr-only">Added: </span>{added}</ins></p> : <p class="diff__ctx">Nothing added.</p>}
+    {contextAfter && <p class="diff__ctx">{contextAfter}</p>}
+  </div>
+  <figcaption slot="after" class="diff__note" id={capId}>
+    <span class="sr-only">{id}, {clause}, {fromVersion} to {toVersion}: </span>
+    <p><Inline text={note} /></p>
+    <span class:list={['diff__notice', 'label', { 'diff__notice--none': !noticeGiven }]}>{noticeGiven ? 'Notice given to users' : 'No notice given'}</span>
+  </figcaption>
+</Spread>

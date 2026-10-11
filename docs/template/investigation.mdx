@@ -1,0 +1,91 @@
+---
+title: "[Headline]"
+dek: "[One or two sentences under the headline]"
+summary: "[One line for the case index]"
+date: "[YYYY-MM-DD]"
+service: "[service-slug]"
+# Optional: delete the line to print no category.
+category: "[surveillance | soma]"
+topics: ["[topic slug from src/lib/topics.ts]"]
+fileNo: "[0000]"
+policyVersion: "[v1.0]"
+policyDate: "[YYYY-MM-DD]"
+testedFrom: "[YYYY-MM-DD]"
+testedTo: "[YYYY-MM-DD]"
+platforms: ["[OS version]", "[OS version]"]
+appVersions: "[app version (build)]"
+companyReply: "[None | Declined | Replied YYYY-MM-DD]"
+companyAsked: "[YYYY-MM-DD]"
+reply:
+  date: "[YYYY-MM-DD]"
+  channel: "[email]"
+  from: "[name or function]"
+  text: |-
+    [Their reply, verbatim, paragraph one.]
+
+    [Paragraph two.]
+  # Further messages, oldest first; delete the block when there are none.
+  followUps:
+    - date: "[YYYY-MM-DD]"
+      text: |-
+        [Their further message, verbatim.]
+replyNote: "[Our one-paragraph comment on the reply]"
+byline: "[byline]"
+sample: "[true | false]"
+findings:
+  - clause: "[§0.0]"
+    clauseTitle: "[clause heading]"
+    source: "[Service] [Document] [version]"
+    quote: "[the policy sentence, verbatim]"
+    mark: "[phrase inside quote to highlight]"
+    effective: "[YYYY-MM-DD]"
+    retrieved: "[YYYY-MM-DD]"
+    observed: "[what we saw, one sentence]"
+    evidence: "[count of observations / devices / file]"
+    evidenceRef: "[Exh. 1, 2]"
+    assessment: "[parts]"
+    means: "[What this means for you]"
+  - clause: "[§0.0]"
+    source: "[Service] [Document] [version]"
+    quote: "[verbatim]"
+    effective: "[YYYY-MM-DD]"
+    retrieved: "[YYYY-MM-DD]"
+    observed: "[what we saw]"
+    evidence: "[count / file]"
+    evidenceRef: "[Exh. 3]"
+    assessment: "[interpretation]"
+  - clause: "[§0.0]"
+    source: "[Service] [Document] [version]"
+    quote: "[verbatim]"
+    effective: "[YYYY-MM-DD]"
+    retrieved: "[YYYY-MM-DD]"
+    observed: "[what we saw]"
+    evidence: "[count / file]"
+    assessment: "[agrees]"
+---
+<Note>**[Summary]**</Note>
+
+[Summary paragraph.]
+
+## [Method, in brief]
+
+<Note>**[M.1]** [traffic capture]</Note>
+
+[How the captures were made; the evidence page has the drawings and the run table.]
+
+<ExhibitRef n={1} label="[what the exhibit shows]" />
+
+## [Observed beside the declarations]
+
+<Finding finding={props.findings[1]} />
+
+## [Consistent with the declarations]
+
+<Finding finding={props.findings[2]} />
+
+<ForReaders>
+
+- [What this means for you, line one.]
+- [Line two.]
+
+</ForReaders>

@@ -1,0 +1,37 @@
+---
+/**
+ * Investigations index: the full case index of long-form investigations, newest first, PAGE_SIZE
+ * to a page (/publications/, then /publications/page/2/ …; paginatePaths in src/lib/cases.ts).
+ * Opens with the FileHeader bar (the total count left; newest date and category counts, over all
+ * pages, right, plus "PAGE 2 OF 3" when there is more than one page) and ends with the Pager.
+ */
+import Base from '../../layouts/Base.astro';
+import CaseIndex from '../../components/CaseIndex.astro';
+import FileHeader from '../../components/FileHeader.astro';
+import Pager from '../../components/Pager.astro';
+import { getInvestigations, indexRef, indexSide, investigationItem, paginatePaths, withPageNote, type CaseItem, type IndexPage } from '../../lib/cases';
+
+export async function getStaticPaths() {
+  const items = await Promise.all((await getInvestigations()).map(investigationItem));
+  return paginatePaths(items, '/publications/').map((p) => ({ ...p, props: { ...p.props, all: items } }));
+}
+
+const { page, all } = Astro.props as { page: IndexPage<CaseItem>; all: CaseItem[] };
+const description =
+  'What privacy policies say and what apps do, with the evidence: recorded traffic, embedded code and settings.';
+---
+<Base title={page.current > 1 ? `Publications, page ${page.current}` : 'Publications'} description={description} prev={page.prevUrl} next={page.nextUrl} fileRef={indexRef('Publications', page.total, 'file', 'files')} og={{ verso: 'Publications', versoLabel: 'Publications' }}>
+  <div class="wrap">
+    <FileHeader ref={indexRef('Publications', page.total, 'file', 'files')} side={withPageNote(indexSide(all), page)} fields={[]} />
+    <div class="page-head page-head--filed">
+      <h1>Publications</h1>
+      <p class="dek">{description}</p>
+    </div>
+    <section aria-label="Case index">
+      {page.data.length > 0
+        ? <CaseIndex items={page.data} level={2} label="Publications, newest first" legend kinds={false} />
+        : <p class="empty topic-empty">No files yet.</p>}
+    </section>
+    <Pager page={page} label="Publications, pages" />
+  </div>
+</Base>

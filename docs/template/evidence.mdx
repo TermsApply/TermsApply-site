@@ -1,0 +1,87 @@
+---
+file: "[investigation-slug]"
+summary: "[One or two sentences under the Evidence headline]"
+captures:
+  - { device: "[A: model]", os: "[OS version]", app: "[app version (build)]", from: "[YYYY-MM-DD]", to: "[YYYY-MM-DD]" }
+---
+
+export const exhibit2Log = `
+# [capture: device / run / date / times UTC]
+[hh:mm:ss.mmm]  POST  ==[highlighted host]==/[path]     200  [size]
+[hh:mm:ss.mmm]  POST  !![offending request]!!          200  [size]  ~~[muted note]~~
+`;
+
+## [Where the data goes]
+
+<Note>**[Exh. 1]** / [drawing]</Note>
+
+[What the drawing shows.]
+
+<Exhibit n={1} caption="[caption]" meta="[drawn from Exhibit 2]">
+  <DataFlow
+    app="[App]"
+    origin={{ name: '[trigger]', sub: '[when]' }}
+    recipients={[
+      { name: '[host]', sub: '[role, §]', disclosed: false, data: '[what it carries]', note: '[note]' },
+      { name: '[host]', sub: '[role, §]', disclosed: true, data: '[what it carries]' },
+    ]}
+  />
+</Exhibit>
+
+## [A request log]
+
+<Note>**[Exh. 2]** / [log]</Note>
+
+<Exhibit n={2} caption="[caption]" meta="[HAR excerpt]" log={exhibit2Log} />
+
+## [One device over time]
+
+<Note>**[Exh. 3]** / [drawing]</Note>
+
+<Exhibit n={3} caption="[caption]" meta="[drawn from runs]">
+  <Timeline
+    points={[
+      { title: '[T1, date]', lines: ['[step]'] },
+      { title: '[event]', lines: ['[what was sent]'] },
+      { title: '[T2, date]', lines: ['[step]'] },
+    ]}
+    span={{ from: 0, to: 2, label: ['[what stayed the same]'] }}
+  />
+</Exhibit>
+
+## [An exchange, there and back]
+
+<Note>**[Exh. 4]** / [drawing]</Note>
+
+<Exhibit n={4} caption="[caption]" meta="[drawn from Exhibit 2]">
+  <RoundTrip
+    app={{ name: '[App]', sub: '[when]' }}
+    service={{ name: '[host]', sub: '[path, §]' }}
+    legs={[
+      { to: 'service', lines: ['[request fields]'] },
+      { to: 'app', lines: ['[response fields]'] },
+    ]}
+  />
+</Exhibit>
+
+## [Files on record]
+
+<TechnicalAppendix title="[Technical appendix A]">
+
+### [A.1 Devices]
+
+<dl>
+  <dt>[Device A]</dt><dd>[model / OS version]</dd>
+</dl>
+
+### [A.2 Runs]
+
+<div class="scroll" tabindex="0" role="region" aria-label="Run table, scrolls horizontally">
+
+| Run | Date | Device | Steps | Entries |
+| --- | --- | --- | --- | ---: |
+| [T1] | [YYYY-MM-DD] | [A] | [steps] | [n] |
+
+</div>
+
+</TechnicalAppendix>

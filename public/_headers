@@ -1,0 +1,28 @@
+/*
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=2592000
+
+/fonts/*.txt
+  Content-Type: text/plain; charset=utf-8
+
+/archive/*.txt
+  Content-Type: text/plain; charset=utf-8
+
+# Files on record (the pseudonymised captures and scripts of a file): served as downloads, byte for
+# byte, with a long cache; the evidence page prints each file's SHA-256 as served.
+/files/*
+  Content-Disposition: attachment
+  Cache-Control: public, max-age=2592000
+  X-Robots-Tag: noindex
+
+/files/*.txt
+  Content-Type: text/plain; charset=utf-8

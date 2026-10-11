@@ -1,0 +1,124 @@
+---
+/**
+ * Spread: the facing-pages primitive (round 3, direction A "Facing Pages"). Every pair on the site
+ * is built from it: the article findings, case-index rows, policy diffs, the service profile, the
+ * footer and the 404.
+ *
+ *   verso (left page)   their words: mono, ink-2. Optional source line under it.
+ *   gutter              a hairline with the red Asterisk on it, where the two part.
+ *   recto (right page)  our words: serif, ink.
+ *
+ * From 48rem the pages sit side by side with the gutter between them; below that they stack and
+ * the gutter becomes a horizontal rule with the asterisk at its left end. Text inside the pages
+ * uses .spread__q (their sentence) and .spread__a (ours); both are sized by `size`.
+ *
+ * Props:
+ *   size      'display' (404) / 'lead' (article head) / 'body' (findings in an article, profile,
+ *             diffs) / 'row' (index rows) / 'compact' (footer). Sets type sizes, gutter width and asterisk size.
+ *   as        wrapping element: 'div' (default), 'section', 'li', 'figure', 'article'
+ *   labels    [verso, recto] mono labels, top-left of each page (optional)
+ *   refs      [verso, recto] mono labels, top-right of each page (optional; or use the
+ *             `verso-ref` / `recto-ref` slots for a link)
+ *   mark      draw the asterisk in the gutter (default true). The footer turns it off: our own
+ *             policy does not part from what we say.
+ *   panel     set the verso on the recessed --paper-2 panel (findings)
+ *   ruled     ink rules above and below the spread (findings inside an article)
+ *   interval  { from, to, fromLabel?, toLabel? }: the interval row "+ 33 days" between a declared
+ *             date and an observed one (or two policy versions). Stacked: on the gutter rule, right
+ *             of the asterisk, as "+ 33 days to observed 2026-09-03" (the from date is spoken but
+ *             not shown; the verso's source line prints it). Side by side: a thin row under the
+ *             verso with both dates.
+ *   labelHrefs  [verso, recto] links for the two labels (optional; a diff links each
+ *             version label to that version's text in the policy archive, when it is on file)
+ *   theirs    the recto is their words too (a diff: old version left, new version right)
+ *   ours      the verso is our words too (Corrections: our sentence as published, facing it as
+ *             corrected): the verso is set in serif. The asterisk stays: the two texts part.
+ *   id, class, label (aria-label), labelledby (aria-labelledby)
+ *
+ * Slots: verso, recto (the pages); source (under the verso); head (a full-width row above both
+ * pages, e.g. a diff's file line); after (a full-width row below, e.g. "What this means for you"
+ * or an index row's meta line; in a figure, pass a <figcaption>, which is placed there unwrapped so
+ * it stays the figure's last child); verso-ref, recto-ref (override `refs`); verso-label (overrides
+ * `labels[0]`, e.g. the footer's asterisk).
+ */
+import Asterisk from './Asterisk.astro';
+import { interval as fmtInterval, iso } from '../lib/format';
+
+type Size = 'display' | 'lead' | 'body' | 'row' | 'compact';
+interface Interval {
+  from: Date;
+  to: Date;
+  fromLabel?: string;
+  toLabel?: string;
+}
+interface Props {
+  size?: Size;
+  as?: 'div' | 'section' | 'li' | 'figure' | 'article';
+  labels?: [string | undefined, string | undefined];
+  labelHrefs?: [string | undefined, string | undefined];
+  refs?: [string | undefined, string | undefined];
+  mark?: boolean;
+  panel?: boolean;
+  ruled?: boolean;
+  interval?: Interval;
+  theirs?: boolean;
+  ours?: boolean;
+  id?: string;
+  class?: string;
+  label?: string;
+  labelledby?: string;
+}
+const {
+  size = 'body', as: Tag = 'div', labels = [undefined, undefined], labelHrefs = [undefined, undefined],
+  refs = [undefined, undefined], mark = true, panel = false, ruled = false, interval, theirs = false, ours = false,
+  id, class: className, label, labelledby,
+} = Astro.props;
+
+const has = (name: string) => Astro.slots.has(name);
+const showVersoHead = Boolean(labels[0] || refs[0] || has('verso-ref') || has('verso-label'));
+const showRectoHead = Boolean(labels[1] || refs[1] || has('recto-ref'));
+// An interval is only drawn forwards: an observation before the policy took effect is not a gap.
+const gap = interval && interval.to.valueOf() >= interval.from.valueOf() ? interval : undefined;
+---
+<Tag
+  class:list={[
+    'spread', `spread--${size}`,
+    { 'spread--panel': panel, 'spread--ruled': ruled, 'spread--theirs': theirs, 'spread--ours': ours, 'spread--nomark': !mark, 'spread--int': gap },
+    className,
+  ]}
+  id={id}
+  aria-label={label}
+  aria-labelledby={labelledby}
+>
+  {has('head') && <div class="spread__head"><slot name="head" /></div>}
+  <div class="spread__verso">
+    {showVersoHead && (
+      <div class="spread__labels">
+        <span class="label">{has('verso-label') ? <slot name="verso-label" /> : labelHrefs[0] ? <a href={labelHrefs[0]}>{labels[0]}</a> : labels[0]}</span>
+        <span class="label">{has('verso-ref') ? <slot name="verso-ref" /> : refs[0]}</span>
+      </div>
+    )}
+    <slot name="verso" />
+    {has('source') && <div class="spread__src"><slot name="source" /></div>}
+  </div>
+  <div class="spread__seam" aria-hidden="true">
+    {mark && <span class="spread__mark"><Asterisk size="var(--sp-ast)" /></span>}
+  </div>
+  {gap && (
+    <p class="spread__int">
+      <span class="spread__int-n">{fmtInterval(gap.from, gap.to)}</span>
+      <span class="spread__int-ctx">{' '}from {gap.fromLabel ?? 'declared'} <time datetime={iso(gap.from)}>{iso(gap.from)}</time></span>
+      <span class="spread__int-to">{' '}to {gap.toLabel ?? 'observed'} <time datetime={iso(gap.to)}>{iso(gap.to)}</time></span>
+    </p>
+  )}
+  <div class="spread__recto">
+    {showRectoHead && (
+      <div class="spread__labels">
+        <span class="label">{labelHrefs[1] ? <a href={labelHrefs[1]}>{labels[1]}</a> : labels[1]}</span>
+        <span class="label">{has('recto-ref') ? <slot name="recto-ref" /> : refs[1]}</span>
+      </div>
+    )}
+    <slot name="recto" />
+  </div>
+  {has('after') && (Tag === 'figure' ? <slot name="after" /> : <div class="spread__after"><slot name="after" /></div>)}
+</Tag>

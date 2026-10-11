@@ -1,0 +1,61 @@
+---
+/**
+ * ArchiveRows: archived versions of policy documents as index rows, each a <Spread size="row">
+ * without the gutter asterisk (an archive row records, it does not accuse; nothing here parts).
+ *   verso  their document: name and version (the link to its archive page) and its effective date,
+ *          in mono
+ *   recto  our record, in serif: when we archived it, whether it is the oldest version on file, and
+ *          which of our files quote it
+ *   after  the checksum, shortened, and the raw .txt with its size
+ * Used by /archive/, /archive/<service>/ and the service profile ("Policy versions on file").
+ *
+ * Props:
+ *   items  ArchivedPolicy[] from src/lib/archive.ts, already in the order to print (newest first
+ *          within a document)
+ *   level  heading level for each row's title (default 3)
+ *   label  aria-label for the list
+ */
+import Spread from './Spread.astro';
+import { getInvestigations } from '../lib/cases';
+import { byNewest, getPolicies, shortSha, type ArchivedPolicy } from '../lib/archive';
+import { iso, long } from '../lib/format';
+
+interface Props {
+  items: ArchivedPolicy[];
+  level?: 2 | 3 | 4;
+  label?: string;
+}
+const { items, level = 3, label } = Astro.props;
+const H = `h${level}` as 'h2' | 'h3' | 'h4';
+
+const all = await getPolicies();
+const files = (await getInvestigations()).map((e) => ({ service: e.data.service.id, version: e.data.policyVersion, label: `file ${e.data.fileNo}`, href: `/publications/${e.id}/` }));
+
+const rows = items.map((p) => {
+  // The version before this one, among the archived versions of the same document.
+  const older = all
+    .filter((x) => x.serviceId === p.serviceId && x.documentSlug === p.documentSlug && byNewest(p, x) < 0)
+    .sort(byNewest)[0];
+  const quoted = files.filter((f) => f.service === p.serviceId && f.version === p.version);
+  return { p, older, quoted };
+});
+---
+<ol class="pairs arch-rows" aria-label={label}>
+  {rows.map(({ p, older, quoted }) => (
+    <Spread as="li" size="row" class="pair arch-row" mark={false}>
+      <Fragment slot="verso">
+        <H class="arch-row__title"><a href={p.href}>{p.serviceName} {p.document} {p.version}</a></H>
+        <p class="arch-row__eff">{p.effective ? <>Effective <time datetime={iso(p.effective)}>{iso(p.effective)}</time></> : 'Effective date not stated'}</p>
+      </Fragment>
+      <p slot="recto" class="arch-row__ours">
+        Archived <time datetime={iso(p.retrieved)}>{long(p.retrieved)}</time>.
+        {older ? <>{' '}Follows {older.version}.</> : <>{' '}The oldest version on file.</>}
+        {quoted.length > 0 && <>{' '}Quoted in {quoted.map((f, i) => <>{i > 0 && (i === quoted.length - 1 ? ' and ' : ', ')}<a href={f.href}>{f.label}</a></>)}.</>}
+      </p>
+      <p slot="after" class="pair__meta">
+        <span class="arch-row__sha">SHA-256 <span class="nw">{shortSha(p.sha256)}</span></span>
+        <span class="nw"><a href={p.txtHref}>Plain text</a>, {p.bytes.length.toLocaleString('en-GB')} bytes</span>
+      </p>
+    </Spread>
+  ))}
+</ol>

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+npm-debug.log*
+.cache/
+# Local patterns for npm run check:clean (names, addresses): never committed.
+.check-clean.local

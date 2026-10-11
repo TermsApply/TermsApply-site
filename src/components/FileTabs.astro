@@ -1,0 +1,46 @@
+---
+/**
+ * FileTabs: the mono tab row under the file bar on every address of one file (round 4):
+ * "Story / Evidence / Reply / History".
+ * The current address carries aria-current="page" and an ink underline; a part the file does not
+ * have is left out (no Evidence without an evidence file, no Reply without a `reply` in the
+ * frontmatter). Plain links, no script: each tab is its own page.
+ *
+ * After the tabs, a small mono link "How to read this file" to /how-to-read/ (block B): in the tab
+ * row, right-aligned, from 48rem; on a phone on its own line under the row's hairline, right-aligned,
+ * so the current tab's underline always sits on the hairline. It is not a tab: sentence case, ink-2.
+ *
+ * Props:
+ *   collection  'investigations'
+ *   slug        the file's slug
+ *   current     'story' | 'evidence' | 'reply' | 'history'
+ *   evidence    the file has an evidence page (default false)
+ *   reply       the file has a reply page (default false)
+ *   history     the file has a history page (default true)
+ */
+import { fileHref, type FileCollection, type FilePart } from '../lib/cases';
+
+interface Props {
+  collection: FileCollection;
+  slug: string;
+  current: FilePart;
+  evidence?: boolean;
+  reply?: boolean;
+  history?: boolean;
+}
+const { collection, slug, current, evidence = false, reply = false, history = true } = Astro.props;
+const tabs: { part: FilePart; label: string }[] = [
+  { part: 'story', label: 'Story' },
+  ...(evidence ? [{ part: 'evidence' as const, label: 'Evidence' }] : []),
+  ...(reply ? [{ part: 'reply' as const, label: 'Reply' }] : []),
+  ...(history ? [{ part: 'history' as const, label: 'History' }] : []),
+];
+---
+<nav class="tabs" aria-label="This file">
+  <ul>
+    {tabs.map((t) => (
+      <li><a href={fileHref(collection, slug, t.part)} aria-current={t.part === current ? 'page' : undefined}>{t.label}</a></li>
+    ))}
+  </ul>
+  <a class="tabs__help" href="/how-to-read/">How to read this file</a>
+</nav>

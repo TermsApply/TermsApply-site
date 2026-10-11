@@ -1,0 +1,30 @@
+---
+/**
+ * Asterisk: the bare brand mark (design/logo/asterisk.svg): six arms, three square-cut bars.
+ * Used on the Declared/Observed seam, at the end of the footer's "Terms apply" and anywhere the footnote
+ * mark needs to be drawn rather than typed.
+ *
+ * Props:
+ *   size   CSS length for width and height (default "1em")
+ *   label  accessible name; omit for a decorative mark (then aria-hidden)
+ *   color  CSS colour (default var(--red))
+ *   class  extra classes
+ */
+interface Props {
+  size?: string;
+  label?: string;
+  color?: string;
+  class?: string;
+}
+const { size = '1em', label, color, class: className } = Astro.props;
+const style = `--ast-size:${size};${color ? `--ast-color:${color};` : ''}`;
+---
+<svg
+  class:list={['asterisk', className]}
+  style={style}
+  viewBox="-16.2 -16.2 32.4 32.4"
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+><path fill="currentColor" d="M-2.34,-15.00L2.34,-15.00L2.34,15.00L-2.34,15.00ZM11.82,-9.53L14.16,-5.47L-11.82,9.53L-14.16,5.47ZM14.16,5.47L11.82,9.53L-14.16,-5.47L-11.82,-9.53Z" /></svg>

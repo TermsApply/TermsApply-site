@@ -1,0 +1,35 @@
+---
+/**
+ * SectionHead: the ruled section heading: "Case index ............ All files →". Numbers are for
+ * sections whose order is information only (none at present); decorative numbering is out.
+ *
+ * Props:
+ *   title     heading text
+ *   id        id for the heading (point the section's aria-labelledby at it)
+ *   num       small mono number before the title, e.g. "02" (optional)
+ *   href      optional right-aligned link
+ *   linkText  text for that link (default "More →"). A trailing " →" is split off: the arrow is
+ *             set outside the underline, so the underline never doubles its shaft, and hidden from
+ *             screen readers (the link is named "All files"). The arrow renders in Plex Mono from
+ *             the arrow-only subset (public/fonts/, @font-face at the top of global.css).
+ *   level     heading level, 2 (default) or 3
+ */
+interface Props {
+  title: string;
+  id: string;
+  num?: string;
+  href?: string;
+  linkText?: string;
+  level?: 2 | 3;
+}
+const { title, id, num, href, linkText = 'More →', level = 2 } = Astro.props;
+const H = level === 3 ? 'h3' : 'h2';
+const arrow = /\s→$/.test(linkText);
+const words = arrow ? linkText.replace(/\s→$/, '') : linkText;
+---
+<div class="sect-head">
+  <H id={id}>{num && <span class="label">{num}</span>} {title}</H>
+  {href && (arrow
+    ? <a class="more go" href={href}><span class="go__w">{words}</span><span class="go__ar" aria-hidden="true">{'\u00a0'}→</span></a>
+    : <a class="more" href={href}>{linkText}</a>)}
+</div>

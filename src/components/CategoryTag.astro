@@ -1,0 +1,22 @@
+---
+/**
+ * CategoryTag: the small mono label for the two editorial categories: plain uppercase text, no
+ * box. Surveillance in ink, Soma in khaki; red is kept for discrepancies, warnings and the brand
+ * asterisk. No scores, ever: this is the only verdict a piece carries.
+ *
+ * Plain text: there are no category pages to link to.
+ *
+ * Props:
+ *   category  'surveillance' | 'soma'
+ *   class     extra classes
+ */
+import { categoryLabel } from '../lib/format';
+import type { Category } from '../lib/cases';
+interface Props {
+  category: Category;
+  class?: string;
+}
+const { category, class: className } = Astro.props;
+const cls = ['tag', category === 'surveillance' ? 'tag--surv' : 'tag--soma', className];
+---
+<span class:list={cls}>{categoryLabel(category)}</span>
