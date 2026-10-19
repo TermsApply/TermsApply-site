@@ -7,8 +7,8 @@
  *                 is "[PLACEHOLDER: …]"
  *   #corrections  how a company or a person named in a file asks for a correction, what we do and
  *                 what we do not do (CORRECTIONS_EMAIL, text and mailto)
- *   #reply        the right of reply: printed in full, unedited, on the file's Reply page, with our
- *                 note beside it; no length limit; every message is printed with its date
+ *   #reply        the right of reply: printed in full, unedited, on the file's Reply page (our note beside it)
+ *                 or Correspondence page (our note above it); no length limit; every message is printed with its date
  *   #sample       only while SITE.sampleNotice is on: every service and finding is fictional. When
  *                 the notice is off this section is not rendered at all
  *   #hosting      PRIVACY_POLICY (our two sentences) and where the site is hosted (the data region
@@ -60,7 +60,7 @@ const rows: { label: string; value: string | string[] | null; what: string }[] =
       <div class="prose">
         <p>If a file names your company or you, and you think a sentence in it is wrong, write to <a class="addr" href={`mailto:${CORRECTIONS_EMAIL}`}>{CORRECTIONS_EMAIL}</a>. Give the file number, the sentence as it stands, and the evidence that it is wrong. We answer within five working days.</p>
         <ul>
-          <li><b>What we will do.</b> If the sentence is wrong, we correct it in the open: the file’s revision date changes, and the <a href="/corrections/">corrections register</a> prints the sentence as published, as corrected, and why. If the sentence stands and you disagree with it, we print your reply in full on the file’s Reply page.</li>
+          <li><b>What we will do.</b> If the sentence is wrong, we correct it in the open: the file’s revision date changes, and the <a href="/corrections/">corrections register</a> prints the sentence as published, as corrected, and why. If the sentence stands and you disagree with it, we print your reply in full on the file’s Reply or Correspondence page.</li>
           <li><b>What we will not do.</b> Remove a file, or a finding, because it is inconvenient. We do not change a published sentence silently, and we do not take a file down to make an error disappear.</li>
         </ul>
       </div>
@@ -69,10 +69,10 @@ const rows: { label: string; value: string | string[] | null; what: string }[] =
     <section class="section" id="reply" aria-labelledby="reply-h">
       <SectionHead title="Right of reply" id="reply-h" />
       <div class="prose">
-        <p>Any company whose service is the subject of a file may have a reply printed in full and unedited on that file’s Reply page, with our note beside it saying what the reply does and does not address. The file’s header and its revision log record the reply and the date it arrived.</p>
+        <p>Any company whose service is the subject of a file may have a reply printed in full and unedited on that file’s Reply page, with our note beside it, or on its Correspondence page, with our note above it; the note says what the reply does and does not address. The file’s header and its revision log record the reply and the date it arrived.</p>
         <ul>
           <li><b>In full.</b> Every message the company sends in reply is printed in full, whatever its length, with the date it arrived. We do not cut, shorten or edit it.</li>
-          <li><b>Subject.</b> A reply answers the findings of the file: the sentence we quote, what the app did, and the evidence. Our note beside it says which findings it addresses.</li>
+          <li><b>Subject.</b> A reply answers the findings of the file: the sentence we quote, what the app did, and the evidence. Our note says which findings it addresses.</li>
           <li><b>Timing.</b> We send our findings before publication and wait at least five working days. A reply, or a further message, that arrives later is added with its date, and the file’s revision date changes.</li>
         </ul>
       </div>

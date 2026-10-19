@@ -1,0 +1,62 @@
+---
+/**
+ * Investigation file, the changed company documents: /publications/<slug>/documents/. Built only for
+ * investigations with `documents` in the frontmatter. Same file bar and tab row as the story; the
+ * story's title as a serif over-line linking back; the h1 "Document changes"; `documentsIntro` (our
+ * words); then one section per document (DocumentVersions): the earlier and the later version, each
+ * in full, read from the .txt file served under /files/, with the later version's added words marked mechanically
+ * (src/lib/textdiff.ts).
+ */
+import { getEntry } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import FileHeader from '../../../components/FileHeader.astro';
+import FileTabs from '../../../components/FileTabs.astro';
+import Inline from '../../../components/Inline.astro';
+import DocumentVersions from '../../../components/DocumentVersions.astro';
+import { fileHref, fileOgVerso, fileRefOf, filePartsOf, getEvidence, getInvestigations, publishedOf, revOf, barRefOf } from '../../../lib/cases';
+
+export async function getStaticPaths() {
+  const entries = (await getInvestigations()).filter((e) => e.data.documents.length > 0);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const service = await getEntry(d.service);
+if (!service) throw new Error(`Unknown service "${d.service.id}" in ${entry.id}`);
+const story = fileHref('investigations', entry.id);
+const evidence = await getEvidence(entry.id);
+const n = d.documents.length;
+const words = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+const description = `${n === 1 ? 'One document' : `${words[n - 1] ?? n} documents`} of ${service.data.name} that changed while file ${d.fileNo} was prepared: each version in full, the words added in the later version underlined.`;
+---
+<Base title={`Document changes / ${d.title}`} description={description} type="article" published={publishedOf(d)} fileRef={fileRefOf(d, 'documents')} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: d.title, rectoLabel: 'Document changes' }}>
+  <div class="wrap">
+    <article aria-labelledby="part-title">
+      <FileHeader
+        ref={barRefOf(d)}
+        rev={revOf(d)}
+        side={`PUBLICATIONS / ${service.data.name.toUpperCase()}`}
+        category={d.category}
+        fields={[]}
+      />
+      <FileTabs collection="investigations" slug={entry.id} current="documents" parts={filePartsOf(d, Boolean(evidence))} />
+
+      <div class="art-head part-head">
+        <p class="part-head__over"><a href={story}>{d.title}</a></p>
+        <h1 id="part-title">Document changes</h1>
+        <p class="dek">{description}</p>
+      </div>
+
+      {d.documentsIntro && <div class="docs-intro"><p><Inline text={d.documentsIntro} /></p></div>}
+      <div class="docs-legend">
+        <p class="label">How the differences are marked</p>
+        <p>Each earlier version is printed as plain text, without marks. In each later version, <ins><span class="sr-only">Added: </span>underlined words</ins> are not in the earlier one. The marks are made automatically, word by word, from the two text files as served among the files on record. Differences of spacing, line breaks, list numbering and quotation-mark style are not marked; a shared run of fewer than three words between two changes is marked as changed.</p>
+      </div>
+
+      {d.documents.map((doc, i) => <DocumentVersions doc={doc} slug={entry.id} index={i + 1} serviceName={service.data.name} />)}
+
+      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the report</span></a></p>
+    </article>
+  </div>
+</Base>

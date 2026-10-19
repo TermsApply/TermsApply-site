@@ -1,0 +1,405 @@
+---
+file: strongbox-ios-network-traffic
+summary: "Twelve runs on three iPhones, 1 to 8 October 2026: the runs, where the data goes, what one first launch sends, the fields of the device profile, the identifiers, the `enrich` exchange, the paywall resources, the `Nudge` sequence, the App Store label beside Apple's data types, with its history, and the options of both SDKs; then the method and every published file with its SHA-256."
+captures:
+  - { device: "A: iPhone16,1", os: "iOS 27.0.1", app: "1.65.2 (152)", from: 2026-10-01, to: 2026-10-08 }
+  - { device: "B: iPhone13,2", os: "iOS 26.5", app: "1.65.2 (152)", from: 2026-10-01, to: 2026-10-03 }
+  - { device: "C: iPhone14,5", os: "iOS 26.7.1", app: "1.65.2 (152)", from: 2026-10-08, to: 2026-10-08 }
+---
+import FieldGroups from '../../components/FieldGroups.astro';
+import Bars from '../../components/Bars.astro';
+import FileList from '../../components/FileList.astro';
+
+export const firstLaunchLog = `
+# run C8 / device C, iPhone14,5, iOS 26.7.1 / first launch after installation, 8 Oct 2026
+# file C8.pub.har / seconds from the first request / paywall resource requests left out
+# labels <<TYPE_hash_Llength>> stand for pseudonymised values
++0.000  POST  ==api.revenuecat.com==/v1/subscribers/$RCAnonymousID:<<HEX_9a31ee51_L32>>/==adservices_attribution==   200
++0.000  GET   api.superwall.me/api/v1/static_config?pk=<<ID_1d5579a4_L24>>                                    200
++0.659  POST  subscriptions-api.superwall.com/subscriptions-api/public/v1/redeem                              200
++0.901  POST  ==enrichment-api.superwall.com/api/v1/enrich==                                                   200
++0.907  GET   api.revenuecat.com/v1/product_entitlement_mapping                                               200
++1.093  GET   api.revenuecat.com/v1/subscribers/$RCAnonymousID:<<HEX_9a31ee51_L32>>/offerings                 200
++1.513  GET   api.revenuecat.com/v1/subscribers/$RCAnonymousID:<<HEX_9a31ee51_L32>>                           200
++1.541  GET   subscriptions-api.superwall.com/subscriptions-api/public/v1/users/$SuperwallDevice:<<UUID_2145e237_L36>>/entitlements?deviceId=%24SuperwallDevice%3A<<UUID_2145e237_L36>>   200
++1.726  POST  ==api.revenuecat.com/v1/receipts==                                                               200
++2.487  GET   api.revenuecat.com/v1/subscribers/$RCAnonymousID:<<HEX_9a31ee51_L32>>                           200
++19.808 POST  collector.superwall.me/api/v1/events   200   6 events
+              ~~paywallWebviewLoad_complete, shimmerView_complete (3 times each)~~
++20.194 POST  ==collector.superwall.me/api/v1/events==   200   50 events
+              ==app_install==, app_open, subscriptionStatus_didChange, ==device_attributes==, session_start,
+              user_attributes, app_launch, first_seen, redemption_start, enrichment_start,
+              redemption_complete, customerInfo_didChange, enrichment_complete, user_attributes,
+              config_refresh, device_attributes, ==config_attributes==, trigger_fire,
+              paywallPresentationRequest, paywallPreload_start, paywallResponseLoad_start (5),
+              paywallResponseLoad_complete (5), paywallProductsLoad_start (5),
+              paywallProductsLoad_complete (5), paywallWebviewLoad_start (5), paywallPreload_complete,
+              paywallWebviewLoad_complete (2), shimmerView_complete (2)
++21.621 POST  api.superwall.me/api/v1/confirm_assignments                                                     200
++39.801 POST  collector.superwall.me/api/v1/events   200   6 events
+              ==Onboarding==, trigger_fire, ==paywall_open==, paywall_page_view, paywall_decline, paywall_close
+`;
+
+export const idfvLog = `
+# run C8 / device C / first launch, 8 Oct 2026 / file C8.pub.har / seconds from the first request
+# the same label is the same value: one pseudonymisation key for all published files
++0.000   POST  api.revenuecat.com/v1/subscribers/…/adservices_attribution
+         X-Apple-Device-Identifier: ==<<UUID_2145e237_L36>>==
++0.907   GET   api.revenuecat.com/v1/product_entitlement_mapping
+         X-Apple-Device-Identifier: ==<<UUID_2145e237_L36>>==
++20.194  POST  collector.superwall.me/api/v1/events
+         event device_attributes, 59 fields, among them:
+           "$vendorId":         "==<<UUID_2145e237_L36>>=="
+           "$deviceId":         "$SuperwallDevice:==<<UUID_2145e237_L36>>=="
+           "$appTransactionId": "<<NUM_f9dc87ad_L18>>"
+# the same batch holds a first device_attributes event with 50 fields and no $appTransactionId
+# D17: Superwall vendorId = UIDevice.identifierForVendor; deviceId = "$SuperwallDevice:" + vendorId
+# D18: RevenueCat header X-Apple-Device-Identifier = identifierForVendor
+`;
+
+## The runs
+
+<Note>**Exh. 1** / runs</Note>
+
+Twelve runs on four days. Device A had an active annual subscription throughout, and from 3 October Strongbox Pro and Strongbox Zero were also installed on it (authors' account); on B the entitlement through Family Sharing expired on 3 October; C had never had the app. Cold starts in total: 24 (A 12, B 9, C 3); 6 database unlocks (B: S18 1, T3 3; C: 2). Exact times are omitted: every published file is shifted in time by a constant per run.
+
+<Exhibit n={1} caption="the twelve runs, 1 to 8 October 2026" meta="run codes as in the file names">
+<div class="scroll" tabindex="0" role="region" aria-label="Run table, scrolls horizontally">
+<table>
+<thead><tr><th scope="col">Run</th><th scope="col">Date</th><th scope="col">Device</th><th scope="col">Activity</th><th scope="col" class="r">Cold starts</th><th scope="col">Capture</th><th scope="col">VPN</th></tr></thead>
+<tbody>
+<tr><td>A0</td><td>1 Oct</td><td>A</td><td class="w">launch, 1.5 min on the home screen</td><td class="r">1</td><td>HAR (domain filter), PCAP</td><td>no</td></tr>
+<tr><td>S02</td><td>1 Oct</td><td>A</td><td class="w">3 cold starts, database locked</td><td class="r">3</td><td>HAR (domain filter), PCAP</td><td>no</td></tr>
+<tr><td>S01</td><td>1 Oct</td><td>B</td><td class="w">first launch after installation</td><td class="r">1</td><td>HAR, PCAP</td><td>no</td></tr>
+<tr><td>S11b</td><td>1 Oct</td><td>A</td><td class="w">6 app openings, including 2 cold starts; crash reporting option off/on</td><td class="r">2</td><td>HAR, PCAP</td><td>no</td></tr>
+<tr><td>S17</td><td>3 Oct</td><td>B</td><td class="w">fresh installation without entitlement, 1 cold start, background/foreground transitions</td><td class="r">1</td><td>HAR, PCAP</td><td>yes</td></tr>
+<tr><td>S18</td><td>3 Oct</td><td>B</td><td class="w">cold start, unlock of a test database, browsing entries, favicons</td><td class="r">1</td><td>HAR (domain filter), PCAP</td><td>yes</td></tr>
+<tr><td>T1</td><td>3 Oct</td><td>B</td><td class="w">5 min, app closed, without Proxyman</td><td class="r">0</td><td>PCAP</td><td>yes</td></tr>
+<tr><td>T2</td><td>3 Oct</td><td>B</td><td class="w">3 cold starts, without Proxyman</td><td class="r">3</td><td>PCAP</td><td>yes</td></tr>
+<tr><td>T3</td><td>3 Oct</td><td>B</td><td class="w">3 cycles: cold start, unlock, 2 entries, lock, background</td><td class="r">3</td><td>HAR, PCAP</td><td>yes</td></tr>
+<tr><td>A5</td><td>5 Oct</td><td>A</td><td class="w">2 × (installation, first launch)</td><td class="r">2</td><td>HAR</td><td>yes</td></tr>
+<tr><td>A8</td><td>8 Oct</td><td>A</td><td class="w">installation, first launch, 3 starts</td><td class="r">4</td><td>HAR</td><td>yes</td></tr>
+<tr><td>C8</td><td>8 Oct</td><td>C</td><td class="w">first launch, 2 cold starts, database creation, 2 unlocks; mobile connection</td><td class="r">3</td><td>HAR</td><td>no</td></tr>
+</tbody>
+</table>
+</div>
+</Exhibit>
+
+## Where the data goes
+
+<Note>**Exh. 2** / drawing</Note>
+
+What a cold start sends, and to whom. A dashed line marks a recipient that neither the privacy policy nor the support article it links to named in the versions in force at the time of the study (documents of 8 October 2026); a solid line, one they named. The new versions (policy of 15 October 2026, article accessed 16 October 2026) name RevenueCat and Superwall, not Google Fonts or Stripe (report, 3.1). Drawn from all ten published HAR files and the packet capture extracts. Event counts per start are counted from 1 s before to 20 s after `app_launch`, or to the next `app_launch` (report, 3.2).
+
+<Exhibit n={2} caption="where data from Strongbox goes on a cold start, 1 to 8 October 2026; disclosure as in the documents of 8 October 2026" meta="drawn from Exhibits 3 to 9">
+  <DataFlow
+    neutral
+    app="Strongbox"
+    origin={{ name: 'Cold start', sub: 'every launch' }}
+    recipients={[
+      { name: 'RevenueCat', sub: 'api.revenuecat.com', disclosed: false, data: 'IDFV in every request', note: 'first launch: receipt, token' },
+      { name: 'Superwall', sub: 'collector.superwall.me', disclosed: false, data: '41 to 73 events per start' },
+      { name: 'Superwall', sub: 'api.superwall.me', disclosed: false, data: 'configuration' },
+      { name: 'Superwall', sub: 'enrichment-api.superwall.com', disclosed: false, data: 'profile; IP location back' },
+      { name: 'Superwall', sub: 'subscriptions-api.superwall.com', disclosed: false, data: 'every start in HAR' },
+      { name: 'Paywall resources', sub: 'superwalleditor, Fonts, Stripe', disclosed: false, data: 'first launch: 127 to 206 requests' },
+      { name: 'DuckDuckGo', sub: 'duckduckgo.com, article item 2', disclosed: true, data: 'connection test' },
+    ]}
+  />
+</Exhibit>
+
+## Hosts on every cold start
+
+<Note>**Exh. 3** / table</Note>
+
+Which of the five hosts appear in each run. HAR runs show all five on every cold start; in T2, recorded without Proxyman, the names `collector` and `subscriptions-api` are not visible. In the 6 captures with DNS answers for these hosts, `collector` resolves to the addresses of `api.superwall.me` and `subscriptions-api` to those of `enrichment-api`; in T2 the hosts may share one connection (hypothesis, T2 only: in the captures with Proxyman the app opens separate connections to `collector`; 3.1 of the report). The hosts appear whatever the entitlement.
+
+<Exhibit n={3} caption="hosts seen per run, with the account state on the device" meta="HAR and PCAP extracts">
+<div class="scroll" tabindex="0" role="region" aria-label="Hosts per run, scrolls horizontally">
+<table class="matrix">
+<thead><tr><th scope="col">Run<span class="matrix__sub">device, entitlement</span></th><th scope="col" class="r">Starts</th><th scope="col">Seen in</th><th scope="col">api.<wbr />revenuecat<wbr />.com</th><th scope="col">api.<wbr />superwall.me</th><th scope="col">collector.<wbr />superwall.me</th><th scope="col">enrichment-api.<wbr />superwall.com</th><th scope="col">subscriptions-api.<wbr />superwall.com</th></tr></thead>
+<tbody>
+<tr><td>A0<span class="matrix__sub">A, active</span></td><td class="r">1</td><td>HAR (domain filter)</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>S02<span class="matrix__sub">A, active</span></td><td class="r">3</td><td>HAR (domain filter)</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>S11b<span class="matrix__sub">A, active</span></td><td class="r">2</td><td>HAR</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>S01<span class="matrix__sub">B, Family Sharing</span></td><td class="r">1</td><td>HAR</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>S17<span class="matrix__sub">B, expired</span></td><td class="r">1</td><td>HAR</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>S18<span class="matrix__sub">B, expired</span></td><td class="r">1</td><td>HAR (domain filter)</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>T1<span class="matrix__sub">B, expired</span></td><td class="r">0</td><td>PCAP</td><td class="matrix__no">no</td><td class="matrix__no">no</td><td class="matrix__no">no</td><td class="matrix__no">no</td><td class="matrix__no">no</td></tr>
+<tr><td>T2<span class="matrix__sub">B, expired</span></td><td class="r">3</td><td>PCAP (SNI)</td><td>yes</td><td>yes</td><td class="matrix__no">not visible</td><td>yes</td><td class="matrix__no">not visible</td></tr>
+<tr><td>T3<span class="matrix__sub">B, expired</span></td><td class="r">3</td><td>HAR</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>A5<span class="matrix__sub">A, active</span></td><td class="r">2</td><td>HAR</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>A8<span class="matrix__sub">A, active</span></td><td class="r">4</td><td>HAR</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>C8<span class="matrix__sub">C, never bought</span></td><td class="r">3</td><td>HAR</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+</tbody>
+</table>
+</div>
+</Exhibit>
+
+## The device profile
+
+<Note>**Exh. 4** / fields</Note>
+
+The `device_attributes` event has 50 to 61 fields (37 events: 59 in 24, 61 in 2, 58 in 2, 51 in 2, 50 in 7). On first launches the events sent before the `enrich` response have no `ip*` or `demand*` fields; 9 events (7 with 50 fields on A5, A8 and C8, 2 with 58 fields on S11b) have no `$appTransactionId` (hypothesis: sent before the transaction read completed). The groups below name the fields given in the report; the headings are ours. The complete set is in every published HAR file, requests `POST /api/v1/events`.
+
+<Exhibit n={4} caption="fields of the device_attributes event sent to Superwall, by kind" meta="all 10 HAR files">
+  <FieldGroups
+    label="Fields of device_attributes, grouped"
+    groups={[
+      { label: 'Identifiers', names: ['$vendorId', '$deviceId', '$appTransactionId'], note: '`$vendorId` is the IDFV; `$deviceId` is `$SuperwallDevice:` followed by the IDFV; `$appTransactionId` is tied to the Apple account.' },
+      { label: 'Installation', names: ['$appInstallDate', '$daysSinceInstall'] },
+      { label: 'Device', names: ['$deviceModel', '$osVersion', '$interfaceStyle', '$radioType', '$isLowPowerModeEnabled'], note: '`$interfaceStyle`: dark mode; `$radioType`: connection type.' },
+      { label: 'Language and place', names: ['$deviceLanguageCode', '$regionCode', '$deviceCurrencyCode', '$timezoneOffset'] },
+      { label: 'Purchases', names: ['$subscriptionStatus', '$totalPaywallViews'] },
+      { label: 'From enrich', names: ['$ipCountry', '$ipCity', '$ipV4', '$demandScore', '$demandTier'], note: 'Returned by Superwall and sent back by the app (Exhibit 8); absent from the events sent before the `enrich` response on a first launch. The values are replaced with labels or masked.' },
+    ]}
+  />
+</Exhibit>
+
+## One first launch, request by request
+
+<Note>**Exh. 5** / log</Note>
+
+The first launch on device C, which had never had the app and never bought anything. The app sends the AdServices token and the App Store receipt to RevenueCat and the device profile to `enrich`; the events follow in batches. The last batch is the only paywall seen in 24 starts.
+
+<Exhibit n={5} caption="first launch on device C, 8 October 2026" meta="excerpt of C8.pub.har" log={firstLaunchLog} logLabel="First launch request log, scrolls horizontally" />
+
+## One value, two services
+
+<Note>**Exh. 6** / log</Note>
+
+The header RevenueCat receives and the fields Superwall receives carry the same label, so the same value. Across the files the two are equal in 9 of 9 files that contain both fields. The source code of both SDKs takes them from the same place. In this batch the first `device_attributes` event has 50 fields without `$appTransactionId`, the second 59 fields with it.
+
+<Exhibit n={6} caption="the IDFV in a RevenueCat header and in a Superwall event, device C" meta="excerpt of C8.pub.har" log={idfvLog} logLabel="Identifier log, scrolls horizontally" />
+
+<Note>**Exh. 7** / drawing</Note>
+
+On device A the IDFV changed between 1 and 5 October and stayed the same between 5 and 8 October (three reinstallations), while Strongbox Pro and Strongbox Zero were installed; `$appTransactionId` had the same value on 1, 5 and 8 October.
+
+<Exhibit n={7} caption="identifiers sent from device A, 1 to 8 October 2026" meta="drawn from S02, S11b, A5, A8">
+  <Timeline
+    points={[
+      { title: '1 Oct', lines: ['runs A0, S02, S11b', 'IDFV: value 1'] },
+      { title: '3 Oct', lines: ['Strongbox Pro and', 'Zero installed', '(authors’ account)'] },
+      { title: '5 Oct', lines: ['A5: installed twice', 'IDFV: value 2'] },
+      { title: '8 Oct', lines: ['A8: installed again', 'IDFV: value 2'] },
+    ]}
+    span={{ from: 0, to: 3, label: ['$appTransactionId: the same value', 'on 1, 5 and 8 October'] }}
+  />
+</Exhibit>
+
+## The enrich exchange
+
+<Note>**Exh. 8** / drawing</Note>
+
+On every start the app sends a device profile to `enrich`; Superwall answers with a location derived from the IP address and a demand score, and the app sends these values back in later events (the demand score and tier also in `paywall_open`). Field names only: in the published files the values are replaced with labels.
+
+<Exhibit n={8} caption="the enrich exchange on every cold start, field names only" meta="20 responses with content in 9 files">
+  <RoundTrip
+    app={{ name: 'Strongbox', sub: 'every cold start' }}
+    service={{ name: 'Superwall', sub: 'enrichment-api, collector' }}
+    legs={[
+      { to: 'service', lines: ['POST /api/v1/enrich', 'a device profile'] },
+      { to: 'app', lines: ['ipCountry, ipRegion, ipCity, ipContinent,', 'ipV4, ipV4ObservedAt,', 'demandScore, demandTier'] },
+      { to: 'service', lines: ['the same values, in later events:', 'device_attributes, enrichment_complete;', 'demand score and tier also in paywall_open'] },
+    ]}
+  />
+</Exhibit>
+
+## Paywall resources
+
+<Note>**Exh. 9** / counts</Note>
+
+On each first launch after installation, the app downloads paywall resources before any paywall is shown: HAR entries to `user-content.superwalleditor.com`, `fonts.gstatic.com`, `fonts.googleapis.com` and `js.stripe.com`, CONNECT included (C8: the first launch only; its two later CONNECT entries to `js.stripe.com` are left out). On later starts the HAR holds 0 or 1 such entries. In the packet captures, one short connection to each resource host appears on each start of T2 (without Proxyman), on the single start of S18 and A0, and only on the first start of S02, S11b and T3 (with Proxyman); in T2 a `user-content` connection received about 5 kB (report, 3.6). In A8 the paywall webview fetches `js.stripe.com/clover/stripe.js` (1.1 MB); in A5 and C8, at the same time, there are connections to `m.stripe.com` and `m.stripe.network`, recorded as CONNECT only, without content, in the authors' HAR files (not in the published ones).
+
+<Exhibit n={9} caption="paywall resource requests on each first launch" meta="HAR entries, four hosts">
+  <Bars
+    label="Paywall resource requests on each first launch"
+    rows={[
+      { label: 'S01', sub: 'B / 1 Oct', value: 163 },
+      { label: 'S17', sub: 'B / 3 Oct', value: 198 },
+      { label: 'A5, first', sub: 'A / 5 Oct', value: 206 },
+      { label: 'A5, second', sub: 'A / 5 Oct', value: 176 },
+      { label: 'A8', sub: 'A / 8 Oct', value: 127 },
+      { label: 'C8', sub: 'C / 8 Oct', value: 160 },
+    ]}
+  />
+</Exhibit>
+
+## After an unlock
+
+<Note>**Exh. 10** / drawing</Note>
+
+The one observation in which an event followed a database unlock. Run T3, cycle 3, device B, 3 October, about 2 min after the third cold start. In the app's public code (1.65.0) `Nudge` is called after a tap on the "Upgrade to Pro" banner on the database list, not by the unlock itself; authors' account: a tap on the banner in T3 cannot be ruled out.
+
+<Exhibit n={10} caption="the Nudge sequence after an unlock, device B, 3 October 2026" meta="drawn from T3.pub.har">
+  <Timeline
+    points={[
+      { title: 'Cold start', lines: ['third of three', 'run T3'] },
+      { title: 'Unlock', lines: ['test database', 'opened'] },
+      { title: 'Nudge', lines: ['app event; in the', 'code: banner tap'] },
+      { title: 'trigger_fire', lines: ['$result =', 'present'] },
+      { title: 'Request', lines: ['confirm_', 'assignments'] },
+      { title: 'No display', lines: ['no paywall_open;', 'the file ends here'] },
+    ]}
+    span={{ from: 2, to: 5, label: ['No display event recorded; the user', 'saw no paywall (authors’ account)'] }}
+  />
+</Exhibit>
+
+## The App Store label and Apple's data types
+
+<Note>**Exh. 11** / table</Note>
+
+The privacy label lists one data type. Apple's definitions (D19) name types that match data seen in the traffic; none of them is declared. Whether Apple's exemptions from disclosure apply beyond the condition quoted in the story, and whether the data are linked to identity on the services' side, the authors do not decide (report, 3.9). The second table is the history of the label in Wayback Machine snapshots of the US App Store page, read on 16 October 2026; some snapshots do not show the privacy section, so a change is known only to within the interval between two snapshots.
+
+<Exhibit n={11} caption="the App Store privacy label beside Apple's data types and the traffic, and its history" meta="D13 snapshots of 8, 9, 10 and 18 Oct 2026; D19; Wayback Machine">
+<div class="scroll" tabindex="0" role="region" aria-label="Label and data types, scrolls horizontally">
+<table>
+<thead><tr><th scope="col">Apple data type (D19)</th><th scope="col">In the label (D13)</th><th scope="col">In the traffic</th></tr></thead>
+<tbody>
+<tr><td>Purchases: Purchase History</td><td class="w">declared, "Data Not Linked to You"; subtype and purpose "Analytics" shown in the App Store app on macOS (10 Oct)</td><td class="w">not compared in the report</td></tr>
+<tr><td>Device ID</td><td class="w">not declared</td><td class="w">the IDFV to both services on every start (Exhibit 6)</td></tr>
+<tr><td>Coarse Location</td><td class="w">not declared</td><td class="w">city and region derived from the IP address, returned by Superwall and sent back by the app (Exhibit 8)</td></tr>
+<tr><td>Product Interaction</td><td class="w">not declared</td><td class="w">launch, session and paywall events to Superwall (Exhibits 4 and 5)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="scroll" tabindex="0" role="region" aria-label="History of the label, scrolls horizontally">
+<table>
+<thead><tr><th scope="col">Snapshot</th><th scope="col">App version</th><th scope="col">Label</th><th scope="col">Between snapshots</th></tr></thead>
+<tbody>
+<tr><td>22 Apr 2025</td><td>1.60.35 (as shown; 1.60.36 was released on 27 Mar 2025)</td><td class="w">"Data Not Collected", "The developer does not collect any data from this app."</td><td class="w"></td></tr>
+<tr><td>4 Sep 2025</td><td>1.61</td><td class="w">"Data Not Linked to You: Purchases"</td><td class="w">RevenueCat added in 1.60.39 (12 May 2025)</td></tr>
+<tr><td>8 Jan 2026</td><td>1.63.2</td><td class="w">as on 8 to 10 Oct 2026</td><td class="w"></td></tr>
+<tr><td>5 Mar 2026</td><td>1.64.1</td><td class="w">as on 8 to 10 Oct 2026</td><td class="w">Superwall and crash reporting added in 1.64.0 (26 Jan 2026)</td></tr>
+<tr><td>3 Sep 2026, 7 Oct 2026</td><td>1.65.2</td><td class="w">as on 8 to 10 Oct 2026</td><td class="w"></td></tr>
+<tr><td>18 Oct 2026</td><td>1.65.2</td><td class="w">as on 8 to 10 Oct 2026</td><td class="w">snapshots of the US and Polish listings (<a href="/files/strongbox-ios-network-traffic/v1/sources/D13_app-store-listing_2026-10-18.pdf"><code>sources/D13_app-store-listing_2026-10-18.pdf</code></a>, <a href="/files/strongbox-ios-network-traffic/v1/sources/D13-PL_app-store-listing_2026-10-18.pdf"><code>sources/D13-PL_app-store-listing_2026-10-18.pdf</code></a>)</td></tr>
+</tbody>
+</table>
+</div>
+</Exhibit>
+
+## The options of both SDKs
+
+<Note>**Exh. 12** / table</Note>
+
+The options of Superwall-iOS 4.15.3 and purchases-ios 5.21.1 that affect what leaves the device, the value the traffic shows and what the option would change. The full table, with default values and line numbers in the SDK code, is `sources/sdk-options_2026-10-10.md`. Settings on the services' dashboards are beyond the reach of this method. Event counts per start: from 1 s before to 20 s after `app_launch` (report, 3.2).
+
+<Exhibit n={12} caption="options of both SDKs that change what is sent, as the traffic shows them" meta="sources/sdk-options_2026-10-10.md">
+<div class="scroll" tabindex="0" role="region" aria-label="SDK options, scrolls horizontally">
+<table>
+<thead><tr><th scope="col">SDK</th><th scope="col">Option or behaviour</th><th scope="col">Kind</th><th scope="col">In the traffic</th></tr></thead>
+<tbody>
+<tr><td>Superwall</td><td class="w"><code>isExternalDataCollectionEnabled</code></td><td class="w">limiting, partial: would drop <code>trigger_fire</code>, <code>user_attributes</code> and the app's own events (5 to 10 % of the events)</td><td class="w">not used: <code>true</code> in 20 of 20 starts</td></tr>
+<tr><td>Superwall</td><td class="w"><code>paywalls.shouldPreload</code></td><td class="w">limiting: would remove paywall preloading and about 35 of the 41 to 73 events per start</td><td class="w">not used</td></tr>
+<tr><td>Superwall</td><td class="w"><code>shouldBypassAppTransactionCheck</code></td><td class="w">limiting, described in the SDK changelog as "useful in testing environments": would remove <code>$appTransactionId</code></td><td class="w">not used</td></tr>
+<tr><td>Superwall</td><td class="w"><code>identify()</code>, custom user attributes, IDFA</td><td class="w">expanding</td><td class="w">none enabled</td></tr>
+<tr><td>Superwall</td><td class="w"><code>enrich</code> with location and demand score, <code>device_attributes</code>, IDFV, lifecycle events</td><td class="w">no switch in 4.15.3; a switch covering all events appeared in 4.16.0 (30 June 2026), not covering <code>enrich</code>, which has no switch up to 4.18.0</td><td class="w">sent on every start</td></tr>
+<tr><td>RevenueCat</td><td class="w">anonymous user, no subscriber attributes, diagnostics off</td><td class="w">limiting, the defaults</td><td class="w">in effect</td></tr>
+<tr><td>RevenueCat</td><td class="w">AdServices attribution token</td><td class="w">expanding, off by default</td><td class="w">switched on by the app: sent on 6 of 6 first launches</td></tr>
+<tr><td>RevenueCat</td><td class="w">one restore and two purchase syncs on first launch</td><td class="w">expanding, called by the app</td><td class="w">on every first launch: 4 receipt posts on A and B (S01: 5), 1 on C, which never bought anything</td></tr>
+<tr><td>RevenueCat</td><td class="w">IDFV header, automatic requests on start</td><td class="w">no switch</td><td class="w">every request, every start</td></tr>
+</tbody>
+</table>
+</div>
+</Exhibit>
+
+## Technical appendix
+
+<TechnicalAppendix title="Devices, runs, method, documents">
+
+### A.1 Devices
+
+<p>The three iPhones, the app and the SDK versions are described in the report ([How it was studied](/publications/strongbox-ios-network-traffic/#2-how-it-was-studied) and [What was studied](/publications/strongbox-ios-network-traffic/#1-what-was-studied-and-what-was-not)). In addition: B had a fresh installation on 3 October, after the entitlement through Family Sharing (from A) had expired.</p>
+
+### A.2 Runs
+
+<p>The run table is Exhibit 1; the totals are in the report (How it was studied). Of the 24 cold starts, 20 have event content in the HAR, 1 is CONNECT only (A0) and 3 are in the packet capture only (T2).</p>
+
+### A.3 Tools
+
+<p>The tools, the decryption list and the VPN are described in the report ([How it was studied](/publications/strongbox-ios-network-traffic/#2-how-it-was-studied)). In addition: the packet captures were taken from the device interface <code>rvi0</code>; <code>m.stripe.com</code> and <code>m.stripe.network</code> were not on the decryption list.</p>
+
+### A.4 Pseudonymisation and time shift
+
+<p>The labels, the address labels, the masked CloudFront point of presence and the time shift are described in the report ([How it was studied](/publications/strongbox-ios-network-traffic/#2-how-it-was-studied)). In addition: the time shift limits the matching of the authors' records on the services' side; the vendor knows the test days from the correspondence. The 13-digit <code>sw_cache_key</code> parameter in paywall resource addresses (most likely the publication time of the paywall version on the service side, a hypothesis) cannot be shifted with the run, so it is masked wherever it occurs, with the same placeholder <code>{'<<MASKED_NUM>>'}</code> for every value. The content of paywall resources and the entries of other apps were removed. From the packet captures only extracts are published (DNS, SNI, SYN/QUIC, connection statistics), without content. The TLS, DNS and DNS-answer extracts keep only the hosts matching a pattern, the SNI lists (<code>*_sni-new.txt</code>) only the hosts named in the report and <code>proxyman.com</code>; the SYN/QUIC extracts (<code>*_syn-quic.csv</code>) only the connection starts to the hosts named in the report, and the connection statistics (<code>T2_tcp-conversations.txt</code>) only the conversations with the addresses of those hosts and inside the local network; the rows of other apps were removed. The scripts and their change log are among the files on record (<code>tools/</code>).</p>
+
+<p>The HAR files carry the run codes (<a href="/files/strongbox-ios-network-traffic/v1/data/A0.pub.har"><code>data/A0.pub.har</code></a> … <a href="/files/strongbox-ios-network-traffic/v1/data/C8.pub.har"><code>data/C8.pub.har</code></a>), because the Proxyman export names contained the export time. The packet capture extracts in <code>data/pcap-extracts/</code> carry the same run codes as the start of their names (<code>A0_…</code> … <code>T3_…</code>; the installation phase before S01: <code>S01-install_…</code>). The runs with extracts, from <a href="/files/strongbox-ios-network-traffic/v1/data/pcap-extracts/README.md"><code>data/pcap-extracts/README.md</code></a>:</p>
+
+<div class="scroll" tabindex="0" role="region" aria-label="Runs with packet capture extracts, scrolls horizontally">
+
+| Run code (extract file prefix) | Device | HAR of the same run |
+| --- | --- | --- |
+| A0 | A | A0.pub.har |
+| S02 | A | S02.pub.har |
+| S01-install (installation phase before S01) | B | none |
+| S01 | B | S01.pub.har |
+| S11b | A | S11b.pub.har |
+| S17 | B | S17.pub.har |
+| S18 | B | S18.pub.har |
+| T1 | B | none |
+| T2 | B | none |
+| T3 | B | T3.pub.har |
+
+</div>
+
+### A.5 Documents
+
+<dl>
+  <dt>D1–D3</dt><dd>Privacy policy, strongboxsafe.com/privacy/, "Last Update: 9 May 2024", snapshot taken 8 October 2026; the version in force at the time of the study. Text in the <a href="/archive/strongbox/privacy-policy/2024-05-09/">policy archive</a>.</dd>
+  <dt>D1, new</dt><dd>Privacy policy, "Last Update: 15 October 2026", accessed 16 October 2026 (<a href="/files/strongbox-ios-network-traffic/v1/sources/D1_privacy-policy_strongboxsafe.com_2026-10-16.pdf"><code>sources/D1_privacy-policy_strongboxsafe.com_2026-10-16.pdf</code></a> and <code>.txt</code>; Wayback: <code>{'web.archive.org/web/20261016171629/https://strongboxsafe.com/privacy/'}</code>). Text in the <a href="/archive/strongbox/privacy-policy/2026-10-15/">archive</a>.</dd>
+  <dt>D4–D8</dt><dd>Support article "What Network Connections Can Strongbox Make?", snapshot taken 8 October 2026. Text in the <a href="/archive/strongbox/network-connections/2026-10-08/">archive</a>.</dd>
+  <dt>D4–D8, new</dt><dd>The same article, rewritten between 14 and 16 October 2026 according to the authors' account (on 14 October 2026 still unchanged; checked without a record), accessed 16 October 2026 (<a href="/files/strongbox-ios-network-traffic/v1/sources/D4-D8_network-connections_reamaze_2026-10-16.pdf"><code>sources/D4-D8_network-connections_reamaze_2026-10-16.pdf</code></a> and <code>.txt</code>; a Wayback Machine capture requested on 16 October 2026 resolves to the archive's copy of 9 June 2026, the old version, so the record of the new version is the PDF and the text file). Text in the <a href="/archive/strongbox/network-connections/2026-10-16/">archive</a>.</dd>
+  <dt>D9</dt><dd>App Store release notes 1.60.39, 12 May 2025. Text in the <a href="/archive/strongbox/release-notes/1.60.39/">archive</a>.</dd>
+  <dt>D11</dt><dd>App Store release notes 1.64.0, 26 January 2026. Text in the <a href="/archive/strongbox/release-notes/1.64.0/">archive</a>.</dd>
+  <dt>D13</dt><dd>App Store privacy label: US storefront, snapshot taken 8 October 2026 (<a href="/files/strongbox-ios-network-traffic/v1/sources/D13_app-store-listing_2026-10-08.pdf"><code>sources/D13_app-store-listing_2026-10-08.pdf</code></a>); Polish storefront, 9 October 2026 (Wayback Machine: <a href="https://web.archive.org/web/20261009193211/https://apps.apple.com/pl/app/strongbox-password-manager/id897283731?l=pl" rel="noopener noreferrer">20261009193211</a>); App Store app on macOS, screenshot taken 10 October 2026 (<a href="/files/strongbox-ios-network-traffic/v1/sources/D13-macAppStore_2026-10-10.png"><code>sources/D13-macAppStore_2026-10-10.png</code></a>); US and Polish storefronts, 18 October 2026 (<a href="/files/strongbox-ios-network-traffic/v1/sources/D13_app-store-listing_2026-10-18.pdf"><code>sources/D13_app-store-listing_2026-10-18.pdf</code></a>, <a href="/files/strongbox-ios-network-traffic/v1/sources/D13-PL_app-store-listing_2026-10-18.pdf"><code>sources/D13-PL_app-store-listing_2026-10-18.pdf</code></a>). History: Wayback Machine snapshots of apps.apple.com/us/app/strongbox-password-manager/id897283731, read on 16 October 2026: <a href="https://web.archive.org/web/20250422150213/https://apps.apple.com/us/app/strongbox-password-manager/id897283731" rel="noopener noreferrer">20250422150213</a>, <a href="https://web.archive.org/web/20250904033117/https://apps.apple.com/us/app/strongbox-password-manager/id897283731" rel="noopener noreferrer">20250904033117</a>, <a href="https://web.archive.org/web/20260108191434/https://apps.apple.com/us/app/strongbox-password-manager/id897283731" rel="noopener noreferrer">20260108191434</a>, <a href="https://web.archive.org/web/20260305192347/https://apps.apple.com/us/app/strongbox-password-manager/id897283731" rel="noopener noreferrer">20260305192347</a>, <a href="https://web.archive.org/web/20260903025419/https://apps.apple.com/us/app/strongbox-password-manager/id897283731" rel="noopener noreferrer">20260903025419</a>, <a href="https://web.archive.org/web/20261007214753/https://apps.apple.com/us/app/strongbox-password-manager/id897283731" rel="noopener noreferrer">20261007214753</a> (Exhibit 11).</dd>
+  <dt>D14</dt><dd>The vendor's public repository, github.com/strongbox-password-safe/Strongbox: README, snapshot taken 8 October 2026; code at the last commit of 17 July 2026 labelled "1.65.0", accessed 10 October 2026.</dd>
+  <dt>D15</dt><dd>Techlore, "The Password Manager that Took KeePass to the Next Level (Strongbox Interview)", YouTube <code>lxCR8-YsuHU</code>, published 1 August 2026, segment 32:57–40:56, accessed 9 October 2026. Interviewee: Alex Logan; role as given in the video description, "VP of Engineering at Applause, the company behind Strongbox" (techlore.tech, accessed 9 October 2026). Transcript by the authors from the audio: <a href="/files/strongbox-ios-network-traffic/v1/sources/D15_transcript_32-57_2026-10-09.txt"><code>sources/D15_transcript_32-57_2026-10-09.txt</code></a>; selected passages: <a href="/files/strongbox-ios-network-traffic/v1/sources/D15_transcript-excerpts_2026-10-09.md"><code>sources/D15_transcript-excerpts_2026-10-09.md</code></a>. Snapshot of the video page with its description: <a href="/files/strongbox-ios-network-traffic/v1/sources/D15_youtube-description_2026-10-18.pdf"><code>sources/D15_youtube-description_2026-10-18.pdf</code></a> (snapshot taken 18 October 2026; it replaces a snapshot of 9 October 2026 with the same description). The vendor's reply of 14 October 2026 links to 44:26 of the recording; the authors' transcript of the segment from 43:50 to the end: <a href="/files/strongbox-ios-network-traffic/v1/sources/D15_transcript_43-50_2026-10-14.txt"><code>sources/D15_transcript_43-50_2026-10-14.txt</code></a>.</dd>
+  <dt>D16</dt><dd>Post "Strongbox 1.64.0" on r/strongbox by u/strongbox-support, 26 January 2026, 12:08 UTC, snapshot taken 9 October 2026. Text in the <a href="/archive/strongbox/release-post/1.64.0/">archive</a>.</dd>
+  <dt>D19</dt><dd>Apple, "App privacy details on the App Store", developer.apple.com/app-store/app-privacy-details/, accessed 10, 16 and 17 October 2026.</dd>
+  <dt>D20</dt><dd>Superwall, "App Privacy Nutrition Labels", accessed 9, 10, 16 and 17 October 2026; "Demand Score", accessed 10 and 17 October 2026. RevenueCat, "Apple App Privacy", revenuecat.com/docs/platform-resources/apple-platform-resources/apple-app-privacy, accessed 16 and 17 October 2026.</dd>
+  <dt>Apple</dt><dd>developer.apple.com/documentation/storekit/apptransaction/apptransactionid, accessed 3, 16 and 17 October 2026.</dd>
+  <dt>EP1–EP3, EP6, EP7, EP7a</dt><dd>Sources of the epilogue (the authors' opinions), accessed 17 October 2026 (descriptions in <a href="/files/strongbox-ios-network-traffic/v1/sources/README.md"><code>sources/README.md</code></a>). EP1–EP3 each as the main text from the raw Wayback Machine capture and as a PDF printed from that capture; EP6 and EP7 as text and as a PDF exported from the replay of the capture on 18 October 2026; EP7a as text only. EP1: Applause, "Strongbox Joins Applause", 13 March 2025 (<a href="https://web.archive.org/web/20261016232547/https://strongboxsafe.com/strongbox-joins-applause/" rel="noopener noreferrer">Wayback</a>; <a href="/files/strongbox-ios-network-traffic/v1/sources/EP1_strongbox-joins-applause_strongboxsafe.com_wayback-20261016232547.txt"><code>.txt</code></a>, <a href="/files/strongbox-ios-network-traffic/v1/sources/EP1_strongbox-joins-applause_strongboxsafe.com_wayback-20261016232547.pdf"><code>.pdf</code></a>). EP2: Applause, "Let's Try This Again", Bartender blog, 10 June 2024 (<a href="https://web.archive.org/web/20261016232701/https://www.macbartender.com/B5blog/Lets-Try-This-Again/" rel="noopener noreferrer">Wayback</a>; <a href="/files/strongbox-ios-network-traffic/v1/sources/EP2_lets-try-this-again_macbartender.com_wayback-20261016232701.txt"><code>.txt</code></a>, <a href="/files/strongbox-ios-network-traffic/v1/sources/EP2_lets-try-this-again_macbartender.com_wayback-20261016232701.pdf"><code>.pdf</code></a>). EP3: A. Engst, "Bartender Developer Explains and Apologizes for Quiet Acquisition", TidBITS, 5 June 2024 (<a href="https://web.archive.org/web/20261016232732/https://tidbits.com/2024/06/05/bartender-developer-explains-and-apologizes-for-quiet-acquisition/" rel="noopener noreferrer">Wayback</a>; <a href="/files/strongbox-ios-network-traffic/v1/sources/EP3_bartender-quiet-acquisition_tidbits.com_wayback-20261016232732.txt"><code>.txt</code></a>, <a href="/files/strongbox-ios-network-traffic/v1/sources/EP3_bartender-quiet-acquisition_tidbits.com_wayback-20261016232732.pdf"><code>.pdf</code></a>; article only, without the readers' comments). EP6: the entries for versions 5.0.52 and 5.0.53 of the Bartender 5 update feed, dates as given by the publisher (<a href="https://web.archive.org/web/20251116051042/https://www.macbartender.com/B2/updates/AppcastB5.xml" rel="noopener noreferrer">Wayback</a>; <a href="/files/strongbox-ios-network-traffic/v1/sources/EP6_bartender-5-update-feed_macbartender.com_wayback-20251116051042.txt"><code>.txt</code></a>, <a href="/files/strongbox-ios-network-traffic/v1/sources/EP6_bartender-5-update-feed_macbartender.com_wayback-20251116051042.pdf"><code>.pdf</code></a>). EP7: release notes of Bartender 5.0.53 (<a href="https://web.archive.org/web/20250614191649/https://macbartender.com/B2/updates/5-0-53/rnotes.html" rel="noopener noreferrer">Wayback</a>; <a href="/files/strongbox-ios-network-traffic/v1/sources/EP7_bartender-5.0.53-release-notes_macbartender.com_wayback-20250614191649.txt"><code>.txt</code></a>, <a href="/files/strongbox-ios-network-traffic/v1/sources/EP7_bartender-5.0.53-release-notes_macbartender.com_wayback-20250614191649.pdf"><code>.pdf</code></a>). EP7a: the release notes of 5.0.52, as archived on 18 May 2024, mention neither Amplitude nor Applause (EP7a; <a href="https://web.archive.org/web/20240518170255/https://macbartender.com/B2/updates/5-0-52/rnotes.html" rel="noopener noreferrer">Wayback</a>; <a href="/files/strongbox-ios-network-traffic/v1/sources/EP7a_bartender-5.0.52-release-notes_macbartender.com_wayback-20240518170255.txt"><code>.txt</code></a>).</dd>
+</dl>
+
+### A.6 SDK source code
+
+<p>Both SDKs at the versions given in the request headers, read on GitHub on 9 and 10 October 2026 (<a href="/files/strongbox-ios-network-traffic/v1/sources/sdk-source-notes_2026-10-09.md"><code>sources/sdk-source-notes_2026-10-09.md</code></a>, with line numbers and permalinks; <a href="/files/strongbox-ios-network-traffic/v1/sources/sdk-options_2026-10-10.md"><code>sources/sdk-options_2026-10-10.md</code></a>, the options of both SDKs set against the traffic):</p>
+
+<ul>
+  <li>D17, Superwall-iOS 4.15.3: <code>Sources/SuperwallKit/Network/Device Helper/DeviceHelper.swift</code>, <code>vendorId</code> from <code>UIDevice.current.identifierForVendor</code>; <code>Sources/SuperwallKit/Dependencies/DependencyContainer.swift</code>, <code>makeDeviceId()</code> returns <code>"$SuperwallDevice:\(deviceHelper.vendorId)"</code>.</li>
+  <li>D18, purchases-ios 5.21.1: <code>Sources/Networking/HTTPClient/HTTPClient.swift</code>, header <code>X-Apple-Device-Identifier</code> set from <code>identifierForVendor</code>.</li>
+  <li>D18a, purchases-ios 5.21.1: <code>Sources/Purchasing/Purchases/Attribution.swift</code>, <code>automaticAdServicesAttributionTokenCollection: Bool = false</code>, switched on by <code>enableAdServicesAttributionTokenCollection()</code>.</li>
+</ul>
+
+### A.7 The archived texts on this site
+
+<p>The policy archive holds the texts of D1, D4–D8, D9, D11 and D16 as plain text, and the new versions of D1 and D4–D8. D1 and D4–D8 of 8 October 2026 were extracted from the PDF snapshots of 8 October 2026: the browser's page header and footer, the site's navigation and footer and, for the article, the sidebar of related articles were left out; line breaks are those of the PDF. The Document changes page prints the same two versions from the Wayback Machine snapshots of 1 October 2026: the words are the same, apart from link addresses that the article's PDF prints and its hyphenation. D9 and D11 are the two entries, unchanged, from <a href="/files/strongbox-ios-network-traffic/v1/sources/D9-D11_appstore-version-history_2026-10-09.txt"><code>sources/D9-D11_appstore-version-history_2026-10-09.txt</code></a>. D16 is the post text, unchanged, from <a href="/files/strongbox-ios-network-traffic/v1/sources/D16_post-text_2026-10-09.md"><code>sources/D16_post-text_2026-10-09.md</code></a>. The new versions of D1 and D4–D8 are the page texts of 16 October 2026, unchanged, from <a href="/files/strongbox-ios-network-traffic/v1/sources/D1_privacy-policy_strongboxsafe.com_2026-10-16.txt"><code>sources/D1_privacy-policy_strongboxsafe.com_2026-10-16.txt</code></a> and <a href="/files/strongbox-ios-network-traffic/v1/sources/D4-D8_network-connections_reamaze_2026-10-16.txt"><code>sources/D4-D8_network-connections_reamaze_2026-10-16.txt</code></a>. The PDF snapshots themselves are among the files on record.</p>
+
+### A.8 Checking the files
+
+<p>Every file below is served byte for byte, as in the authors' repository; <a href="/files/strongbox-ios-network-traffic/v1/README.md"><code>README.md</code></a> is the short report and <a href="/files/strongbox-ios-network-traffic/v1/FULL-REPORT.md"><code>FULL-REPORT.md</code></a> the full report, both in English. <a href="/files/strongbox-ios-network-traffic/v1/data/SHA256SUMS.txt"><code>data/SHA256SUMS.txt</code></a> and <a href="/files/strongbox-ios-network-traffic/v1/sources/SHA256SUMS.txt"><code>sources/SHA256SUMS.txt</code></a> are the authors' own checksum lists, and <a href="/files/strongbox-ios-network-traffic/v1/data/SHA256SUMS_originals.txt"><code>data/SHA256SUMS_originals.txt</code></a> holds the checksums of the unpublished original captures, under the run codes. To check a download: <code>shasum -a 256 -c SHA256SUMS.txt</code> in the folder that holds the list.</p>
+
+</TechnicalAppendix>
+
+<div id="files" class="anchor"></div>
+
+## Files on record
+
+<Note>**Files** / v1</Note>
+
+The report, its change log, the pseudonymised captures, the packet capture extracts, the scripts, the vendor's documents and the correspondence, as published by the authors. The SHA-256 of each file is computed from the bytes this site serves. Licence: text and data CC BY 4.0, scripts MIT.
+
+<FileList
+  slug="strongbox-ios-network-traffic"
+  version="v1"
+  groups={{
+    '': 'The short report (`README.md`), the full report (`FULL-REPORT.md`) and the change log (`CHANGELOG.md`).',
+    data: 'Pseudonymised HAR files per run (`*.pub.har`), their check reports and checksums.',
+    'data/pcap-extracts': 'Packet capture extracts: TLS server names, DNS, connection starts, TCP statistics. No content.',
+    figures: 'The two drawings of the short report as standalone SVG files: where data goes on a cold start and the enrich exchange, the same as Exhibits 2 and 8.',
+    tools: 'Pseudonymisation and analysis scripts, with their change log.',
+    sources: 'Snapshots of the vendor’s documents in the versions of 8 October 2026 and 16 October 2026, the interview transcripts, the SDK code references and the SDK options table, the sources of the epilogue (EP1–EP3, EP6, EP7, EP7a) and the two screenshots of the App Privacy Report (P0).',
+    correspondence: 'The thread with the vendor, 2 to 19 October 2026, ten messages, without addresses.',
+  }}
+/>

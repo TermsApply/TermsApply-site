@@ -1,0 +1,53 @@
+---
+/**
+ * ReplyPending: the "Company reply" block of a file that has no reply on file yet: the status in
+ * our words (awaited, with the deadline given to the company; or none received), then every
+ * message that only acknowledged the questions (`acknowledgements`), in full and verbatim, in mono,
+ * each under its own source line. Never called a reply and never linked to a Reply page: the file
+ * has none until `reply` is filled in. On the recessed paper, ruled, never red.
+ *
+ * The story page prints it after the body when the file has no `reply` and is awaiting one or holds
+ * acknowledgements; an MDX body can place it itself with <ReplyPending {...props.pending} />.
+ *
+ * Props:
+ *   status        'awaiting' | 'none' (replyStatus(...).kind)
+ *   serviceName   the company
+ *   asked         the date the findings were sent (companyAsked), when on file
+ *   due           { date, time? }: the deadline given to the company (replyDue)
+ *   messages      acknowledgements: [{ date, channel, from, text }]
+ */
+import { replyParagraphs } from '../lib/cases';
+import { iso, long } from '../lib/format';
+
+type Ack = { date: Date; channel: string; from: string; text: string };
+interface Props {
+  status: 'awaiting' | 'none';
+  serviceName: string;
+  asked?: Date;
+  due?: { date: Date; time?: string };
+  messages?: Ack[];
+}
+const { status, serviceName, asked, due, messages = [] } = Astro.props;
+const msgs = messages.map((m) => ({ ...m, paras: replyParagraphs(m.text) }));
+---
+<section class="reply-pending" aria-labelledby="reply-pending-h">
+  <h2 id="reply-pending-h" class="label">Company reply</h2>
+  <p class="reply-pending__status">
+    {status === 'awaiting'
+      ? <>Not yet received.{asked && <> Questions sent <time datetime={iso(asked)}>{long(asked)}</time>.</>}{due && <> Deadline given to {serviceName}: <time datetime={iso(due.date)}>{long(due.date)}</time>{due.time && <>, {due.time}</>}.</>} The reply will be printed in full, with its date, when it arrives.</>
+      : <>No reply received from {serviceName}.</>}
+  </p>
+  {msgs.length > 0 && (
+    <>
+      <h3 class="label reply-pending__sub">{msgs.length === 1 ? 'Acknowledgement' : 'Acknowledgements'}, printed in full</h3>
+      {msgs.map((m) => (
+        <figure class="reply-pending__msg">
+          <blockquote class="reply-pending__q">
+            {m.paras.map((lines) => <p>{lines.map((l, i) => <>{i > 0 && <br />}{l}</>)}</p>)}
+          </blockquote>
+          <figcaption class="reply-pending__src"><cite>{m.from}, {serviceName}</cite>&nbsp;/ by {m.channel}&nbsp;/ <time datetime={iso(m.date)}>{iso(m.date)}</time></figcaption>
+        </figure>
+      ))}
+    </>
+  )}
+</section>

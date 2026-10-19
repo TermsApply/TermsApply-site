@@ -207,8 +207,16 @@ In a story written as `.mdx`, the body can place components without importing th
 `<Finding finding={props.findings[1]} />`, `<ExhibitRef>`, `<ForReaders>`. In an evidence file:
 `<Note>`, `<Exhibit>`, `<DataFlow>`, `<RoundTrip>`, `<Timeline>`, `<TechnicalAppendix>`. Anything
 the story does not place (findings, reader advice from `means`) is added after it, so plain `.md`
-stories get the full layout too; a `.md` story with an evidence file gets a short "Evidence on
-file" list. See the header comment in each file in `src/components/`, and `docs/template/` for a
+stories get the full layout too. Further components are imported in the MDX file itself:
+`FindingsLedger` (every pair of the file grouped by assessment, with links to the pairs; place an
+anchor `<div id="finding-<n>" class="anchor"></div>` before each body pair), `Pending` (a part
+not yet available: prologue, contact; mono label, never red), `FieldGroups` (field names seen in
+the traffic, grouped, names only), `Bars` (a few counts as CSS bars, scale from zero) and
+`FileList` (the downloads in `public/files/<slug>/<version>/`, each with its size and the SHA-256
+of the served bytes). A `.md` story with an evidence file gets a short "Evidence on file"
+list. A story with a reply on file can place the "Company reply" teaser itself with
+`<ReplyTeaser {...props.teaser} />` (e.g. in its correspondence section); otherwise it follows the
+body. See the header comment in each file in `src/components/`, and `docs/template/` for a
 complete example.
 
 ## Content: adding an investigation
@@ -232,7 +240,8 @@ complete example.
 | `summary` | no | One line for the case index; falls back to `dek`. |
 | `pull` | no | One quotable policy sentence, verbatim, about 20 words or fewer. It is the left page of the file's case-index row and, when it is part of the first finding's `quote`, the sentence set at display size in the head pair. Without it, both use `findings[0].quote`, trimmed to about 20 words for the index. |
 | `pullClause` | no | The clause of `pull` (`"§5"`) when the sentence is not taken from one of the findings; otherwise the clause comes from the finding that contains it. |
-| `date` | yes | Publication date, `YYYY-MM-DD`. |
+| `date` | yes | Publication date, `YYYY-MM-DD` (with `draft`: the date of the draft). |
+| `draft` | no | Set while the file is not yet published: the draft's label, e.g. `"0.7.3"`. The story says "Draft <label> of <date>, not published", the file bar "DRAFT <label>" instead of REV, the meta tags carry no publication time, and the history logs the draft instead of a publication. Without `draft` the build refuses placeholders in the file (`<Pending>`, `<Placeholder>`, `correspondencePending`). |
 | `revised` | no | Date of the latest revision or correction; shown as `REV` in the file header. Set it to the newest correction's date or later (not enforced by the build). |
 | `service` | yes | Slug of a file in `src/content/services/`. |
 | `category` | no | `surveillance` (taken without asking) or `soma` (handed over for convenience). Without it no category label is printed (index row, legend, file bar, fact grid). |
@@ -240,11 +249,13 @@ complete example.
 | `fileNo` | yes | Four digits, quoted: `"0043"`. Never reuse a number. |
 | `policyVersion`, `policyDate` | yes | The policy version the findings quote, and the date it took effect. |
 | `policyPrev` | no | The previous version, as text: `v4.1, 2026-02-10`. |
+| `policyLater` | no | A later version the file also examines, in the same form; logged in the history. |
+| `archiveQuoted` | no | Ids of other archived texts the file quotes (`src/content/policies/<id>.md`); each archive row names the file under "Quoted in". |
 | `testedFrom`, `testedTo` | yes | The test window. |
 | `platforms` | yes | List of OS versions or devices tested: `[iOS 18.6, Android 15]`. |
 | `appVersions` | no | App builds tested, as text. |
 | `companyAsked` | no | Date the findings were sent to the company. |
-| `companyReply` | yes | The status line, one of `None`, `Declined`, `Replied YYYY-MM-DD` (the build rejects anything else). `Replied` must carry the date of `reply.date`; `None` with a `reply` fails the build. The file header turns it into "No reply within five working days" (counted from `companyAsked` to `date`), "Declined YYYY-MM-DD" or "Replied YYYY-MM-DD". |
+| `companyReply` | yes | The status line, one of `None`, `Awaiting`, `Declined`, `Replied YYYY-MM-DD` (the build rejects anything else). `Awaiting` needs `replyDue` and prints "Awaiting reply" / "Reply due <date>, <time>"; once `SITE.launched` is true the build refuses `Awaiting` with a deadline before the publication date. `Replied` must carry the date of `reply.date`; `None` with a `reply` fails the build. The file header turns it into "No reply within five working days" (counted from `companyAsked` to `date`), "Declined YYYY-MM-DD" or "Replied YYYY-MM-DD". |
 | `reply` | no | The reply in full: `{ date, channel, from, text, attachment?, followUps? }`. See "Company replies". |
 | `replyNote` | no | Our one paragraph beside the reply: what it does and does not address. |
 | `byline` | no | Defaults to `termsapply`. |
@@ -343,8 +354,10 @@ share cards drop the backticks (`plain()` in `src/lib/format.ts`). Never in a ti
 ### Files on record (downloads)
 
 A file's captures and scripts, pseudonymised, go in `public/files/<slug>/` and are served byte for
-byte at `/files/<slug>/<name>` (Cloudflare Pages serves `public/` as is; `public/_headers` marks
-`/files/*` as attachments with a long cache and keeps them out of search). List them on the
+byte at `/files/<slug>/<name>` (Cloudflare Pages serves `public/` as is; `public/_headers` gives
+`/files/*` a long cache and keeps it out of search; the evidence page links carry `download`,
+because a `Content-Disposition` rule on `/files/*` would also apply to the 404 page of a missing
+file). List them on the
 evidence page with the SHA-256 of each file as served, and keep the originals' checksums in a
 separate file next to them. Limits: Cloudflare Pages serves no single file over 25 MiB, and Git LFS
 objects are not fetched by its build, so split anything larger and commit the pieces as plain
@@ -395,6 +408,16 @@ received from <from> by <channel>." A refusal is a reply too: `companyReply: Dec
 the refusal in `reply.text`. No reply at all is `companyReply: None` and no `reply`; the header then
 says "No reply within five working days" when the file was published at least five working days
 after `companyAsked`.
+
+A reply that has been promised but has not arrived is `companyReply: Awaiting` with `replyDue`
+(`date`, optional `time`, e.g. `"23:59 CEST"`): the header says "Awaiting reply" and "Reply due
+<date>, <time>", the file has no Reply tab, and the revision log says "File <fileNo> published,
+awaiting <service>’s reply, due <date>". Messages that only acknowledge the questions ("we'll get
+back to you") go in `acknowledgements` (`date`, `channel`, `from`, `text`, each verbatim): they are
+printed in full in the "Company reply" block on the story (ReplyPending; the body may place it with
+`<ReplyPending {...props.pending} />`), each logged as "Acknowledgement received from <from> by
+<channel>.", and never called a reply. When the reply arrives, move it to `reply` and set
+`Replied <date>`; when the deadline passes without one, set `None`.
 
 ### Findings
 

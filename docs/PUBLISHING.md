@@ -1,4 +1,4 @@
-# Publishing a file: instructions for the agent
+# Publishing a file: instructions for the writer
 
 You assemble one publication (an investigation) from the material the editor gives you. You write
 content files only. The site's fixed text, layout and code are out of scope: they are listed in
@@ -126,7 +126,9 @@ Every `[bracketed]` value in a template is a placeholder: replace it or delete t
 | `summary` | no | Services index when there is no finding; falls back to `dek` |
 | `pull` | no | About 20 words, verbatim, part of `findings[0].quote`: set large at the head and on the index row |
 | `pullClause` | no | Clause of `pull` when it is not from a finding |
-| `date` | yes | "Published <date>"; index date; revision log |
+| `date` | yes | "Published <date>"; index date; revision log (with `draft`: the date of the draft) |
+| `draft` | no | While the file is not yet published, the draft's label ("0.7.3"): "Draft <label> of <date>, not published", "DRAFT <label>" in the file bar, no publication time in the meta tags, the history logs the draft. Remove it on the day of publication and set `date`; without `draft` the build refuses `<Pending>`, `<Placeholder>` and `correspondencePending` |
+| `publicFrom` | no | When access was restricted at publication and opened to everyone later: `date`, optional `time` ("06:00 CEST (04:00 UTC)"). The history logs the publication as "online for the vendor only until <date>" and a line "Public access from <time>." on that date |
 | `revised` | no | "REV" in the file bar, "Revised" in the byline; set it on every correction |
 | `service` | yes | Service slug |
 | `category` | no | `surveillance` or `soma`; leave out to print no category label (list, file bar, fact grid) |
@@ -134,13 +136,21 @@ Every `[bracketed]` value in a template is a placeholder: replace it or delete t
 | `fileNo` | yes | "FILE 0001" everywhere; never reuse |
 | `policyVersion`, `policyDate` | yes | Fact grid "Policy v4.2, eff. <date>"; Evidence byline; revision log |
 | `policyPrev` | no | "prev. v4.1, 2026-02-10" |
+| `policyLater` | no | A later policy version the file also examines, "v4.3, 2026-11-02"; logged in the history |
+| `archiveQuoted` | no | Ids of other archived texts the file quotes (`src/content/policies/<id>.md`); the archive lists the file under "Quoted in" |
 | `testedFrom`, `testedTo` | yes | "Tested <range>"; revision log |
 | `platforms` | yes | Fact grid "Platforms tested" (first two, the rest below); "Testing begins on …" |
 | `appVersions` | no | Fact grid "App versions"; several separated by `;` |
 | `companyAsked` | no | "Company asked <date>"; "What we asked" on the Reply page; revision log |
-| `companyReply` | yes | `None`, `Declined` or `Replied YYYY-MM-DD` (date of `reply.date`) |
+| `companyReply` | yes | `None`, `Awaiting`, `Declined` or `Replied YYYY-MM-DD` (date of `reply.date`) |
+| `replyDue` | with `Awaiting` | `date`, optional `time`: the deadline given to the company |
+| `acknowledgements` | no | Messages that only acknowledge the questions: `date`, `channel`, `from`, `text` (verbatim); printed in full in the "Company reply" block, never called a reply |
+| `acknowledgements[].time` | no | Time of an acknowledgement ("17:36 CEST (15:36 UTC)"), printed in its history line after the channel |
 | `reply` | no | Reply tab and page, teaser after the story: `date`, `channel`, `from`, `text`, `attachment` (`/exhibits/…`); further messages in `followUps` (`date`, `text`, optional `channel`, `from`), each printed in full with its date |
 | `replyNote` | no | "What it does and does not address" on the Reply page |
+| `correspondence` | no | Correspondence tab and page: every message, both sides, in order: `sent` (`"2026-10-02T07:50Z"`, or a bare date), `side` (`ours`/`theirs`), `from` (no e-mail address), optional `channel`, `subject`; `text` verbatim or, when the text is not on record, `summary`. With it there is no Reply page; `reply`, `followUps` and `acknowledgements` can reuse the texts as YAML aliases (`text: &r1 |-` … `text: *r1`) |
+| `correspondencePending` | no | A message still to come, printed last as not yet available |
+| `documents`, `documentsIntro` | no | Document changes tab and page: per document `title`, `address`, `changed`, `versions` (earlier, later: `label`, `status`, `text` and `pdf` paths under `public/files/<slug>/`, `textFrom`, `headings`, `pdfSaved`, `snapshot.url`, `snapshot.note`); differences marked by `src/lib/textdiff.ts` |
 | `byline` | no | Bold at the start of the byline; default "termsapply" |
 | `sample` | yes | `false` for every real file |
 | `readingTime` | no | Leave out: computed |
@@ -170,7 +180,8 @@ for you" box, a bullet list inside), `<Diff>`, `<CategoryTag>`, `<Asterisk>`. He
 | `captures` | no | "Capture" table: `device`, `os`, `app`, `from`, `to` |
 
 Body components: `<Note>`, `<Exhibit>` (with `log`, `shot`, `image` + `redactions`, or a drawing
-inside), `<DataFlow>`, `<Timeline>`, `<RoundTrip>`, `<TechnicalAppendix>`, `<Diff>`. Number
+inside), `<DataFlow>`, `<Timeline>`, `<RoundTrip>`, `<TechnicalAppendix>`, `<Diff>`; imported in the
+file itself: `FieldGroups`, `Bars`, `FileList` (story: `FindingsLedger`, `Pending`). Number
 exhibits 1, 2, 3 in order of appearance; the story's `<ExhibitRef n>` and each `evidenceRef` must
 point at an exhibit that exists. Logs are top-level `export const …Log = \`…\`` strings with the
 mini-markup `# comment`, `==highlight==`, `!!red request!!`, `~~muted~~`. The template

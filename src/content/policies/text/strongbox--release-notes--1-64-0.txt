@@ -1,0 +1,21 @@
+This update for Strongbox adds new import options, improves the upgrade experience & adds more options for crash reporting.
+
+  New:
+  - Import from Apple Passwords exporter.
+  - Import from mSecure and Secrets 4 vaults.
+  - Updated upgrade/onboarding flow and trial messaging.
+  - Added automatic opt-in crash reporting.
+
+  Fixes:
+  - Improved split view controller stability (crashes, collapsing, toolbar issues, layout glitches).
+  - Fixed Safari AutoFill lock reliability and YubiKey config mismatch.
+  - Fixed Proton Pass importer reliability and WebDAV multi-user connections.
+  - Improved HIBP audit logic and error tracking.
+  - Fixed missing translations and credit card formatting/copy issues.
+
+  If you are enjoying the new version of Strongbox it would be great if you could leave a positive review for us in the App Store. It
+  makes a huge difference to us as Indie developers. Thank you!
+
+  If you're experiencing any problems or are not happy, just let us know (support@strongboxsafe.com) and we'll make it right.
+
+  - The Strongbox Team

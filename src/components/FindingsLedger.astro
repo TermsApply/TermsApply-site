@@ -1,0 +1,53 @@
+---
+/**
+ * FindingsLedger: every Declared / Observed pair of a file as one ruled index, grouped by its
+ * assessment ("Departs from the wording", "Open to interpretation", "Consistent"), so a reader sees
+ * in one screen which declarations the traffic sets apart and which it does not. Each row is the
+ * declaration's code and its sentence, verbatim, in mono (their words), with the source under it,
+ * and links to the pair on the page. No counts and no totals: the grouping is the only summary.
+ *
+ * Props:
+ *   findings  the file's findings (props.findings in an MDX story; the head pair arrives inHead)
+ *   anchor    id prefix of the anchors placed before each body pair (default "finding-"); the head
+ *             pair links to #main
+ *   title     heading (default "Declarations and findings, side by side")
+ */
+interface F {
+  clause: string;
+  clauseTitle?: string;
+  source: string;
+  quote: string;
+  assessment?: 'parts' | 'interpretation' | 'agrees';
+}
+interface Props {
+  findings: F[];
+  anchor?: string;
+  title?: string;
+}
+const { findings, anchor = 'finding-', title = 'Declarations and findings, side by side' } = Astro.props;
+const GROUPS = [
+  { key: 'parts', word: 'Departs from the wording', cls: 'flag--harmful' },
+  { key: 'interpretation', word: 'Open to interpretation', cls: 'flag--vague' },
+  { key: 'agrees', word: 'Consistent', cls: 'flag--fine' },
+] as const;
+const items = findings.map((f, i) => ({ f, href: i === 0 ? '#main' : `#${anchor}${i}` }));
+---
+<section class="ledger" aria-labelledby="ledger-h">
+  <h2 id="ledger-h">{title}</h2>
+  {GROUPS.map((g) => {
+    const rows = items.filter((x) => x.f.assessment === g.key);
+    return rows.length > 0 && (
+      <div class="ledger__group">
+        <p class="ledger__flag"><span class={`label flag ${g.cls}`}>{g.word}</span></p>
+        <ol class="ledger__list">
+          {rows.map(({ f, href }) => (
+            <li>
+              <span class="ledger__code">{f.clause}</span>
+              <span class="ledger__said"><a href={href}>"{f.quote}"</a><span class="ledger__src">{f.source}</span></span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  })}
+</section>

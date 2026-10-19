@@ -26,7 +26,7 @@ import TechnicalAppendix from '../../../components/TechnicalAppendix.astro';
 import Diff from '../../../components/Diff.astro';
 import CategoryTag from '../../../components/CategoryTag.astro';
 import Asterisk from '../../../components/Asterisk.astro';
-import { exhibitsIn, fileHref, fileOgVerso, fileRefOf } from '../../../lib/cases';
+import { exhibitsIn, fileHref, fileOgVerso, fileRefOf, filePartsOf, publishedOf, revOf, barRefOf } from '../../../lib/cases';
 import { iso, range } from '../../../lib/format';
 
 export async function getStaticPaths() {
@@ -51,27 +51,31 @@ const captures = evidence.data.captures ?? [];
 const description =
   evidence.data.summary ?? `The exhibits, the data flow and the technical appendix for file ${d.fileNo}: ${d.title}`;
 const count = `${exhibits.length}\u00a0${exhibits.length === 1 ? 'exhibit' : 'exhibits'}`;
+// With a capture table, count the devices in it; without one, the platforms of the file.
+const devices = captures.length
+  ? `${captures.length}\u00a0${captures.length === 1 ? 'device' : 'devices'}`
+  : `${d.platforms.length}\u00a0${d.platforms.length === 1 ? 'platform' : 'platforms'}`;
 const components = { Note, Exhibit, DataFlow, RoundTrip, Timeline, TechnicalAppendix, Diff, CategoryTag, Asterisk };
 ---
-<Base title={`Evidence / ${d.title}`} description={description} type="article" published={d.date} fileRef={fileRefOf(d, 'evidence')} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: evidence.data.summary ?? d.title, rectoLabel: 'Evidence' }}>
+<Base title={`Evidence / ${d.title}`} description={description} type="article" published={publishedOf(d)} fileRef={fileRefOf(d, 'evidence')} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: evidence.data.summary ?? d.title, rectoLabel: 'Evidence' }}>
   <div class="wrap">
     <article aria-labelledby="part-title">
       <FileHeader
-        fileNo={d.fileNo}
-        rev={d.revised ?? d.date}
+        ref={barRefOf(d)}
+        rev={revOf(d)}
         side={`PUBLICATIONS / ${service.data.name.toUpperCase()}`}
         category={d.category}
         fields={[]}
       />
-      <FileTabs collection="investigations" slug={entry.id} current="evidence" evidence reply={Boolean(d.reply)} />
+      <FileTabs collection="investigations" slug={entry.id} current="evidence" parts={filePartsOf(d, Boolean(evidence))} />
 
       <div class="art-head part-head">
         <p class="part-head__over"><a href={story}>{d.title}</a></p>
         <h1 id="part-title">Evidence</h1>
         <p class="dek"><Inline text={description} /></p>
         <p class="byline">
-          {count}&nbsp;/ Tested {range(d.testedFrom, d.testedTo)}&nbsp;/ {d.platforms.length}&nbsp;{d.platforms.length === 1 ? 'platform' : 'platforms'}
-          {'\u00a0'}/ policy {d.policyVersion}, eff. <time datetime={iso(d.policyDate)}>{iso(d.policyDate)}</time>
+          {count}&nbsp;/ Tested {range(d.testedFrom, d.testedTo)}&nbsp;/ {devices}
+          {'\u00a0'}/ policy {d.policyVersion}{d.policyVersion !== iso(d.policyDate) && <>, eff. <time datetime={iso(d.policyDate)}>{iso(d.policyDate)}</time></>}
         </p>
       </div>
 
@@ -102,7 +106,7 @@ const components = { Note, Exhibit, DataFlow, RoundTrip, Timeline, TechnicalAppe
       <div class="body">
         <Content components={components} findings={d.findings} service={service.data} />
       </div>
-      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the story</span></a></p>
+      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the report</span></a></p>
     </article>
   </div>
 </Base>

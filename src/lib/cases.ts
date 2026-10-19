@@ -1,7 +1,7 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { iso, trimWords } from './format';
 import type { OgInput } from './og';
-import { PAGE_SIZE, SHOW_INTERVAL } from './site';
+import { PAGE_SIZE, SHOW_INTERVAL, SITE } from './site';
 import type { Topic } from './topics';
 
 export type Category = 'surveillance' | 'soma';
@@ -67,7 +67,7 @@ async function serviceName(id: string) {
 
 export async function investigationItem(e: CollectionEntry<'investigations'>): Promise<CaseItem> {
   return {
-    ref: e.data.fileNo,
+    ref: e.data.draft ? `${e.data.fileNo} / DRAFT` : e.data.fileNo,
     kind: 'INV',
     href: `/publications/${e.id}/`,
     title: e.data.title,
@@ -215,7 +215,7 @@ export function investigationFields(
         value: service.data.platforms.join(', '),
         sub: versions[0] ? `app ${versions[0].replace(/\s*\(.*\)$/, '')}` : undefined,
       },
-      { label: 'Policy', value: d.policyVersion, sub: ['eff. ', d.policyDate] },
+      { label: 'Policy', value: d.policyVersion, sub: d.policyVersion === iso(d.policyDate) ? undefined : ['eff. ', d.policyDate] },
       { label: 'Tested', value: d.testedFrom, sub: ['to ', d.testedTo] },
       ...(d.category ? [{ label: 'Category', category: d.category }] : []),
       { label: 'Company reply', value: status.short, sub: d.companyAsked ? ['asked ', d.companyAsked] : undefined },
@@ -232,7 +232,8 @@ export function investigationFields(
     },
     {
       label: 'Platforms tested',
-      value: [p1, p2].filter(Boolean).join(', '),
+      // The list runs on into the sub line, so the value ends on a comma when there is more.
+      value: [p1, p2].filter(Boolean).join(', ') + (rest.length ? ',' : ''),
       sub: rest.length ? rest.join(', ') : undefined,
     },
     ...(versions.length
@@ -240,7 +241,7 @@ export function investigationFields(
       : [{ label: 'Tested', value: d.testedFrom, sub: ['to ', d.testedTo] } as FileField]),
     {
       label: 'Policy',
-      value: [`${d.policyVersion}, eff. `, d.policyDate],
+      value: d.policyVersion === iso(d.policyDate) ? d.policyVersion : [`${d.policyVersion}, eff. `, d.policyDate],
       sub: d.policyPrev ? ['prev. ', ...withDates(d.policyPrev)] : undefined,
     },
     ...(d.category ? [{ label: 'Category', category: d.category } as FileField] : []),
@@ -266,24 +267,39 @@ type Replying = {
   companyReply?: string;
   companyAsked?: Date;
   date: Date;
+  replyDue?: { date: Date; time?: string };
   reply?: { date: Date; channel: string; from: string; followUps?: { date: Date; channel?: string; from?: string }[] };
 };
 
 /**
- * The company-reply status of a file, from `companyReply` ("None", "Declined", "Replied YYYY-MM-DD")
- * and the full `reply`, when there is one. `short` is the one-word cell ("No reply", "Declined",
- * "Replied 2026-06-29"), `long` the Status line ("No reply within five working days", "Declined
- * 2026-08-24", "Replied 2026-06-29"). Fails the build when the two fields contradict each other:
- * a reply on file with companyReply None, or "Replied" with a date other than the reply's.
+ * The company-reply status of a file, from `companyReply` ("None", "Awaiting", "Declined",
+ * "Replied YYYY-MM-DD") and the full `reply`, when there is one. `short` is the one-word cell ("No
+ * reply", "Awaiting reply", "Declined", "Replied 2026-06-29"), `long` the Status line ("No reply
+ * within five working days", "Reply due 2026-10-15, 23:59 CEST", "Declined 2026-08-24", "Replied
+ * 2026-06-29"). Fails the build when the fields contradict each other: a reply on file with
+ * companyReply None or Awaiting, "Replied" with a date other than the reply's, "Awaiting" without
+ * `replyDue`, or, once the site is launched, "Awaiting" a reply due before the publication date.
+ * Messages that only acknowledge the questions (`acknowledgements`) never change the status.
  */
-export function replyStatus(d: Replying, where = 'file'): { kind: 'none' | 'declined' | 'replied'; short: Part; long: Part } {
+export function replyStatus(d: Replying, where = 'file'): { kind: 'none' | 'awaiting' | 'declined' | 'replied'; short: Part; long: Part } {
   const raw = (d.companyReply ?? (d.reply ? `Replied ${d.reply.date.toISOString().slice(0, 10)}` : 'None')).trim();
+  if (raw === 'Awaiting') {
+    if (d.reply) throw new Error(`${where}: companyReply is "Awaiting" but the file has a reply on file; use Replied YYYY-MM-DD`);
+    const due = d.replyDue;
+    if (!due) throw new Error(`${where}: companyReply "Awaiting" needs replyDue (the deadline given to the company)`);
+    if (SITE.launched && due.date < d.date)
+      throw new Error(`${where}: still "Awaiting" a reply that was due ${iso(due.date)}, before publication on ${iso(d.date)}; set companyReply to "None" or "Replied YYYY-MM-DD"`);
+    const long: Part = due.time ? ['Reply due ', due.date, `, ${due.time}`] : ['Reply due ', due.date];
+    return { kind: 'awaiting', short: 'Awaiting reply', long };
+  }
   const replied = raw.match(/^Replied (\d{4}-\d{2}-\d{2})$/);
   if (replied) {
     const date = new Date(`${replied[1]}T00:00:00Z`);
     if (d.reply && d.reply.date.valueOf() !== date.valueOf())
       throw new Error(`${where}: companyReply says ${raw} but reply.date is ${d.reply.date.toISOString().slice(0, 10)}`);
-    return { kind: 'replied', short: ['Replied ', date], long: ['Replied ', date] };
+    // Further messages are named on the Status line too, each with its date.
+    const further: Part = (d.reply?.followUps ?? []).flatMap((m) => ['; further message ', m.date] as (string | Date)[]);
+    return { kind: 'replied', short: ['Replied ', date], long: ['Replied ', date, ...further] };
   }
   if (raw === 'Declined') {
     return { kind: 'declined', short: 'Declined', long: d.reply ? ['Declined ', d.reply.date] : 'Declined to comment' };
@@ -364,11 +380,24 @@ const correctionLines = (list: CorrectionLine[]): LogLine[] =>
 /* ---------- One file, four addresses ---------- */
 
 /**
- * The parts of a file (round 4): the story at /publications/<slug>/, the evidence at …/evidence/
- * (files with an evidence file only), the company's reply at …/reply/ (files with a `reply` only)
- * and the history at …/history/.
+ * The parts of a file (round 4): the story (tab "Report") at /publications/<slug>/, the changed
+ * company documents at …/documents/ (files with `documents` only), the correspondence at
+ * …/correspondence/ (files with `correspondence` only), the evidence at …/evidence/ (files with an
+ * evidence file only), the company's reply at …/reply/ (files with a `reply` and no
+ * `correspondence`: the correspondence prints the reply) and the history at …/history/.
  */
-export type FilePart = 'story' | 'evidence' | 'reply' | 'history';
+export type FilePart = 'story' | 'documents' | 'correspondence' | 'evidence' | 'reply' | 'history';
+
+/** Which parts a file has, for the tab row (FileTabs) and the pages that build them. */
+export const filePartsOf = (
+  d: { reply?: unknown; correspondence?: unknown[]; documents?: unknown[] },
+  hasEvidence: boolean,
+) => ({
+  documents: (d.documents?.length ?? 0) > 0,
+  correspondence: (d.correspondence?.length ?? 0) > 0,
+  evidence: hasEvidence,
+  reply: Boolean(d.reply) && !(d.correspondence?.length ?? 0),
+});
 export type FileCollection = 'investigations';
 
 /** The URL section of each file collection: the `investigations` collection is published under /publications/. */
@@ -442,7 +471,9 @@ export function investigationLog(
   const atPublication =
     status.kind === 'none'
       ? `with no reply from ${serviceName}${d.companyAsked && workingDaysBetween(d.companyAsked, d.date) >= 5 ? ' within five working days' : ''}`
-      : status.kind === 'declined'
+      : status.kind === 'awaiting'
+        ? `awaiting ${serviceName}’s reply, due ${iso(d.replyDue!.date)}${d.replyDue!.time ? `, ${d.replyDue!.time}` : ''}`
+        : status.kind === 'declined'
         ? `after ${serviceName} declined to comment`
         : `with ${serviceName}’s reply printed in full`;
   // The first reply and every further message, each dated; those after publication say so.
@@ -454,13 +485,25 @@ export function investigationLog(
         ),
       ]
     : [];
+  // Acknowledgements are dated messages too, but never a reply.
+  const acks: LogLine[] = d.acknowledgements.map((a) => ({
+    date: a.date,
+    what: `Acknowledgement received from ${a.from} by ${a.channel}${a.time ? `, ${a.time}` : ''}${a.date > d.date ? ', after publication' : ''}.`,
+  }));
   const prev = parseDated(d.policyPrev);
+  const later = parseDated(d.policyLater);
+  // Our own messages after the first, from the correspondence, each dated.
+  const ours: LogLine[] = d.correspondence
+    .filter((m) => m.side === 'ours')
+    .slice(1)
+    .map((m) => ({ date: new Date(m.sent.length === 10 ? `${m.sent}T00:00:00Z` : m.sent.replace(/Z$/, ':00Z')), what: m.gist ? `Further message sent to ${serviceName} in writing: ${m.gist}` : `Further message sent to ${serviceName} in writing.` }));
   const first = d.findings[0];
   const seen = first?.observedAt;
   const from = first?.effective ?? d.policyDate;
   const lines: LogLine[] = [
     ...(prev ? [{ date: prev.date, what: `Policy ${prev.version} takes effect: the version before the one examined.` }] : []),
-    { date: d.policyDate, what: `Policy ${d.policyVersion} takes effect: the version this file examines.` },
+    { date: d.policyDate, what: later ? `Policy ${d.policyVersion} takes effect: the version in force during testing, examined in this file.` : `Policy ${d.policyVersion} takes effect: the version this file examines.` },
+    ...(later ? [{ date: later.date, what: `Policy ${later.version} takes effect: a later version, also examined in this file.` }] : []),
     {
       date: d.testedFrom,
       what: `Testing begins on ${d.platforms.join(', ')}.`,
@@ -468,12 +511,21 @@ export function investigationLog(
       interval: seen ? undefined : { from, to: d.testedFrom, label: `after ${d.policyVersion} took effect` },
     },
     ...(seen
-      ? [{ date: seen, what: `First observation: ${lowerFirst(first.observed)}`, interval: { from, to: seen, label: `after ${d.policyVersion} took effect` } }]
+      ? [{ date: seen, what: `First observation: ${lowerFirst(firstSentence(first.observed))}`, interval: { from, to: seen, label: `after ${d.policyVersion} took effect` } }]
       : []),
-    ...(d.companyAsked ? [{ date: d.companyAsked, what: `Findings sent to ${serviceName} in writing.` }] : []),
+    ...(d.companyAsked ? [{ date: d.companyAsked, what: `Questions sent to ${serviceName} in writing.` }] : []),
+    ...ours,
     { date: d.testedTo, what: 'Testing ends.' },
+    ...acks.filter((l) => l.date <= d.date),
     ...replies.filter((l) => l.date <= d.date),
-    { date: d.date, what: `File ${d.fileNo} published, ${atPublication}.` },
+    d.draft
+      ? { date: d.date, what: `Draft ${d.draft} of file ${d.fileNo}; the file is not yet published.` }
+      : d.publicFrom
+        ? { date: d.date, what: `File ${d.fileNo} published, ${atPublication}; online for the vendor only until ${iso(d.publicFrom.date)}.` }
+        : { date: d.date, what: `File ${d.fileNo} published, ${atPublication}.` },
+    // Access restricted at publication, opened to everyone later.
+    ...(d.publicFrom && !d.draft ? [{ date: d.publicFrom.date, what: d.publicFrom.time ? `Public access from ${d.publicFrom.time}.` : 'Public access.' }] : []),
+    ...acks.filter((l) => l.date > d.date),
     ...replies.filter((l) => l.date > d.date),
     ...(d.revised ? [{ date: d.revised, what: `File ${d.fileNo} revised.` }] : []),
     ...correctionLines(corrections),
@@ -492,6 +544,8 @@ const replyLine = (r: { date: Date; from: string; channel: string }, late = fals
 });
 
 const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+// The first sentence only: the log line should not run ahead of its date.
+const firstSentence = (s: string) => { const m = s.match(/^.*?[.!?](?=\s|$)/); return m ? m[0] : s; };
 
 /* ---------- Open Graph cards (block C, src/lib/og.ts) ---------- */
 
@@ -532,8 +586,32 @@ export function fileOgVerso(
 }
 
 /** The file bar's reference as the card and the printed running head show it: "FILE 0042 / REV 2026-09-14". */
-export const fileRefOf = (d: { fileNo?: string; date: Date; revised?: Date }, part?: string) =>
-  `${d.fileNo ? `FILE ${d.fileNo}` : 'FILE'}${part ? ` / ${part.toUpperCase()}` : ''} / REV ${iso(d.revised ?? d.date)}`;
+export const fileRefOf = (d: { fileNo?: string; date: Date; revised?: Date; draft?: string }, part?: string) =>
+  `${d.fileNo ? `FILE ${d.fileNo}` : 'FILE'}${part ? ` / ${part.toUpperCase()}` : ''} / ${d.draft ? `DRAFT ${d.draft}` : `REV ${iso(d.revised ?? d.date)}`}`;
+
+/** The publication date for the meta tags (article:published_time): none while the file is a draft. */
+export const publishedOf = (d: { date: Date; draft?: string }) => (d.draft ? undefined : d.date);
+
+/** The REV date of a file's bar: none while the file is a draft (the bar says DRAFT instead, see fileRefOf). */
+export const revOf = (d: { date: Date; revised?: Date; draft?: string }) => (d.draft ? undefined : d.revised ?? d.date);
+
+/** The left-hand reference of a file's bar: "FILE 0001", or "FILE 0001 / DRAFT 0.7.3" while it is a draft. */
+export const barRefOf = (d: { fileNo: string; draft?: string }) => `FILE ${d.fileNo}${d.draft ? ` / DRAFT ${d.draft}` : ''}`;
+
+/**
+ * A published file (no `draft`) must not carry placeholders: no <Pending> or <Placeholder> in its
+ * body and no `correspondencePending`. Called by the story page; fails the build.
+ */
+export function assertPublishable(e: { id: string; body?: string; data: { draft?: string; correspondencePending?: string } }) {
+  if (e.data.draft) return;
+  const found = [
+    ...(/<Pending\b/.test(e.body ?? '') ? ['<Pending>'] : []),
+    ...(/<Placeholder\b/.test(e.body ?? '') ? ['<Placeholder>'] : []),
+    ...(e.data.correspondencePending ? ['correspondencePending'] : []),
+  ];
+  if (found.length)
+    throw new Error(`investigations/${e.id}: published (no \`draft\`) but still has placeholders: ${found.join(', ')}; fill them or set \`draft\``);
+}
 
 /** A Reply page's card: their reply's first words facing our note on it. */
 export const replyOg = (

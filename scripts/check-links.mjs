@@ -6,7 +6,8 @@
  * anchor resolves inside dist/: `/path/` must be dist/path/index.html (or dist/path), `#id` must
  * exist in the target page, and no URL may point at another host (the site makes no external
  * requests; the only outside hrefs allowed are the canonical / Open Graph URLs on this site's own
- * domain, which are checked as internal paths). Also counts <script> tags (must be zero) and
+ * domain, which are checked as internal paths, and plain <a href> links to Wayback Machine
+ * snapshots on web.archive.org or archive.org, which must carry rel="noopener noreferrer"). Also counts <script> tags (must be zero) and
  * reports pages with more or fewer than one <h1>. Exits 1 on any problem.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -19,6 +20,8 @@ const dist = process.env.DIST ?? join(root, 'dist');
 // src/lib/site.ts), so the domain is written in one place only.
 const SITE = new URL(readFileSync(join(dist, 'index.html'), 'utf8').match(/<link rel="canonical" href="([^"]+)"/)[1]).origin;
 const problems = [];
+// Hosts an <a> may link to besides this site: Wayback Machine snapshots only.
+const ARCHIVE_HOSTS = new Set(['web.archive.org', 'archive.org']);
 
 const walk = (dir) =>
   readdirSync(dir).flatMap((f) => {
@@ -55,8 +58,19 @@ for (const p of pages) {
   const h1 = (text.match(/<h1\b/g) ?? []).length;
   if (h1 !== 1) problems.push(`${rel}: ${h1} <h1> elements`);
 
+  // The one exception to "no other host": an <a> link to a Wayback Machine snapshot. Only in an
+  // <a href> (never src, link or meta), only https, only these two hosts, and only with
+  // rel="noopener noreferrer". Checked here and then skipped below.
+  for (const m of text.matchAll(/<a\b([^>]*)\bhref="(https?:\/\/[^"]+)"([^>]*)>/g)) {
+    const url = new URL(m[2].replace(/&amp;/g, '&'));
+    if (!ARCHIVE_HOSTS.has(url.hostname)) continue;
+    if (url.protocol !== 'https:') problems.push(`${rel}: archive link without https ${m[2]}`);
+    if (!/\brel="noopener noreferrer"/.test(m[1] + m[3])) problems.push(`${rel}: archive link without rel="noopener noreferrer" ${m[2]}`);
+  }
+  const archiveHrefs = new Set([...text.matchAll(/<a\b[^>]*\bhref="(https:\/\/(?:web\.)?archive\.org\/[^"]+)"/g)].map((m) => m[1]));
   const refs = [...text.matchAll(/\b(?:href|src|content)="([^"]+)"/g)].map((m) => m[1]);
   for (const raw of refs) {
+    if (archiveHrefs.has(raw)) continue;
     let url = raw.replace(/&amp;/g, '&');
     if (url.startsWith('mailto:') || url.startsWith('data:')) continue;
     if (/^[a-z]+:/i.test(url)) {

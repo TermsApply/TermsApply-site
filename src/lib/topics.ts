@@ -10,13 +10,13 @@
 import { z } from 'astro/zod';
 
 export const TOPICS = [
-  { slug: 'location', label: 'Location', blurb: 'Where you are, where you sleep and how you get between the two, read from the phone and sent on.' },
+  { slug: 'location', label: 'Location', blurb: 'Where a device or its user is, read from the phone or derived from its network address, and sent on.' },
   { slug: 'health', label: 'Health', blurb: 'Heart rate, sleep, cycles and moods: readings that say more about a body than its owner would tell a stranger.' },
   { slug: 'children', label: 'Children', blurb: 'What happens to the data of people too young to agree to anything, whatever the box says.' },
   { slug: 'dark-patterns', label: 'Dark patterns', blurb: 'Screens built so that the answer the company wants is the easiest one to give.' },
   { slug: 'identifiers', label: 'Identifiers', blurb: 'The numbers that follow a phone or a person from one app, one account or one reinstall to the next.' },
   { slug: 'encryption', label: 'Encryption', blurb: 'What a promise of encryption covers, what it leaves out, and who holds the keys.' },
-  { slug: 'telemetry', label: 'Telemetry', blurb: 'The quiet counts an app sends home about how it is used, often in places the user thought were private.' },
+  { slug: 'telemetry', label: 'Telemetry', blurb: 'The counts and events an app sends about how it is used, and when it sends them.' },
   { slug: 'third-parties', label: 'Third parties', blurb: 'The companies that receive the data without ever meeting the person it describes.' },
   { slug: 'defaults', label: 'Defaults', blurb: 'The settings that are already on when the app arrives, which most people never change.' },
   { slug: 'retention', label: 'Retention', blurb: 'How long the data is kept, and what a policy means when it says as long as necessary.' },

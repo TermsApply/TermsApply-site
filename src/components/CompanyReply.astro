@@ -62,8 +62,8 @@ const ordinal = (n: number) => ORD[n - 1] ?? `${n}th`;
     <h2 class="label">What we asked</h2>
     <p>
       {asked
-        ? <>We sent our findings to {serviceName} in writing on <time datetime={iso(asked)}>{long(asked)}</time>, with the evidence and our questions, and gave the company at least five working days to answer.</>
-        : <>We sent our findings to {serviceName} in writing, with the evidence and our questions.</>}
+        ? <>We sent our findings to {serviceName} in writing on <time datetime={iso(asked)}>{long(asked)}</time>, with our observations and questions, and gave the company at least five working days to answer.</>
+        : <>We sent our findings to {serviceName} in writing, with our observations and questions.</>}
       {days !== undefined && days > 0 && <>{' '}The reply came on the {ordinal(days)} working day after that.</>}
       {status === 'declined' && ' The company declined to comment.'}
     </p>

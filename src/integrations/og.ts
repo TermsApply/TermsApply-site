@@ -11,7 +11,7 @@
  *      committed. `npm run check:og` then checks every page against its image.
  *
  * The card is the site's facing pages on paper (light only: an image has no colour scheme): their
- * words in IBM Plex Mono on the left page, the red six-arm asterisk in the gutter (drawn from
+ * words in IBM Plex Mono on the left page, the six-arm asterisk in ink in the gutter (drawn from
  * design/logo/asterisk.svg, never a typed "*"), our words in Literata on the right page, and the
  * file bar at the foot under a double rule, with the wordmark (design/logo/wordmark-inline.svg)
  * on the right. Two layouts (round 5):
@@ -183,7 +183,7 @@ function card(c: OgCard, logo: { wordmark: ReturnType<typeof svgPaths>; asterisk
         ...(c.mark && !c.plain && astTop !== undefined
           ? [
               h('div', { display: 'flex', background: C.paper, padding: '12px 0', marginTop: astTop }, [
-                h('svg', {}, logo.asterisk.paths.map((d) => h('path', {}, undefined, { d, fill: C.red })), { viewBox: logo.asterisk.viewBox, width: AST, height: AST }),
+                h('svg', {}, logo.asterisk.paths.map((d) => h('path', {}, undefined, { d, fill: C.ink })), { viewBox: logo.asterisk.viewBox, width: AST, height: AST }),
               ]),
             ]
           : []),

@@ -1,0 +1,26 @@
+---
+/**
+ * Bars: counts as horizontal bars in ink, drawn with CSS only (a width per row), each with its label
+ * and its number in mono. For a handful of counts that a reader should compare at a glance. The
+ * scale starts at zero and runs to `max` (default: the largest value). No colour codes, no red.
+ *
+ * Props:
+ *   rows   [{ label, value, sub? }]
+ *   max    end of the scale (default the largest value)
+ *   unit   word after each number ("requests")
+ *   label  accessible name
+ */
+interface Row { label: string; value: number; sub?: string }
+interface Props { rows: Row[]; max?: number; unit?: string; label?: string }
+const { rows, max = Math.max(...rows.map((r) => r.value)), unit = '', label } = Astro.props;
+const pct = (v: number) => `${Math.max(0.6, (v / max) * 100).toFixed(1)}%`;
+---
+<ol class="bars" aria-label={label}>
+  {rows.map((r) => (
+    <li class="bars__row">
+      <span class="bars__label">{r.label}{r.sub && <span class="bars__sub">{r.sub}</span>}</span>
+      <span class="bars__track" aria-hidden="true"><span class="bars__bar" style={`--w:${pct(r.value)}`}></span></span>
+      <span class="bars__n">{r.value}{unit && <span class="bars__unit"> {unit}</span>}</span>
+    </li>
+  ))}
+</ol>

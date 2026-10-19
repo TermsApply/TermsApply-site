@@ -52,11 +52,26 @@ change, not a publishing step.
 
 ## One publication: shared parts (`FileHeader.astro`, `FileTabs.astro`)
 
-- File bar: "FILE <fileNo> / REV <date>", right side "PUBLICATIONS / <SERVICE NAME>" and the
-  category label.
-- Tabs: **Story**, **Evidence** (only with an evidence file), **Reply** (only with a reply),
-  **History**; link "How to read this file".
-- Back link at the foot of Evidence, Reply, History: "← Back to the story".
+- File bar: "FILE <fileNo> / REV <date>" (a draft, `draft` set: "FILE <fileNo> / DRAFT <label>"),
+  right side "PUBLICATIONS / <SERVICE NAME>" and the category label. Index rows of a draft:
+  "<fileNo> / DRAFT".
+- Tabs: **Report**, **Document changes** (only with `documents`), **Correspondence** (only with
+  `correspondence`), **Evidence** (only with an evidence file), **Reply** (only with a reply and no
+  correspondence), **History**; link "How to read this file". The tab row also prints.
+- Back link at the foot of every part page: "← Back to the report".
+- Document changes (`[slug]/documents.astro`, `DocumentVersions.astro`): h1 "Document changes";
+  dek "<Number> documents of <Service> that changed while file <no> was prepared: each version in
+  full, the words added in the later version underlined."; box "How the differences are marked"
+  (earlier version plain, without marks; later version: words not in the earlier one underlined;
+  automatic, word by word; spacing, line breaks, list numbering and quotation-mark style not marked;
+  shared runs of fewer than three words between two changes marked as changed); per document
+  "Published at <address>.", per version "Earlier version" / "Later version" with STATUS, TEXT
+  SHOWN, PDF COPY ("saved <date>"), WAYBACK MACHINE ("snapshot of <date>, <hh:mm> UTC").
+- Correspondence (`[slug]/correspondence.astro`): h1 "Correspondence"; dek "The correspondence
+  between the authors and <Service> about file <no>, <n> messages (<a> from the authors, <b> from
+  <Service>), each in full and in the order sent, without the senders’ e-mail addresses."; "Our
+  note"; per message "<date>, <hh:mm> CEST (<hh:mm> UTC)" or "<date>, time not on record",
+  "From <name> / by <channel>", "Subject: …"; "Summary, not the message itself".
 
 ## Story `/publications/<slug>/` (`[slug]/index.astro`, `DeclaredObserved.astro`, `src/lib/cases.ts`)
 
@@ -65,16 +80,23 @@ change, not a publishing step.
 - Assessment words under "Observed": "Departs from the wording", "Open to interpretation",
   "Consistent".
 - Byline: "<byline> / Published <date> / Revised <date> / <n> correction(s) / Tested <range> /
-  <n> min read". Default byline: "termsapply".
+  <n> min read" (a draft: "<byline> / Draft <label> of <date>, not published / …"). Default byline:
+  "termsapply".
 - "Topics" followed by topic names.
 - Fact grid labels: **Service**, **Platforms tested**, **App versions** (or **Tested**),
   **Policy** ("<version>, eff. <date>", "prev. …"), **Category**, **Status**
   ("Company asked <date>").
 - Status phrases: "No reply", "No reply within five working days", "No reply at publication, <n>
-  working days after asking", "Declined", "Declined to comment", "Declined <date>",
-  "Replied <date>".
-- Reply teaser: "Company reply", the first 40 words, "<from>, <service> / by <channel> / <date>",
-  link "Read the reply in full →" or "The reply, with our note →".
+  working days after asking", "Awaiting reply", "Reply due <date>[, <time>]", "Declined",
+  "Declined to comment", "Declined <date>", "Replied <date>[; further message <date>]".
+- Reply teaser: "Company reply", the first 40 words, "<from>, <service> / by <channel> / <date>[ /
+  further message <date>]", link "Read the replies in full →" (with further messages), "Read the
+  reply in full →" or "The reply, with our note →".
+- Reply pending (`ReplyPending.astro`, no reply on file yet): "Company reply", "Not yet received.
+  Questions sent <date>. Deadline given to <service>: <date>[, <time>]. The reply will be printed
+  in full, with its date, when it arrives." (or "No reply received from <service>."), then
+  "Acknowledgement(s), printed in full" and each message with "<from>, <service> / by <channel> /
+  <date>".
 - "Evidence on file" (a list, only when the story places no exhibit links).
 - Exhibit link: "Exhibit <n> / <label> →".
 - Box: "For readers" / **What this means for you**.
@@ -84,7 +106,8 @@ change, not a publishing step.
 
 - Heading **Evidence**; default dek when there is no summary: "The exhibits, the data flow and the
   technical appendix for file <fileNo>: <title>".
-- Byline: "<n> exhibit(s) / Tested <range> / <n> platform(s) / policy <version>, eff. <date>".
+- Byline: "<n> exhibit(s) / Tested <range> / <n> device(s) (from the Capture table; without one,
+  <n> platform(s)) / policy <version>, eff. <date>".
 - **Capture** table: Device, System, App build, From, To.
 - Exhibit captions: "Exhibit <n> / <caption>", "Redactions: <…>".
 - Appendix default title: "Technical appendix".
@@ -98,7 +121,7 @@ change, not a publishing step.
   received[, with <n> further message(s)].", "Attachment: <file>". Each further message under
   "Further message [from <from>] / by <channel> / <date>".
 - Right page **Our note**: "What we asked": "We sent our findings to <service> in writing on
-  <date>, with the evidence and our questions, and gave the company at least five working days to
+  <date>, with our observations and questions, and gave the company at least five working days to
   answer. The reply came on the <ordinal> working day after that." / "The company declined to
   comment." Then "What it does and does not address" and our note.
 
@@ -108,13 +131,19 @@ change, not a publishing step.
   correction."
 - **Revision log / file <fileNo>**, lines generated from the publication:
   "Policy <prev> takes effect: the version before the one examined." /
-  "Policy <version> takes effect: the version this file examines." /
+  "Policy <version> takes effect: the version this file examines." (with `policyLater`: "…: the
+  version in force during testing, examined in this file." and "Policy <later> takes effect: a later
+  version, also examined in this file.") /
   "Testing begins on <platforms>." / "First observation: <observed>" ["+ <n> days after <version>
-  took effect", only with `SHOW_INTERVAL`] / "Findings sent to <service> in writing." / "Testing ends." /
+  took effect", only with `SHOW_INTERVAL`] / "Questions sent to <service> in writing." /
+  "Further message sent to <service> in writing." (each later message of ours in `correspondence`) /
+  "Testing ends." /
+  "Acknowledgement received from <from> by <channel>[, after publication]." /
   "Reply received from <from> by <channel>[, after publication]." /
   "Further message received from <from> by <channel>[, after publication]." /
-  "File <fileNo> published, with no reply from <service> [within five working days] | after
-  <service> declined to comment | with <service>’s reply printed in full." /
+  "File <fileNo> published, with no reply from <service> [within five working days] | awaiting
+  <service>’s reply, due <date>[, <time>] | after <service> declined to comment | with <service>’s
+  reply printed in full." (a draft: "Draft <label> of file <fileNo>; the file is not yet published.") /
   "File <fileNo> revised." / "Correction CR-<nnnn>: <why>".
 
 ## Services `/services/` and `/services/<slug>/` (`src/pages/services/`)
@@ -131,7 +160,7 @@ change, not a publishing step.
   leaves the device**; "Not captured yet. We have read this policy but have not run the app through
   our capture, so nothing is set against the list."), or "What it collects"; "Who receives it"
   (Recipient, Role, Disclosed Yes/No, Where; "no clause given", "not listed"; "<n> recipient(s)
-  is/are not named in the policy.", no red); data-flow exhibit "where data from <name> goes. Solid
+  is/are not named in the policy.", no red); data-flow drawing, captioned "Figure 1 / where data from <name> goes. Solid
   line: disclosed in the policy. Dashed line: not named in the policy." (dashed in ink, not red) / "drawn from the table above"; "What the
   policy says, and what we found"; "Files on this service" ("All files →"); "Policy versions on
   file" ("Archive →"). Empty: "Nothing recorded yet.", "No findings filed on <name> yet.", "No files
@@ -144,7 +173,7 @@ change, not a publishing step.
   document is shown as retrieved on the date given. …"); "Nothing archived yet."
 - Per service: "<name>: policies on file", "<name> profile / All services in the archive".
 - Per version: fact grid Service, Document, Version, Retrieved ("as retrieved on this
-  date"), Source ("as text: this site links to no other host"), Plain text, SHA-256 ("of the
+  date"), Source ("as text: this site links to no company’s site"), Plain text, SHA-256 ("of the
   plain-text file, checked at every build"); "Versions on file"; "The text, as retrieved";
   "End of <document> <version> / SHA-256 <hash>"; "← All <name> documents on file".
 - Rows: "Effective <date>", "Archived <date>. Follows <version>. / The oldest version on file.
@@ -159,7 +188,9 @@ change, not a publishing step.
 
 ## How to read `/how-to-read/` (`src/pages/how-to-read/index.astro`)
 
-Entirely fixed text with composite examples: sections "Two pages", "The asterisk", "Exhibits",
+Entirely fixed text with composite examples: sections "Two pages", "The asterisk" (the asterisk in ink
+marks a pair that does not simply agree; the label says "Departs from the wording" or "Open to
+interpretation"; a consistent pair has an empty gutter), "Exhibits",
 "One file, several pages", "File number and REV", "Corrections". Byline "termsapply / Examples: composites".
 
 ## Legal notice `/legal/` (`src/pages/legal/index.astro`, `src/lib/contact.ts`)

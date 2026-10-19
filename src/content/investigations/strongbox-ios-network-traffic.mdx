@@ -1,0 +1,1137 @@
+---
+title: "What Strongbox for iOS sends to RevenueCat and Superwall"
+dek: "On every launch, the in-app purchase variant of Strongbox connects to RevenueCat and Superwall and sends Superwall several dozen events with a device profile, whether or not the user pays. The privacy policy in force at the time of the study said the app used no vendors or analytics providers; after the authors' questions, the vendor changed it on 15 October 2026."
+summary: "The network traffic of Strongbox 1.65.2 for iOS on three iPhones, 1 to 8 October 2026, set against the vendor's privacy policy, support article, App Store privacy label and public statements as of 8 October 2026 and after the changes of 15 and 16 October 2026, with the vendor's replies."
+date: 2026-10-19
+publicFrom: { date: 2026-10-21, time: "07:00 CEST (05:00 UTC)" }
+service: strongbox
+topics: [third-parties, identifiers, telemetry, location]
+fileNo: "0001"
+policyVersion: "2024-05-09"
+policyDate: 2024-05-09
+policyLater: "2026-10-15, 2026-10-15"
+archiveQuoted:
+  - strongbox--privacy-policy--2026-10-15
+  - strongbox--network-connections--2026-10-08
+  - strongbox--network-connections--2026-10-16
+  - strongbox--release-notes--1-60-39
+  - strongbox--release-notes--1-64-0
+  - strongbox--release-post--1-64-0
+testedFrom: 2026-10-01
+testedTo: 2026-10-08
+platforms: ["iOS 27.0.1 (A)", "iOS 26.5 (B)", "iOS 26.7.1 (C)"]
+appVersions: "1.65.2 (152)"
+companyAsked: 2026-10-02
+companyReply: "Replied 2026-10-14"
+correspondence:
+  - sent: "2026-10-02T07:50Z"
+    side: ours
+    from: "Authors"
+    subject: "Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: |-
+      Dear Strongbox Team,
+
+      We are preparing a publication on the network behaviour of Strongbox for iOS and would like to give you the opportunity to respond before it is published.
+
+      The analysis covers Strongbox for iOS, downloaded from the App Store and tested on few independent devices.
+
+      Below are 19 questions in five groups. Each refers to a specific observation or to a specific statement in your documentation. We would be grateful if you could address each point and identify any errors in our findings. Please reply by Thursday 08
+
+      A. Superwall
+
+      Since which version has the app included the Superwall SDK, and in which user-facing document is this described?
+      On every launch, the app sends to Superwall, among other things, the device identifier (IDFV), an alias, appTransactionId, install date, device model, OS version, language, currency and time zone, as well as the events app_launch, app_open, app_close and session_start. What is the purpose of this processing, and what is its legal basis?
+      Superwall returns the user's IP address, city and region, together with demandScore and demandTier values, and the app sends these back in subsequent events. What are they used for?
+      Why are paywall screens preloaded at launch for a user with an active Pro subscription?
+      What data is sent when a database is unlocked?
+      The configuration parameter isExternalDataCollectionEnabled is set to true. Did you consider the event collection restrictions available in the SDK, and can the user turn this collection off?
+      The paywall screens load resources from user-content.superwalleditor.com and fonts.gstatic.com, and reference js.stripe.com. Are these parties covered in your privacy documentation?
+      B. RevenueCat
+
+      The release notes for version 1.60.39 state that RevenueCat receives "the exact same information" as Apple and that no "extra analytics or tracking" was added. On first launch, the app sends RevenueCat an AdServices attribution token and the ATT consent status. How do you reconcile this with the release notes?
+      The same device identifier is sent to both RevenueCat and Superwall. Does either of them combine it with data received from the other?
+      C. Crash reporting
+
+      Who is your crash reporting provider?
+      What does "automatic opt-in crash reporting" in the release notes for version 1.64.0 mean: a feature that requires consent, or a feature that is enabled by default? On a fresh install, the toggle was switched on.
+      When the toggle is switched off, is the SDK still initialised, and does it send any data, including session data?
+      D. Documentation
+
+      The privacy policy dated 9 May 2024 contains the sentence "The Application does not use vendors or analytics providers." Is this an accurate description of version 1.65.2?
+      The policy states: "The Company does not collect any of your data". Do you consider the data sent to Superwall, RevenueCat and the crash reporting provider to fall outside the scope of that statement, and if so, why?
+      The article "What Network Connections Can Strongbox Make?" does not list the hosts of Superwall, RevenueCat or the crash reporting provider. Is the list intended to be complete? When was it last updated?
+      The App Store privacy label declares only "Purchases", as data not linked to the user. Were device identifiers, usage data and IP-derived location assessed against the other label categories?
+      Do you have data processing agreements in place with Superwall, RevenueCat and the crash reporting provider, and to which countries is the data transferred?
+      E. Scope and source code
+
+      Do the macOS version and the Strongbox Zero variant include the same SDKs?
+      Does the code published in the repository correspond to version 1.65.2 as distributed on the App Store, including the Superwall, RevenueCat and Sentry integrations?
+
+      Kind regards,
+      Biggest StrongBox fans
+    note: "The 19 questions are not numbered in the message; the report numbers them in order: A 1–7, B 8–9, C 10–12, D 13–17, E 18–19. The sentence \"Please reply by Thursday 08\" ends this way in the message as sent."
+  - sent: "2026-10-05T15:36Z"
+    side: theirs
+    from: "Alex (Strongbox)"
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: &ack1 |-
+      Hey there!
+
+      We'll get back to you on all the above points later this week! First, we'd like to know the purpose of this data - are you able to share the purpose of this publication, which website etc it will be published on?
+
+      Best,
+      Alex @ Strongbox
+  - sent: "2026-10-05T17:22Z"
+    side: ours
+    from: "Authors"
+    gist: "the test was private; a reply by 8 October."
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: |-
+      Dear Alex,
+
+      thank you for your reply.
+
+      We carried out the test privately (just curious users of Strongbox) to compare this what the application version 1.65.2 sends to third parties with what the privacy policy, the article about network connections, the App Store label and your public statements say.
+      We will wait for a response with the publication until Thursday, October 8, 2026. If you need more time for specific points, please let us know which and until when.
+
+      Kind regards,
+      Biggest StrongBox fans
+  - sent: "2026-10-05T17:41Z"
+    side: theirs
+    from: "Alex (Strongbox)"
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: &ack2 |-
+      Hey!
+
+      No worries on timeline, we'll get back to you on these items by then, including making sure privacy policy etc is up to date!
+
+      We just specifically wanted to know what the publication is, which website, etc, so we can take a look. When we're given some sort of deadline like this, it usually comes with an indication of the reason&where it's going to end up, so we'd appreciate the same here!
+
+      Thanks,
+      Alex @ Strongbox
+  - sent: "2026-10-08T14:13Z"
+    side: ours
+    from: "Authors"
+    gist: "the place of publication, r/strongbox."
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: |-
+      Dear Alex,
+
+      We are going to publish it in the Strongbox community on reddit.
+
+      Kind regards,
+      Biggest StrongBox fans
+  - sent: "2026-10-08T21:46Z"
+    side: ours
+    from: "Authors"
+    gist: "corrections, three devices, further observations, new deadline 15 October."
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox iOS – corrections, additional observations, new date"
+    text: |-
+      Dear Alex,
+
+      Thank you for your replies on October 5th. We have continued testing since our first message and want to correct two points. There are three observations you have not had a chance to comment on, and set a clear date yet.
+
+      Corrections to our message on October 2nd
+
+      - Sentry. The Sentry traffic we initially saw came from our own capture tool, not from Strongbox. We observed no Sentry traffic from Strongbox in any test. Please disregard questions 10 and 12. Question 11 (the crash reporting toggle being on by default on a fresh install) stands.
+      - Devices. We wrote "a few independent devices". To be precise: three iPhones. Two of them belong to the same Family Sharing group; the third is unrelated and had never had Strongbox installed.
+      - Scope. All findings concern the App Store variant with in-app purchases (com.markmcguill.strongbox), version 1.65.2 (152). We did not test Strongbox Pro, Strongbox Zero or macOS.
+
+      Additional observations (tests of 3–8 October)
+
+      - On the device that had never had Strongbox installed, a paywall was presented about 20 seconds after first launch, triggered by an "Onboarding" event. The events paywall_open, paywall_page_view, paywall_decline and paywall_close were sent to Superwall. These were in addition to roughly 50–60 other events sent on that launch (app_install, app_launch, session_start, device_attributes and others).
+      - On that same device, with no purchase ever made, the app sent RevenueCat an AdServices attribution token and one POST /v1/receipts request on first launch.
+      - In six database unlocks on two devices without an active entitlement, we observed no event related to opening, creating or editing a database being sent to Superwall or RevenueCat. This is consistent with your public statement that nothing is tracked after a database is opened. This will be aslo mentioned.
+
+      Superwall's enrichment endpoint also returned a demandScore and demandTier for each device, in addition to the IP-derived fields mentioned in question 3.
+
+      Publication and date
+
+      In our earlier messages we said this would be posted in the Strongbox community on Reddit. To be precise: the full report, with methodology, evidence, references and this correspondence, will be published as a public document, at a public URL that we will send you before publication. A summary linking to it will be posted on r/strongbox.
+      Our comparison uses your privacy policy, the network connections article, the App Store listing and release notes as they stood on 8 October 2026. If any of these are updated, please tell us and we will describe both versions.
+
+      We will hold publication until Thursday, 15 October 2026, 23:59 CET. Any reply received by then will be published in full alongside the findings. If we receive none, we will state that. If you need more time for specific points, tell us for which and how much time you need.
+
+      The remaining questions from 2 October are unchanged.
+
+      Kind regards,
+      Biggest StrongBox fans
+  - sent: "2026-10-14T16:49Z"
+    side: theirs
+    from: "Alex (Strongbox)"
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: &reply1 |-
+      Hey again!
+
+      Thanks for reaching out to us first -  rather than answer all 19 questions, I'd rather just respond in broad strokes. If you would like clarifications on any specific points, please let me know. This is mostly the same as we've already said publicly, but may be useful to go over again. 
+
+      First, the privacy policy update is simply a mistake on our end. We updated the app’s privacy labels on the app store, and made sure any changes were clearly communicated in our Launch posts & release notes, but we didn’t push an update to the policy. We'll publish this update shortly to explicitly mention that freemium will contact RevenueCat & Superwall. Some articles on the website are outdated, and we're sweeping through them all in the same pass.
+
+      For Superwall & RevenueCat we did aim to be pro-active with announcing their addition, and you'll be able to see a lot of discussion about it on Reddit launch posts, including about us then removing it from PRO. We're not in the business of sneaking tracking in to a password manager.
+
+      Superwall allows us to grow our app with paywall testing, price testing, and running sales without shipping new builds. It isn't a tool for analytics, like Mixpanel, or Amplitude. The result of us using Superwall, is most users end up with a better price. For some specifics, if we can see that only 1% of users choose to start a subscription on a paywall, we’ll then adjust the design & price to improve that. We aren’t able to see any information about your databases, unless you send us that as debug info in support. We also can't see anything like "alex@strongboxsafe.com". Our usage of Superwall's events is just for triggering paywalls, so for example, we can trigger a paywall on app launch, which we do for sales, or when someone taps our "nudge" banner that says they could get better experiences with PRO. We've purposefully ensured we're not sending events with the database unlocked. 
+
+      For RevenueCat's events & networking, the Ad services token is used to tell us which Apple Search Ad someone saw before they purchased ( we run ads on the App Store like most iOS apps ). We're not using ATT, so that property just stays as false for everyone. 
+
+      I spoke a lot about this, including why not having analytics hurts privacy-conscious apps like Strongbox, and that we're happy to make the sacrifice, in my Techlore interview a while back, which may offer some helpful context ( this should skip to the relevant section ): https://www.youtube.com/watch?v=lxCR8-YsuHU&t=2666s
+
+      In terms of tying data together, we do not do any extra merging of users. Apple's receipts contain some identifiers, which let you restore someone's subscription across devices & ensure they get the correct trial entitlements etc, and this is strictly used for that purpose. This makes sure we don't show a paywall to someone who already paid. 
+
+      We will always offer PRO & Zero for more and extreme levels of “locked down”. PRO can contact Apple if you decide to pay for a tip, but otherwise it'll stay to just the connections that you setup. We did originally use RevenueCat for this, but we heard the community and switched it out for just talking straight to Apple again. 
+
+      Best,
+      Alex 
+
+      Also just a heads up, your alias tool is leaking emails 😅
+    note: "The last line refers to the authors' e-mail setup and is unrelated to the subject of this report."
+  - sent: "2026-10-14T18:29Z"
+    side: ours
+    from: "Authors"
+    gist: "the unanswered questions re-sent."
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: |-
+      Dear Alex,
+
+      Thank you for your reply of 14 October. We will publish it in full, unchanged, together with the report. The publication date stays as announced: after 15 October 2026, 23:59 CEST. Any further reply received before publication will also be published in full. We will send you the publication address before publishing, as promised.
+
+      On 5 October you wrote that you would get back to us on all the points raised. The questions below are those your reply of 14 October did not address. You offered clarifications on specific points; these questions remain open and will be marked as unanswered unless we hear from you:
+
+      Since which version has the app included the Superwall SDK, and in which user-facing document is this described?
+
+      Superwall returns the user's IP address, city and region, together with demandScore and demandTier values, and the app sends these back in subsequent events. What are they used for?
+
+      Why are paywall screens preloaded at launch for a user with an active Pro subscription?
+
+      The configuration parameter isExternalDataCollectionEnabled is set to true. Did you consider the event collection restrictions available in the SDK, and can the user turn this collection off?
+
+      The paywall screens load resources from user-content.superwalleditor.com and fonts.gstatic.com, and reference js.stripe.com. Are these parties covered in your privacy documentation?
+
+      What does "automatic opt-in crash reporting" in the release notes for version 1.64.0 mean: a feature that requires consent, or a feature that is enabled by default? On a fresh install, the toggle was switched on.
+
+      The policy states: "The Company does not collect any of your data". Do you consider the data sent to Superwall and RevenueCat to fall outside the scope of that statement, and if so, why?
+
+      The App Store privacy label declares only "Purchases", as data not linked to the user. Were device identifiers, usage data and IP-derived location assessed against the other label categories?
+
+      Do you have data processing agreements in place with Superwall and RevenueCat, and to which countries is the data transferred?
+
+      Do the macOS version and the Strongbox Zero variant include the same SDKs?
+
+      Does the code published in the repository correspond to version 1.65.2 as distributed on the App Store, including the Superwall and RevenueCat integrations?
+
+      You write that the App Store privacy labels were updated. When was that, and what did the label include before? The label we recorded on 8, 9 and 10 October lists "Purchase History" only, with the purpose "Analytics".
+
+      You write that the changes were communicated in release notes. The App Store release notes for 1.60.39 mention RevenueCat; the notes for 1.64.0 do not mention Superwall, while the r/strongbox post of the same day does. Is there a release note that mentions Superwall?
+
+      One clarification on your reply. You write that no events are sent with the database unlocked. In our captures, the app's own events agree with that. The Superwall SDK's lifecycle events (app_open, app_close) were, however, sent while a database was unlocked, when the app returned to the foreground. Do you consider these covered by your statement?
+
+      Kind regards,
+      Biggest StrongBox fans
+  - sent: "2026-10-16T10:37Z"
+    side: theirs
+    from: "Alex (Strongbox)"
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: &further1 |-
+      Hey again!
+
+      Quick responses below for you! 
+
+      Since which version has the app included the Superwall SDK, and in which user-facing document is this described?
+      1.64.0, we included this in the launch post at the time.
+      Superwall returns the user's IP address, city and region, together with demandScore and demandTier values, and the app sends these back in subsequent events. What are they used for?
+      These are simply not used. They're something you can use to work out "is this person likely to subscribe" or not, but we don't use them.
+      Why are paywall screens preloaded at launch for a user with an active Pro subscription?
+      Paywalls are always pre-loaded because an existing pro user may not stay pro at run-time, for example, their sub may expire, or their family share may be removed by someone else. We pre-load to make sure users don't have to stare at a loading screen before paywalls.
+      The configuration parameter isExternalDataCollectionEnabled is set to true. Did you consider the event collection restrictions available in the SDK, and can the user turn this collection off?
+      This cannot currently be turned off by the user. This property generally describes which events we post-back to Superwall, and is used in reporting so we can see which paywalls drove conversions, i.e did a paywall get opened 1000 times but only 1 person paid. External data collection does not mean another third party or similar, it just refers to the events we post-back.
+      The paywall screens load resources from user-content.superwalleditor.com and fonts.gstatic.com, and reference js.stripe.com. Are these parties covered in your privacy documentation?
+      The revised policy specifically mentions Superwall & RevenueCat, it does not explicitly list fonts etc.
+      What does "automatic opt-in crash reporting" in the release notes for version 1.64.0 mean: a feature that requires consent, or a feature that is enabled by default? On a fresh install, the toggle was switched on.
+      For fresh installs this is turned on by default, for existing users it remains off. This crash reporting is the most stripped down reporting possible. For example, most crash reporting tools allow "breadcrumbs" which would tell us what screens a user was on before the crash. In Strongbox, we only get the exact same stack trace as sent manually by users if they see the in-app pop-up after a crash. Using automatic reporting has already allowed us to catch multiple crashes before users even raised tickets, and we've shipped fixes before it affected more users. 
+      The policy states: "The Company does not collect any of your data". Do you consider the data sent to Superwall and RevenueCat to fall outside the scope of that statement, and if so, why?
+      We have updated the policy with clearer wording.
+      The App Store privacy label declares only "Purchases", as data not linked to the user. Were device identifiers, usage data and IP-derived location assessed against the other label categories?
+      When we added these, we checked the guidance from the various providers to see what they reccomended to add. If this changes, we'd add more labels to the app store, and we stay up-to-date with changes here.
+      Do you have data processing agreements in place with Superwall and RevenueCat, and to which countries is the data transferred?
+      - RevenueCat & Superwall have DPA's available. https://superwall.com/legal/dpa & https://www.revenuecat.com/dpa
+
+      Do the macOS version and the Strongbox Zero variant include the same SDKs?
+      PRO & Zero do not include Superwall or RevenueCat. 
+      Does the code published in the repository correspond to version 1.65.2 as distributed on the App Store, including the Superwall and RevenueCat integrations?
+      - This is slightly behind, but most code is visible. Only small commercially sensitive elements are omitted, and some files that would make it easy for copycats to clone our app. We aim to update the open-source repo shortly after most releases.
+
+      You write that the App Store privacy labels were updated. When was that, and what did the label include before? The label we recorded on 8, 9 and 10 October lists "Purchase History" only, with the purpose "Analytics".
+      We do not have the exact date these were recorded to hand, but we updated these when we added RevenueCat to the app.
+      You write that the changes were communicated in release notes. The App Store release notes for 1.60.39 mention RevenueCat; the notes for 1.64.0 do not mention Superwall, while the r/strongbox post of the same day does. Is there a release note that mentions Superwall?
+      There is not a release note that mentions Superwall, only the launch post.
+      One clarification on your reply. You write that no events are sent with the database unlocked. In our captures, the app's own events agree with that. The Superwall SDK's lifecycle events (app_open, app_close) were, however, sent while a database was unlocked, when the app returned to the foreground. Do you consider these covered by your statement?
+      We believe so, yes. The app lifecycle events are used as stated to determine subscription updates, i.e, if someones entitlements have changed since they last opened the app. It does not contain any database information, or that the database is opened, and we do not send any events like "database_open" or "database_closed".
+      Best,
+      Alex 
+  - sent: "2026-10-19T21:00Z"
+    side: ours
+    from: "Authors"
+    gist: "the address of this publication, access restricted to the vendor until 21 October."
+    subject: "Re: Request for comment before publication: network traffic analysis of Strongbox IOS."
+    text: |-
+      Dear Alex,
+
+      Thank you for your replies of 14 and 16 October.
+
+      As promised, before the public release we are sending you the address of the report:
+
+      https://termsapply.fyi/publications/strongbox-ios-network-traffic/
+
+      The page is already online, but for now access is restricted to your company. When you open the address, Cloudflare will ask for an e-mail address and send a one-time code to it; the code is sent by Cloudflare (noreply@notify.cloudflare.com), not by us. Any address ending in @strongboxsafe.com will be accepted. We will open the page to the public on 21 October 2026 at 07:00 CEST; the content will not change in the meantime.
+
+      What is published there:
+      - a short report and a full report, with the data (pseudonymised HAR files and packet-capture extracts), the scripts, and the snapshots of your documents on which the report relies;
+      - both versions of the privacy policy and of the article on network connections (as of 8 October 2026 and after your changes of 15 and 14 to 16 October 2026), described side by side;
+      - our questions and both of your replies, reproduced in full and unedited, together with the dates and times of each message in this thread.
+
+      Any further reply from you will be published in the same way, in full. If you find a factual error in the report after it appears, write to contact@termsapply.fyi and we will correct it and record the correction in the change log.
+
+      We have no further questions.
+
+      Kind regards,
+      Biggest StrongBox fans
+acknowledgements:
+  - date: 2026-10-05
+    time: "17:36 CEST (15:36 UTC)"
+    channel: "email"
+    from: "Alex @ Strongbox"
+    text: *ack1
+  - date: 2026-10-05
+    time: "19:41 CEST (17:41 UTC)"
+    channel: "email"
+    from: "Alex @ Strongbox"
+    text: *ack2
+reply:
+  date: 2026-10-14
+  channel: "email"
+  from: "Alex"
+  text: *reply1
+  followUps:
+    - date: 2026-10-16
+      text: *further1
+documentsIntro: "Two of Strongbox's documents changed after the authors sent their questions: the privacy policy and the support article on network connections. This page prints both versions of each in full, the version in force during the study first, then the version after the change. The earlier texts are taken from Wayback Machine snapshots of 1 October 2026 and match the PDF copies of 8 October 2026; the later texts were taken from the vendor's pages on 16 October 2026; for the policy, the Wayback Machine snapshot of that day gives the same text, while for the article the archive resolves the address to its copy of 9 June 2026, so the text of 16 October 2026 rests on the authors' copy (PDF and text file)."
+documents:
+  - title: "Privacy Policy"
+    address: "strongboxsafe.com/privacy/"
+    changed: "The page dates the new version “Last Update: 15 October 2026”."
+    versions:
+      - label: "“Last Update: 9 May 2024”"
+        status: "In force during the study; the report's reference state (8 Oct 2026)."
+        text: "v1/sources/D1_privacy-policy_strongboxsafe.com_wayback-20261001190802.txt"
+        textFrom: "the page text from the raw Wayback Machine snapshot, main content only, link text without addresses. The snapshot of 8 Oct 2026, 21:29 CEST (19:29 UTC), gives the same text."
+        pdf: "v1/sources/D1_privacy-policy_strongboxsafe.com_2026-10-08.pdf"
+        pdfSaved: 2026-10-08
+        snapshot:
+          url: "https://web.archive.org/web/20261001190802/https://strongboxsafe.com/privacy/"
+        headings:
+          - "Our Privacy Policy"
+          - "Summary"
+          - "What information does the Application obtain and how is it used?"
+          - "How do you handle location data?"
+          - "Can users see their personal data?"
+          - "Do you share personal information?"
+          - "What possible Network Connections can the Application make?"
+          - "Do you offer any alternative, more privacy conscious products?"
+          - "Do advertising companies collect data?"
+          - "Do you use vendors or analytics providers?"
+          - "What about my Cloud Storage Providers? Do they have my data?"
+          - "How do you store or manage support and or other correspondence emails?"
+          - "Do you comply with the EU’s GDPR?"
+          - "Do you comply with the Children’s Online Privacy Protection Act (COPPA)?"
+          - "How to contact us"
+      - label: "“Last Update: 15 October 2026”"
+        status: "Published after the authors' questions; accessed 16 Oct 2026."
+        text: "v1/sources/D1_privacy-policy_strongboxsafe.com_2026-10-16.txt"
+        textFrom: "the page text taken from the vendor's page on 16 Oct 2026, about 18:20 CEST (16:20 UTC), main content only, link text without addresses; the Wayback Machine snapshot below gives the same text."
+        pdf: "v1/sources/D1_privacy-policy_strongboxsafe.com_2026-10-16.pdf"
+        pdfSaved: 2026-10-16
+        snapshot:
+          url: "https://web.archive.org/web/20261016171629/https://strongboxsafe.com/privacy/"
+        headings:
+          - "Our Privacy Policy"
+          - "Who we are"
+          - "Your password databases"
+          - "Purchases and subscription management"
+          - "Upgrade screens and related analytics"
+          - "Crash reporting"
+          - "Favicon downloading"
+          - "Website and support"
+          - "Retention and deletion"
+          - "Your rights"
+          - "Strongbox Zero"
+          - "Different editions and changes"
+  - title: "What Network Connections Can Strongbox Make?"
+    address: "strongbox.reamaze.com/kb/security-and-privacy/what-possible-network-connections-can-strongbox-make (also shown inside strongboxsafe.com/support/)"
+    changed: "The article carries no date. Last records of the old version: Wayback Machine, 1 October 2026, and PDF, 8 October 2026; first record of the new version: 16 October 2026. Authors' account: on 14 October 2026 the article was still unchanged (checked without a record), so it changed between 14 and 16 October 2026."
+    versions:
+      - label: "version of 8 Oct 2026"
+        status: "In force during the study; the report's reference state (8 Oct 2026)."
+        text: "v1/sources/D4-D8_network-connections_reamaze_wayback-20261001191012.txt"
+        textFrom: "the article text from the raw Wayback Machine snapshot, link text without addresses; list numbers and dashes, with an indent of three spaces for each level, stand for the page's HTML lists."
+        pdf: "v1/sources/D4-D8_network-connections_reamaze_2026-10-08.pdf"
+        pdfSaved: 2026-10-08
+        snapshot:
+          url: "https://web.archive.org/web/20261001191012/https://strongbox.reamaze.com/kb/security-and-privacy/what-possible-network-connections-can-strongbox-make?sso%5Bid%5D=&sso%5Banon_id%5D=&sso%5Bfirst_seen%5D=2026-10-01T19%3A10%3A12.738Z&sso%5Bname%5D=&sso%5Bavatar%5D=&sso%5Bemail%5D=&sso%5Bauthkey%5D=&sso%5Bauthpath%5D=&sso%5Bparent_url%5D=https%3A%2F%2Fstrongboxsafe.com%2Fsupport%2F%23reamaze%230%23%2Fkb%2Fsecurity-and-privacy%2Fwhat-possible-network-connections-can-strongbox-make&sso%5Btz_offset%5D=0&sso%5Btz_name%5D=Etc%2FUnknown&framed=1&no_subject=0&require_attachment=0&form_id=&category_id="
+          note: "made when the support page was archived (snapshot of 1 Oct 2026, 21:10 CEST (19:10 UTC)), at the address the page uses to show the article; the snapshot of the article's direct address of 9 Jun 2026, 12:29 UTC, gives the same text"
+        headings:
+          - "What Network Connections Can Strongbox Make?"
+          - "Strongbox Zero"
+      - label: "version of 16 Oct 2026"
+        status: "Rewritten after the authors' questions; accessed 16 Oct 2026."
+        text: "v1/sources/D4-D8_network-connections_reamaze_2026-10-16.txt"
+        textFrom: "the article text taken from the vendor's page on 16 Oct 2026, about 18:20 CEST (16:20 UTC), link text without addresses; a Wayback Machine capture requested the same day resolves to the archive's copy of 9 Jun 2026, the old version."
+        pdf: "v1/sources/D4-D8_network-connections_reamaze_2026-10-16.pdf"
+        pdfSaved: 2026-10-16
+        headings:
+          - "What Network Connections Can Strongbox Make?"
+          - "Database storage and synchronisation"
+          - "Purchases and subscriptions"
+          - "Upgrade screens"
+          - "Crash reporting"
+          - "Internet connectivity detection"
+          - "Favicon downloading"
+          - "Have I Been Pwned? password checks"
+          - "Strongbox Zero"
+          - "Checking network activity"
+replyNote: "The first reply (14 October 2026) answered in broad strokes rather than the 19 questions individually; the authors re-sent the unanswered questions the same evening. The second reply (16 October 2026, after the deadline of 15 October 2026, 23:59 CEST (21:59 UTC), set on 8 October, and before publication) gives a short answer under each question. The questions still not addressed after the second reply are listed in the report, under \"Correspondence with the vendor\" (entry of 16 October 2026). The statements of purpose cannot be verified from network traffic. How the replies compare with the traffic is set out in the story, in the lines marked R."
+sample: false
+findings:
+  - clause: "D1"
+    clauseTitle: "Do you use vendors or analytics providers?"
+    source: "Strongbox Privacy Policy, Last Update 9 May 2024"
+    quote: "The Application does not use vendors or analytics providers."
+    mark: "does not use vendors or analytics providers"
+    effective: 2024-05-09
+    retrieved: 2026-10-08
+    observed: "On every cold start the app connected to RevenueCat and to four Superwall hosts and sent Superwall 41 to 73 events with a device profile (from 1 s before to 20 s after launch), whether the user had an active entitlement, an expired one or none. The policy of 15 October 2026 names both services."
+    observedAt: 2026-10-01
+    evidence: "21 of 21 cold starts recorded in HAR; in the 3 starts recorded only in packet capture, 3 of the 5 host names are visible / devices A, B and C / 1, 3, 5 and 8 Oct 2026"
+    evidenceRef: "Exh. 2"
+    assessment: parts
+  - clause: "D4–D8"
+    clauseTitle: "What Network Connections Can Strongbox Make?"
+    source: "Strongbox support article, version of 8 Oct 2026"
+    quote: "The following are the possible network connections that Strongbox can make which may be seen if you monitor network traffic while using the features described below."
+    mark: "the possible network connections"
+    retrieved: 2026-10-08
+    observed: "The list covered the App Store, the `duckduckgo.com` connectivity test, favicons and Have I Been Pwned. It did not cover RevenueCat, Superwall, Google Fonts or Stripe, which the app contacted. The new version of the article names RevenueCat and Superwall, not Google Fonts or Stripe."
+    evidence: "all 10 HAR files / 3 devices / 4 days"
+    evidenceRef: "Exh. 3"
+    assessment: parts
+  - clause: "D16"
+    clauseTitle: "Strongbox 1.64.0"
+    source: "Post on r/strongbox by u/strongbox-support, 26 Jan 2026"
+    quote: "we get almost the same data we get from RevenueCat, which is the same as we get from Apple. The only addition is lifecycle events for the paywall itself, i.e paywall viewed, closed."
+    mark: "The only addition is lifecycle events for the paywall itself"
+    effective: 2026-01-26
+    retrieved: 2026-10-09
+    observed: "The events sent on start cover the app lifecycle (`app_launch`, `app_open`, `session_start`, `app_close`) and a device profile (`device_attributes`, 50 to 61 fields), not only paywall events."
+    evidence: "41 to 73 events per cold start, from 1 s before to 20 s after launch / the HAR files with content"
+    evidenceRef: "Exh. 4"
+    assessment: parts
+  - clause: "D16"
+    clauseTitle: "Strongbox 1.64.0"
+    source: "Post on r/strongbox by u/strongbox-support, 26 Jan 2026"
+    quote: "This is only in the free app, and is not linked in PRO or Zero, just like with RevenueCat."
+    mark: "only in the free app"
+    effective: 2026-01-26
+    retrieved: 2026-10-09
+    observed: "The \"free app\" is the in-app purchase variant, which paying subscribers use too. On device A, with an active subscription, the flow to RevenueCat and Superwall is the same as on B and C; under the configuration no paywall can be shown to A. The policy of 15 October 2026 says the integration \"can run even when you already have an active Pro subscription\"."
+    evidence: "device A: 11 cold starts with recorded content, no decision to display a paywall"
+    evidenceRef: "Exh. 3"
+    assessment: interpretation
+  - clause: "D16"
+    clauseTitle: "Strongbox 1.64.0"
+    source: "Post on r/strongbox by u/strongbox-support, 26 Jan 2026"
+    quote: "These events all happen on the homepage, before any databases are opened, and there are no further manually tracked events."
+    mark: "before any databases are opened"
+    effective: 2026-01-26
+    retrieved: 2026-10-09
+    observed: "In one of six database unlocks, the app sent the event `Nudge` and the configuration returned a decision to display a paywall; no display was recorded. In the app's public code `Nudge` follows a tap on the \"Upgrade to Pro\" banner, and a tap cannot be ruled out. In the other five unlocks, no event concerning the database."
+    observedAt: 2026-10-03
+    evidence: "1 of 6 unlocks: run T3, cycle 3, device B, 3 Oct 2026"
+    evidenceRef: "Exh. 10"
+    assessment: interpretation
+  - clause: "D15"
+    clauseTitle: "Techlore interview, 32:57–40:56"
+    source: "Representative of the vendor, interview published 1 Aug 2026"
+    quote: "we don't have any identifiers that we track."
+    mark: "we don't have any identifiers"
+    effective: 2026-08-01
+    retrieved: 2026-10-09
+    observed: "The app sends the device identifier (IDFV) to both services and `$appTransactionId` to Superwall. Whether the vendor reads them cannot be determined with this method. The policy of 15 October 2026 says the services \"may process device identifiers\"."
+    evidence: "IDFV equal in both services in 9 of 9 files with both fields / SDK code, D17 and D18"
+    evidenceRef: "Exh. 6"
+    assessment: interpretation
+  - clause: "D15"
+    clauseTitle: "Techlore interview, 32:57–40:56"
+    source: "Representative of the vendor, interview published 1 Aug 2026"
+    quote: "Both of those are effectively in the most limited state they possibly can be."
+    mark: "the most limited state"
+    effective: 2026-08-01
+    retrieved: 2026-10-09
+    observed: "The vendor's assessment. In the app's code no limiting option is set, three available ones are unused and two expanding ones are enabled; most of the traffic has no switch in these SDK versions. The vendor states that the user currently cannot turn the event collection off."
+    evidence: "`config_attributes` in 20 of 20 starts / SDK code / app's public code, 1.65.0"
+    evidenceRef: "Exh. 12"
+    assessment: interpretation
+  - clause: "D15"
+    clauseTitle: "Techlore interview, 32:57–40:56"
+    source: "Representative of the vendor, interview published 1 Aug 2026"
+    quote: "the general rule that we followed throughout all of this is that we haven't added analytics."
+    mark: "we haven't added analytics"
+    effective: 2026-08-01
+    retrieved: 2026-10-09
+    observed: "Depends on the definition. The App Store label itself declares the purpose \"Analytics\"; session and paywall events go to Superwall, as does `demandScore`, computed according to Superwall's documentation from the number of app opens and paywall views. The policy of 15 October 2026 has the heading \"Upgrade screens and related analytics\"."
+    evidence: "all 10 HAR files / D13 / Superwall documentation"
+    evidenceRef: "Exh. 11"
+    assessment: interpretation
+  - clause: "D8"
+    clauseTitle: "What Network Connections Can Strongbox Make?"
+    source: "Strongbox support article, version of 8 Oct 2026"
+    quote: "None of these connections send any of your databases or personal identifying information."
+    mark: "personal identifying information"
+    retrieved: 2026-10-08
+    observed: "No database content is sent. The app sends the IDFV and `$appTransactionId`, and Superwall returns a location derived from the IP address. Whether these count as identifying information depends on how they are classified. The new version of the article names device identifiers and IP-derived location."
+    evidence: "all 10 HAR files"
+    evidenceRef: "Exh. 6"
+    assessment: interpretation
+  - clause: "D9"
+    clauseTitle: "Release notes 1.60.39"
+    source: "App Store release notes, Strongbox 1.60.39"
+    quote: "The exact same information is provided to RevenueCat as it would be directly to Apple, and no extra analytics or tracking is added as a result of this change."
+    mark: "The exact same information"
+    effective: 2025-05-12
+    retrieved: 2026-10-09
+    observed: "RevenueCat receives the IDFV with every request and, on first launch, an Apple AdServices attribution token, which the app has to switch on. Apple receives such values within its own store; here they go to two third parties."
+    evidence: "6 first launches: S01, S17, A5 (2), A8, C8"
+    evidenceRef: "Exh. 5"
+    assessment: interpretation
+  - clause: "D13"
+    clauseTitle: "App Privacy"
+    source: "App Store privacy label, US and PL storefronts, App Store app on macOS"
+    quote: "Data Not Linked to You: Purchases"
+    mark: "Purchases"
+    retrieved: 2026-10-08
+    observed: "The label lists one type, \"Purchases\" (subtype \"Purchase History\", purpose \"Analytics\", as the App Store app on macOS shows it). It does not contain the types that match Apple's definitions of Device ID, Coarse Location and Product Interaction, all of which occur in the traffic. Whether Apple's exemptions apply, the authors do not decide. According to web archive snapshots the label has not changed since 8 January 2026, including after Superwall was added."
+    evidence: "label snapshots of 8, 9, 10 and 18 Oct 2026 / Wayback Machine, 2025 to 7 Oct 2026 / Apple, App privacy details (D19)"
+    evidenceRef: "Exh. 11"
+    assessment: interpretation
+  - clause: "D1"
+    clauseTitle: "How do you handle location data?"
+    source: "Strongbox Privacy Policy, Last Update 9 May 2024"
+    quote: "The Application does not use or collect any data related to your geographic location."
+    mark: "any data related to your geographic location"
+    effective: 2024-05-09
+    retrieved: 2026-10-08
+    observed: "No access to GPS location was observed. On every start Superwall returns a country, region and city derived from the IP address, and the app sends them back in later events. The policy of 15 October 2026 says Superwall \"may derive approximate location from your IP address\"."
+    evidence: "20 responses with content in 9 files; the values are replaced with labels"
+    evidenceRef: "Exh. 8"
+    assessment: interpretation
+  - clause: "D11"
+    clauseTitle: "Release notes 1.64.0"
+    source: "App Store release notes, Strongbox 1.64.0"
+    quote: "Added automatic opt-in crash reporting."
+    effective: 2026-01-26
+    retrieved: 2026-10-09
+    observed: "No connection from Strongbox to Sentry was observed. Requests to `*.sentry.io` occur in 4 of the authors' 10 HAR files (these entries are not in the published files): in two they name the authors' proxy app, the other two come from runs made with it; the name does not occur in the packet captures made without it. Three captures contain DNS lookups of `sentry.io` without a connection, of unestablished origin. No crash occurred during the tests."
+    evidence: "4 of 10 HAR files; packet captures T1 and T2; DNS extracts"
+    evidenceRef: "Exh. 1"
+    assessment: agrees
+  - clause: "D5"
+    clauseTitle: "Offline Connectivity Detection"
+    source: "Strongbox support article, version of 8 Oct 2026"
+    quote: "No information is sent, just a connection test."
+    retrieved: 2026-10-08
+    observed: "On device A, and in S01 on device B, a DNS query for `duckduckgo.com` when the app comes to the foreground; no content was sent. Also consistent with the new version of the article."
+    evidence: "devices A and B (S01)"
+    assessment: agrees
+  - clause: "D6"
+    clauseTitle: "FavIcon Download"
+    source: "Strongbox support article, version of 8 Oct 2026"
+    quote: "FavIcon Download - (Opt In)"
+    retrieved: 2026-10-08
+    observed: "Connections to `icons.duckduckgo.com` and to the hosts of the entries' addresses occurred only after the option was switched on. Their content was not decrypted. Also consistent with the new version of the article."
+    evidence: "run S18, device B, 3 Oct 2026"
+    evidenceRef: "Exh. 1"
+    assessment: agrees
+  - clause: "D16"
+    clauseTitle: "Strongbox 1.64.0"
+    source: "Post on r/strongbox by u/strongbox-support, 26 Jan 2026"
+    quote: "Strongbox's free app has a new setup for its paywalls - we're using Superwall."
+    mark: "we're using Superwall"
+    effective: 2026-01-26
+    retrieved: 2026-10-09
+    observed: "Both providers were named publicly by the vendor before this study: RevenueCat in the release notes for 1.60.39 (12 May 2025), Superwall in this post, both in the interview of 1 August 2026. According to the vendor, no release note names Superwall."
+    evidence: "D9, D16, D15; the vendor's reply of 16 Oct 2026"
+    assessment: agrees
+---
+import FindingsLedger from '../../components/FindingsLedger.astro';
+import InOneMinute from '../../components/InOneMinute.astro';
+import DataFlow from '../../components/DataFlow.astro';
+import RoundTrip from '../../components/RoundTrip.astro';
+import { PUBLISHER } from '../../lib/contact';
+
+## Prologue
+
+<Note>**Authors**</Note>
+
+*This prologue describes the authors' personal experience and impressions; the report itself starts under "In brief".*
+
+We are active Strongbox users. We chose it because it met all our functional requirements. The privacy policy, linked from the app and the App Store, and the support article the policy linked to, answered our doubts. The article also encouraged users to check the connections themselves. We had no concerns.
+
+At the end of September 2026, entirely by chance, one of us was using the iOS App Privacy Report to see how many domains a different app, one used for testing connections, was contacting, and noticed a strangely large number of connections from Strongbox to domains the app's documentation did not mention (two screenshots: [1](/files/strongbox-ios-network-traffic/v1/sources/P0_app-privacy-report_domains_2026-09-30.png), [2](/files/strongbox-ios-network-traffic/v1/sources/P0_app-privacy-report_most-contacted_2026-09-30.png)). Intrigued, we decided to look into it.
+
+<figure class="shots">
+  <a href="/files/strongbox-ios-network-traffic/v1/sources/P0_app-privacy-report_domains_2026-09-30.png"><img src="/files/strongbox-ios-network-traffic/v1/sources/P0_app-privacy-report_domains_2026-09-30.png" width="1179" height="2379" loading="lazy" alt="Screenshot of the iOS App Privacy Report entry for Strongbox, owned by Phoebe Code Limited, section Domains contacted directly by app: gateway.icloud.com 16, collector.superwall.me 15, api.revenuecat.com 9, amp-api-edge.apps.apple.com 8, fonts.gstatic.com 8, each dated 30/09/2026 with the time covered." /></a>
+  <a href="/files/strongbox-ios-network-traffic/v1/sources/P0_app-privacy-report_most-contacted_2026-09-30.png"><img src="/files/strongbox-ios-network-traffic/v1/sources/P0_app-privacy-report_most-contacted_2026-09-30.png" width="1179" height="2418" loading="lazy" alt="Screenshot of the list Most Contacted Domains in the iOS App Privacy Report, scrolled: amp-api-edge.apps.apple.com 8, fonts.gstatic.com 8, user-content.superwalleditor.com 8, api.superwall.me 7, enrichment-api.superwall.com 7, fonts.googleapis.com 7, subscriptions-api.superwall.com 7, mzstorekit.itunes.apple.com 4, inappcheck.itunes.apple.com 3, ocsp2.apple.com 3, api.revenuecat.com 2, metrics.icloud.com 1." /></a>
+  <figcaption>iOS App Privacy Report, device A, 30 Sep 2026; times of day covered with grey boxes. Files <code>sources/P0_app-privacy-report_domains_2026-09-30.png</code> and <code>sources/P0_app-privacy-report_most-contacted_2026-09-30.png</code>.</figcaption>
+</figure>
+
+## In brief
+
+<Note>**Summary**</Note>
+
+This page is the short report. The full report, with all observations, sources and the complete correspondence, is [`FULL-REPORT.md`](/files/strongbox-ios-network-traffic/v1/FULL-REPORT.md); the short report as a file is [`README.md`](/files/strongbox-ios-network-traffic/v1/README.md). Section numbers on this page are the same as in both reports; references of the form "(full report, 3.x)" and "(3.x)" point to the same section of the full report. The exhibits (the run table, the data flow, the request logs and the file list) are on the [Evidence](/publications/strongbox-ios-network-traffic/evidence/) page.
+
+On every launch, the tested version of the app connects to two external services: RevenueCat (purchase handling) and Superwall (purchase screens), whether or not the user has a subscription (full report, 3.1). On every start, several dozen events with a device profile go to Superwall, including the device identifier (IDFV), the App Store transaction identifier, model, operating system, language, region, currency, time zone, dark mode and connection type (3.2). The service returns a location derived from the IP address and a purchase propensity score ("demand score"), and the app sends them back in later events (3.5). The same device identifier goes to RevenueCat (3.3).
+
+On the first launch after installation, the app sends an Apple AdServices attribution token to RevenueCat, which in this SDK version has to be switched on by the app (3.4). The content of password databases is not sent. After a database is opened, in the 6 observed unlocks the app sent no events concerning the database (one exception, most likely triggered by the user, is described in 3.8). No connection from Strongbox to Sentry was observed (DNS lookups of `sentry.io` without a connection, of unestablished origin: section 4).
+
+The privacy policy in force at the time of the study (as of 9 May 2024) stated that the app uses no vendors or analytics providers and collects no location data. The vendor's article on network connections did not list these services. The vendor's public statements (post of 26 January 2026, D16; interview of 1 August 2026, D15) described the data as limited to paywall events. After the authors' questions, the vendor changed both documents (policy: 15 October 2026; article: between 14 and 16 October 2026, according to the authors' account): the new versions name RevenueCat and Superwall, device identifiers, approximate location derived from the IP address, an estimate of purchase likelihood, and operation with an active subscription (3.1, 3.5).
+
+Most of the observed behaviour matches the default settings of both SDKs; in the app's public code (state 1.65.0) both SDKs are configured with defaults apart from the StoreKit version, and none of the available options to limit data collection is used (3.10, 3.11). The flow to Superwall is the same on the device with an active subscription, to which, under the configuration, no paywall can be shown. The App Store privacy label lists one data type ("Purchase History", purpose "Analytics", not linked to the user) and, according to web archive snapshots, has not changed since 8 January 2026, including after Superwall was added (as of 18 October 2026); the traffic contains data that match Apple's definitions of Device ID, Coarse Location and Product Interaction (3.9).
+
+The vendor replied on 14 October 2026 in broad strokes and on 16 October 2026 under each question (quoted in full in the full report, section 6): the privacy policy remained out of date by mistake; the AdServices token serves Apple Search Ads attribution; App Tracking Transparency is not used; the vendor does not use the location derived from the IP address or the demand score; paywalls are preloaded for subscribers too, in case the entitlement is lost; the user currently cannot turn the event collection off; no release note named Superwall, only the launch post on Reddit (D16). Several questions remained unanswered (section 6). This report describes traffic leaving the phone. It does not describe what the recipients do with the data, and it attributes no intent to the vendor.
+
+<InOneMinute items={[
+  "On every launch the app connects to two outside companies, RevenueCat and Superwall, also when the user pays ([3.1](#31-connections-on-every-cold-start)).",
+  "It sends them a persistent device identifier and, to Superwall, an identifier tied to the Apple account ([3.3](#33-the-same-device-identifier-to-both-services-persistent-identifiers)).",
+  "It receives from Superwall a location derived from the IP address and a purchase propensity score, and sends them back ([3.5](#35-location-from-the-ip-address-and-a-demand-score)).",
+  "The content of password databases is not sent ([section 4](#4-what-agrees-with-the-declarations)).",
+  "The privacy policy in force said the app used no vendors or analytics providers; after the authors' questions it was changed ([3.1](#31-connections-on-every-cold-start), [section 6](#6-correspondence-with-the-vendor)).",
+]} />
+
+<figure class="flow-fig">
+  <DataFlow
+    neutral
+    app="Strongbox"
+    origin={{ name: 'Cold start', sub: 'every launch' }}
+    recipients={[
+      { name: 'RevenueCat', sub: 'api.revenuecat.com', disclosed: false, data: 'IDFV in every request', note: 'first launch: receipt, token' },
+      { name: 'Superwall', sub: 'collector.superwall.me', disclosed: false, data: '41 to 73 events per start' },
+      { name: 'Superwall', sub: 'api.superwall.me', disclosed: false, data: 'configuration' },
+      { name: 'Superwall', sub: 'enrichment-api.superwall.com', disclosed: false, data: 'profile; IP location back' },
+      { name: 'Superwall', sub: 'subscriptions-api.superwall.com', disclosed: false, data: 'every start in HAR' },
+      { name: 'Paywall resources', sub: 'superwalleditor, Fonts, Stripe', disclosed: false, data: 'first launch: 127 to 206 requests' },
+      { name: 'DuckDuckGo', sub: 'duckduckgo.com, article item 2', disclosed: true, data: 'connection test' },
+    ]}
+  />
+  <figcaption>Figure 1. Where data goes on a cold start (Exhibit 2 on the Evidence page); dashed: not listed in the vendor's article of 8 October 2026.</figcaption>
+</figure>
+
+<figure class="flow-fig">
+  <RoundTrip
+    app={{ name: 'Strongbox', sub: 'every cold start' }}
+    service={{ name: 'Superwall', sub: 'enrichment-api, collector' }}
+    legs={[
+      { to: 'service', lines: ['POST /api/v1/enrich', 'a device profile'] },
+      { to: 'app', lines: ['ipCountry, ipRegion, ipCity, ipContinent,', 'ipV4, ipV4ObservedAt,', 'demandScore, demandTier'] },
+      { to: 'service', lines: ['the same values, in later events:', 'device_attributes, enrichment_complete;', 'demand score and tier also in paywall_open'] },
+    ]}
+  />
+  <figcaption>Figure 2. The enrich exchange on every cold start, field names only (Exhibit 8).</figcaption>
+</figure>
+
+<Note>**Labels**</Note>
+
+Each paragraph below is marked in the margin: **F** for a fact from a file, with its location; **D** for a document, with its address and date of access; **R** for the vendor's replies to the authors of 14 and 16 October 2026, printed in full on the [Correspondence](/publications/strongbox-ios-network-traffic/correspondence/) page; **I** for an inference, a conclusion drawn by the authors; **H** for a hypothesis. Section numbers are the same as in the short and the full report ([`FULL-REPORT.md`](/files/strongbox-ios-network-traffic/v1/FULL-REPORT.md), among the files on record). Document codes (D1–D21, EP1–EP7a, P0) refer to the files and addresses listed in [`sources/README.md`](/files/strongbox-ios-network-traffic/v1/sources/README.md).
+
+<nav class="toc" aria-label="Contents">
+<ol>
+<li><a href="#1-what-was-studied-and-what-was-not">1. What was studied, and what was not</a></li>
+<li><a href="#2-how-it-was-studied">2. How it was studied</a></li>
+<li><a href="#31-connections-on-every-cold-start">3.1 Connections on every cold start</a></li>
+<li><a href="#32-what-goes-to-superwall-on-start">3.2 What goes to Superwall on start</a></li>
+<li><a href="#33-the-same-device-identifier-to-both-services-persistent-identifiers">3.3 The same device identifier to both services; persistent identifiers</a></li>
+<li><a href="#34-first-launch-attribution-token-consent-status-receipt">3.4 First launch: attribution token, consent status, receipt</a></li>
+<li><a href="#35-location-from-the-ip-address-and-a-demand-score">3.5 Location from the IP address and a demand score</a></li>
+<li><a href="#36-paywall-resources-loaded-before-any-paywall">3.6 Paywall resources, loaded before any paywall</a></li>
+<li><a href="#37-paywall-configuration">3.7 Paywall configuration</a></li>
+<li><a href="#38-a-displayed-paywall-and-a-trigger-after-an-unlock">3.8 A displayed paywall, and a trigger after an unlock</a></li>
+<li><a href="#39-the-app-store-privacy-label-and-apples-definitions">3.9 The App Store privacy label and Apple's definitions</a></li>
+<li><a href="#310-the-options-of-both-sdks-and-the-most-limited-state">3.10 The options of both SDKs and the "most limited state"</a></li>
+<li><a href="#311-the-apps-public-code">3.11 The app's public code</a></li>
+<li><a href="#312-declarations-and-findings-after-the-vendors-changes-of-october-2026">3.12 Declarations and findings after the vendor's changes of October 2026</a></li>
+<li><a href="#4-what-agrees-with-the-declarations">4. What agrees with the declarations</a></li>
+<li><a href="#5-limits-of-this-study">5. Limits of this study</a></li>
+<li><a href="#6-correspondence-with-the-vendor">6. Correspondence with the vendor</a></li>
+<li><a href="#epilogue">Epilogue</a></li>
+<li><a href="#7-licence-and-contact">7. Licence and contact</a></li>
+</ol>
+</nav>
+
+<FindingsLedger findings={props.findings} />
+
+## 1. What was studied, and what was not
+
+<Note>**Scope**</Note>
+
+App: Strongbox - Password Manager, App Store, bundle `com.markmcguill.strongbox`, version 1.65.2 (build 152), in-app purchase variant; SDKs according to request headers: RevenueCat 5.21.1, Superwall 4.15.3. Out of scope: Strongbox Pro (one-off purchase), Strongbox Zero, the macOS version. Subject: connections made by the app to the RevenueCat and Superwall services and to paywall resources, set against the wording of the vendor's public declarations. Other connections (Sentry, favicons, the `duckduckgo.com` connectivity test) were observed but are not the subject of this report. Within the scope examined, no discrepancy with the declarations was found in them (section 4). The report describes what the app sends and when (full report, 1).
+
+Vendor documents as of the time of the study: 8 October 2026. On 15 October 2026 the vendor changed the privacy policy, and between 14 and 16 October 2026 (authors' account) it changed the article on network connections; both changes followed the authors' questions, and both versions are given below and in the full report, section 3.
+
+## 2. How it was studied
+
+<Note>**Method**</Note>
+
+Three iPhones owned by the authors: A (annual Pro subscription, active), B (entitlement through Family Sharing until 3 October, then expired; fresh installation on 3 October) and C (never installed before, no purchase). Tools: Proxyman (macOS) with TLS decryption for the RevenueCat, Superwall and Google Fonts hosts and `js.stripe.com` (HAR: decrypted HTTP log); Proxyman for iOS on the device in A0, S02, S17 and S18; `rvictl` + Wireshark (PCAP: full packet capture). Apple domains were not decrypted. Runs (full report, 2):
+
+<ExhibitRef n={1} label="the twelve runs" />
+
+<div class="scroll" tabindex="0" role="region" aria-label="Run codes, scrolls horizontally">
+<table>
+<thead><tr><th scope="col">Run</th><th scope="col">Date</th><th scope="col">Device</th><th scope="col">What</th></tr></thead>
+<tbody>
+<tr><td>A0</td><td>1 Oct</td><td>A</td><td class="w">launch, 1.5 min on the home screen</td></tr>
+<tr><td>S02</td><td>1 Oct</td><td>A</td><td class="w">3 cold starts, database locked</td></tr>
+<tr><td>S01</td><td>1 Oct</td><td>B</td><td class="w">first launch after installation</td></tr>
+<tr><td>S11b</td><td>1 Oct</td><td>A</td><td class="w">6 app openings, 2 of them cold starts</td></tr>
+<tr><td>S17</td><td>3 Oct</td><td>B</td><td class="w">fresh installation without entitlement</td></tr>
+<tr><td>S18</td><td>3 Oct</td><td>B</td><td class="w">cold start, database unlock, favicons</td></tr>
+<tr><td>T1</td><td>3 Oct</td><td>B</td><td class="w">5 min with the app closed, without Proxyman</td></tr>
+<tr><td>T2</td><td>3 Oct</td><td>B</td><td class="w">3 cold starts, without Proxyman</td></tr>
+<tr><td>T3</td><td>3 Oct</td><td>B</td><td class="w">3 cycles of start, unlock, lock</td></tr>
+<tr><td>A5</td><td>5 Oct</td><td>A</td><td class="w">2 × installation and first launch</td></tr>
+<tr><td>A8</td><td>8 Oct</td><td>A</td><td class="w">installation, first launch, 3 starts</td></tr>
+<tr><td>C8</td><td>8 Oct</td><td>C</td><td class="w">first launch, 2 cold starts, 2 unlocks</td></tr>
+</tbody>
+</table>
+</div>
+
+"Domain filter": an export that contains only selected hosts (section 5).
+
+A VPN on the router, with its exit in another country, was active in the runs of 3, 5 and 8 October on A and B. This was established from the country derived from the IP address that the Superwall service returns, and from the authors' account. In total, 24 cold starts (A 12, B 9, C 3).
+
+In the published HAR files (`data/`), identifiers, tokens, addresses, purchase dates and prices are replaced with labels (the same value gives the same label in every file), server addresses with labels of the form `<<IP_n>>`, and all timestamps are shifted by a constant random value per run, so times should not be compared between files. From the packet captures only extracts are published, without content (full report, 2, "Pseudonymisation"). A "CONNECT" entry in a HAR file is a connection whose content was not decrypted.
+
+<details class="appendix" id="terms">
+<summary>Terms</summary>
+<div class="inner">
+<dl>
+<dt>HAR</dt><dd>a log of decrypted HTTP requests and responses, here from Proxyman.</dd>
+<dt>PCAP</dt><dd>a full packet capture; here only extracts are published.</dd>
+<dt>SNI</dt><dd>the server name sent in the clear at the start of a TLS connection; it shows which hosts a capture without decryption reached.</dd>
+<dt>DNS</dt><dd>the lookup of a host name's addresses.</dd>
+<dt>CONNECT</dt><dd>a HAR entry for a connection whose content was not decrypted.</dd>
+<dt>IDFV (identifierForVendor)</dt><dd>an identifier iOS gives to all apps of one vendor on a device, kept while at least one of those apps stays installed.</dd>
+<dt>IDFA (Identifier for Advertisers)</dt><dd>an identifier requested through App Tracking Transparency; not seen in the traffic.</dd>
+<dt>ATT (App Tracking Transparency)</dt><dd>the iOS consent prompt through which an app requests the IDFA.</dd>
+<dt>StoreKit</dt><dd>Apple's purchase framework; the receipt comes from it.</dd>
+<dt>Paywall</dt><dd>the purchase screen; Superwall delivers and configures it.</dd>
+<dt>Trigger or placement</dt><dd>a named point in the app at which a paywall can be shown, under rules from the configuration.</dd>
+<dt>Entitlement</dt><dd>an active right to the paid features; here from a subscription or Family Sharing.</dd>
+<dt>Demand score</dt><dd>a number from 1 to 100 that Superwall assigns to each user on every app open (D20).</dd>
+<dt>HTTP/2 coalescing</dt><dd>two host names served over one connection, so that only one name is visible in the capture.</dd>
+</dl>
+</div>
+</details>
+
+<div id="finding-1" class="anchor"></div>
+
+## 3.1 Connections on every cold start
+
+*On every start the app contacts the two services, whether or not the user pays.*
+
+<Note>**F**</Note>
+
+In each of the 21 cold starts recorded in HAR, the app connected to the following five hosts.
+
+<div class="scroll" tabindex="0" role="region" aria-label="Hosts on every cold start, scrolls horizontally">
+<table>
+<thead><tr><th scope="col">Host</th><th scope="col">What it carries</th></tr></thead>
+<tbody>
+<tr><td><code>api.revenuecat.com</code></td><td class="w">purchase handling: the IDFV in every request; on first launch the receipt and the attribution token (3.3, 3.4)</td></tr>
+<tr><td><code>api.superwall.me</code></td><td class="w">paywall configuration (3.7)</td></tr>
+<tr><td><code>collector.superwall.me</code></td><td class="w">events with the device profile, 41 to 73 per start (3.2)</td></tr>
+<tr><td><code>enrichment-api.superwall.com</code></td><td class="w">device profile sent; location from the IP address and demand score returned (3.5)</td></tr>
+<tr><td><code>subscriptions-api.superwall.com</code></td><td class="w">contacted on every start in the HAR; <code>redeem</code> requests on first launches and in S18 (section 5)</td></tr>
+</tbody>
+</table>
+</div>
+
+In the 3 starts of T2 (packet capture only, without Proxyman) the names `api.revenuecat.com`, `api.superwall.me` and `enrichment-api.superwall.com` are visible and `collector` and `subscriptions-api` are absent. In the 6 captures with DNS answers (S01, S02, S11b, S17, S18, T3) `collector` resolves to the same addresses as `api.superwall.me`, and `subscriptions-api` to the same as `enrichment-api`. H (T2 only): both hosts share one connection (HTTP/2), so the names would not appear separately. The connections occur whether the user has an active entitlement (A), an expired one (B) or has never made a purchase (C).
+
+<ExhibitRef n={2} label="where data goes on a cold start" />
+<ExhibitRef n={3} label="hosts contacted in each run" />
+
+<Note>**D** / D1</Note>
+
+D1 (privacy policy, "Last Update: 9 May 2024", in force at the time of the study; wording: 3.12). D4–D8 (article "What Network Connections Can Strongbox Make?", snapshot of 8 October 2026): the list of connections covered App Store/StoreKit, the `duckduckgo.com` connectivity test, favicons (opt-in), Have I Been Pwned (opt-in). D1, version of 15 October 2026: "The iOS freemium app uses Superwall to provide upgrade screens, manage offers and measure their performance."; D4–D8, new version: names RevenueCat, Superwall, Sentry and Apple Ads attribution.
+
+<Note>**R** / 14 and 16 Oct 2026</Note>
+
+R (14 October 2026): "the privacy policy update is simply a mistake on our end." R (16 October 2026): "There is not a release note that mentions Superwall, only the launch post."
+
+<Note>**I**</Note>
+
+The RevenueCat and Superwall hosts appeared neither in D1 nor in D4–D8 in the versions in force at the time of the study; whether this differed from the wording of D1 depended on whether a payment operator and a paywall operator are "vendors or analytics providers". The new versions name both providers; the discrepancy concerns the earlier versions (the vendor had named both publicly in D9/D16 and D15, section 4).
+
+<div id="finding-2" class="anchor"></div>
+
+<div id="finding-3" class="anchor"></div>
+
+## 3.2 What goes to Superwall on start
+
+*Several dozen events with a device profile go to Superwall on every start; the app's own statements described only paywall events.*
+
+<Note>**F**</Note>
+
+On every cold start the app sends 41 to 73 events to `collector.superwall.me` (window from 1 s before `app_launch` to 20 s after, or to the next `app_launch`), including `app_install` (first launch), `app_launch`, `app_open`, `session_start`, `app_close` on going to the background, `device_attributes`, `config_attributes`, `user_attributes` and paywall preloading events. The `device_attributes` event has 50–61 fields; the fields are grouped in Exhibit 4.
+
+<ExhibitRef n={4} label="the fields of device_attributes" />
+<ExhibitRef n={5} label="one first launch on device C, request by request" />
+
+<Note>**I** / from D</Note>
+
+This set of events and fields matches the standard behaviour of the Superwall SDK as described in its documentation and code.
+
+<Note>**D** / D16</Note>
+
+D16 (r/strongbox post "Strongbox 1.64.0", 26 January 2026). D15 (statement by a representative of the vendor, "VP of Engineering at Applause, the company behind Strongbox" according to the video description, in a Techlore conversation published on 1 August 2026): "we don't have any identifiers that we track. So if you wrote me an email and you said, why is my subscription not working? I couldn't go into anywhere and find you." (further wording: 3.12)
+
+<Note>**R** / 14 and 16 Oct 2026</Note>
+
+R (14 October 2026): "It isn't a tool for analytics, like Mixpanel, or Amplitude. […] Our usage of Superwall's events is just for triggering paywalls". R (16 October 2026), on `isExternalDataCollectionEnabled`: "This property generally describes which events we post-back to Superwall, and is used in reporting so we can see which paywalls drove conversions, i.e did a paywall get opened 1000 times but only 1 person paid."
+
+<Note>**I**</Note>
+
+The events sent on start cover the app lifecycle and the device profile, not only paywall events; this differs from the wording "The only addition…" (D16). The D15 statement is about what the vendor sees and whether the vendor can find a user: the app sends device and account identifiers to both services (3.3) and receives a location derived from the IP address (3.5), but whether the vendor can or wants to use them to find a user does not follow from the traffic, and the assessment "most limited state" cannot be checked from traffic (3.10, 3.11).
+
+<div id="finding-5" class="anchor"></div>
+
+<div id="finding-8" class="anchor"></div>
+
+## 3.3 The same device identifier to both services; persistent identifiers
+
+*The same device identifier reaches both companies, and the Apple account identifier allows records to be linked after reinstallation.*
+
+<Note>**F**</Note>
+
+The value of the `X-Apple-Device-Identifier` header in requests to RevenueCat equals the value of `$vendorId` in Superwall events on A, B and C (9/9 files with both fields); according to the code of both SDKs (D17, D18) both values come from `UIDevice.identifierForVendor` (IDFV). `$appTransactionId`, sent to Superwall on every start, has the same value on A on 1, 5 and 8 October (despite the change of IDFV) and the same value on B on 1 and 3 October (despite the fresh installation and the change of IDFV). RevenueCat returns `original_app_user_id` with the same label for B before and after the fresh installation.
+
+<ExhibitRef n={6} label="one value, two services" />
+<ExhibitRef n={7} label="identifiers on device A, 1 to 8 October" />
+
+<Note>**D** / D9</Note>
+
+D9 (release notes 1.60.39, 12 May 2025) and D1 (version of 15 October 2026): wording in 3.12.
+
+<Note>**R** / 14 Oct 2026</Note>
+
+R (14 October 2026): "In terms of tying data together, we do not do any extra merging of users."
+
+<Note>**I**</Note>
+
+The `$appTransactionId` value allows records from the same account to be linked after reinstallation, independently of the IDFV, and according to Apple's documentation also across devices; whether the IDFV and `appTransactionId` fall within "the exact same information … as … Apple" depends on interpretation. The vendor's statement is consistent with the absence of `identify()` and of custom user attributes (3.11; section 4, item 11); the new policy describes device identifiers but does not name the Apple Account-level identifier (`$appTransactionId`).
+
+<div id="finding-9" class="anchor"></div>
+
+## 3.4 First launch: attribution token, consent status, receipt
+
+*On the first launch the app sends an Apple advertising attribution token that the app itself had to switch on.*
+
+<Note>**F**</Note>
+
+On every first launch after installation (S01, S17, A5 ×2, A8, C8; 6 observations) the app sends to RevenueCat an Apple AdServices token (560 characters) and `POST /v1/receipts` requests with the App Store receipt and the attribute `$attConsentStatus` (App Tracking Transparency consent status), including on device C, which never made a purchase. The value of `$attConsentStatus` is `denied` in 22/22 receipts.
+
+<Note>**D** / D18a</Note>
+
+D18a: in the RevenueCat SDK 5.21.1 code, token collection is off by default and starts only when the app calls `enableAdServicesAttributionTokenCollection()`. D1 (version of 15 October 2026): "The iOS freemium app also uses RevenueCat for Apple Ads attribution, associating installations and purchases with advertising campaigns."
+
+<Note>**R** / 14 Oct 2026</Note>
+
+R (14 October 2026): "the Ad services token is used to tell us which Apple Search Ad someone saw before they purchased ( we run ads on the App Store like most iOS apps ). We're not using ATT, so that property just stays as false for everyone."
+
+<Note>**I**</Note>
+
+Sending the token means the app switched this function on; it is not the SDK's default behaviour, and the versions of D1 and D4–D8 in force at the time of the study did not mention it (the new versions mention Apple Ads attribution). Based on the app's public code and the vendor's reply, the app does not ask for ATT consent, and `denied` does not mean the user refused.
+
+<div id="finding-11" class="anchor"></div>
+
+## 3.5 Location from the IP address and a demand score
+
+*Superwall returns a location derived from the IP address and a purchase propensity score, and the app sends them back.*
+
+<Note>**F**</Note>
+
+On every start the app sends `POST enrichment-api.superwall.com/api/v1/enrich` with a device profile; the response contains the fields `ipCountry`, `ipRegion`, `ipCity`, `ipContinent`, `ipV4`, `ipV4ObservedAt`, `demandScore`, `demandTier`. The app sends these values back in later events (`device_attributes`, `enrichment_complete`; the demand score and tier also in `paywall_open`). None of the 10 paywall rules in `static_config` refers to `demandScore`, `demandTier` or the `ip*` fields.
+
+<ExhibitRef n={8} label="the enrich exchange, field names only" />
+
+<Note>**D** / D20, Superwall documentation "Demand Score"</Note>
+
+D20 (Superwall documentation "Demand Score"): "Demand Score is a number from 1 to 100 assigned to each user by Superwall on every app open."; the documentation mentions no way to switch it off, and the SDK 4.15.3 code calls `enrich` unconditionally. D1 (version in force at the time of the study; wording: 3.12). D1 (version of 15 October 2026): "It may derive approximate location from your IP address and estimate the likelihood of a purchase. This is not GPS location tracking."
+
+<Note>**R** / 16 Oct 2026</Note>
+
+R (16 October 2026): "These are simply not used."
+
+<Note>**I**</Note>
+
+The service assigns the device a location derived from the IP address (country, region, city) and a demand score, and the app sends them back in events, with no switch in this SDK version (3.10); no access to GPS location was observed, and we leave it to the reader to judge whether a location derived from the IP address was "data related to your geographic location" in the sense of D1. The rules evaluated on the device agree with the statement; use of these values on the service's side is beyond the reach of this method.
+
+## 3.6 Paywall resources, loaded before any paywall
+
+*Purchase screens and their resources are downloaded before any purchase screen is shown, also for subscribers.*
+
+<Note>**F**</Note>
+
+On the first launch after installation the app downloads paywall resources: 127–206 requests to `user-content.superwalleditor.com`, `fonts.gstatic.com`, `fonts.googleapis.com` and `js.stripe.com`. On later starts the HAR contains 0–1 such entries per start. In the packet captures, one short connection to each of the three resource hosts appears in T2 (without Proxyman) on each of the 3 starts, in S18 and A0 on the single start, and in S02, S11b and T3 (with Proxyman) only on the first start of the capture. In A8 the paywall webview fetches `js.stripe.com/clover/stripe.js` (1.1 MB). In A5 and C8, at the same time, there are connections to `m.stripe.com` and `m.stripe.network` (CONNECT only; attributed to the app by timing and the Referer header); these entries are not in the published files, which keep only the examined hosts.
+
+<ExhibitRef n={9} label="resource requests on each first launch" />
+
+<Note>**D** / D21</Note>
+
+D21 (Stripe documentation "Advanced fraud detection"): Stripe.js collects "risk factors about device characteristics and user activity". D1 (version of 15 October 2026): "Upgrade screens may load resources from Superwall and third-party hosts."
+
+<Note>**R** / 16 Oct 2026</Note>
+
+R (16 October 2026): "Paywalls are always pre-loaded because an existing pro user may not stay pro at run-time […]"; on the resource hosts: "The revised policy specifically mentions Superwall & RevenueCat, it does not explicitly list fonts etc."
+
+<Note>**I**</Note>
+
+Paywall resources (including Google Fonts and the Stripe script) are downloaded before the user sees any paywall, including on the device with an active subscription (A); what Stripe.js sends from the paywall webview remains unestablished. The reply explains preloading (a loss of entitlement occurred on B on 3 October), not the device profile and `enrich`, which the SDK sends for a subscriber regardless of preloading (the vendor gave the purpose of the lifecycle events separately, 3.8); Google Fonts and Stripe are not named.
+
+## 3.7 Paywall configuration
+
+*The configuration allows paywalls after a database is opened, but only for users without an active entitlement; the event collection cannot be switched off by the user.*
+
+<Note>**F**</Note>
+
+The response to `GET api.superwall.me/api/v1/static_config` contains 7 paywalls and 7 triggers (`database-unlock`, `Nudge`, `Onboarding`, `retention-discount`, `session_start`, `Settings`, `transaction_abandon`), with 10 rules in total. Every rule contains the condition `size(device.activeEntitlements) == 0`. The `config_attributes` event sent by the app contains `$isExternalDataCollectionEnabled: true`.
+
+<Note>**D**</Note>
+
+SDK 4.15.3 code: the value `false` blocks only `trigger_fire`, `user_attributes` and the app's own events (5–10 % of the events in the examined files); `device_attributes`, `enrich` and the lifecycle events are still sent. A switch covering all events (`eventTrackingBehavior`) appeared in Superwall 4.16.0 (30 June 2026). It does not cover the `enrich` request, which has no switch in any version up to 4.18.0 (15 October 2026). The tested app version (App Store, 1 September 2026) contains 4.15.3; before that date Superwall had also released 4.15.4, 4.16.1, 4.16.2 and 4.16.3.
+
+<Note>**R** / 16 Oct 2026</Note>
+
+R (16 October 2026): "This cannot currently be turned off by the user. […] External data collection does not mean another third party or similar, it just refers to the events we post-back."
+
+<Note>**I**</Note>
+
+Paywalls can be triggered at the places named `database-unlock` and `Settings`, that is after a database is opened, but only for users without an active entitlement, and the app's public code does not register the triggers `database-unlock` and `retention-discount` (3.11). The description of the option agrees with the SDK code and documentation; the app uses neither this option nor the other limiting options (3.10), and the question whether the vendor considered the available restrictions on event collection was not answered.
+
+<div id="finding-4" class="anchor"></div>
+
+## 3.8 A displayed paywall, and a trigger after an unlock
+
+*One paywall was shown in 24 starts; one event after an unlock most likely followed a tap on a banner.*
+
+<Note>**F**</Note>
+
+On C (first launch, 8 October), 22 s after `app_install`, the app sent `Onboarding`, `trigger_fire` (result `present`), `paywall_open`, `paywall_page_view`; after 9 s, `paywall_decline` and `paywall_close`. Authors' account: the paywall was closed by the user. The only paywall in 24 starts. On B in T3, cycle 3, after the database was unlocked the app sent the event `Nudge`; the configuration returned a decision to display a paywall (`trigger_fire`, `$result = present`); no display event was recorded. The published `T3.pub.har` ends with the `Nudge` request (the recording continued for about 3 min, authors' account); in T3 only one `app_close` was recorded for three cycles. H: events still queued at the end of the recording were not sent, so the missing display event cannot be told apart from an unsent one. Authors' account: the user did not observe a paywall. F: in all 79 `app_open`/`app_close` events (9 files with content) the parameters are only `$app_session_id`, `$event_name`, `$is_standard_event` and `event_name`.
+
+<ExhibitRef n={10} label="the Nudge sequence after an unlock" />
+
+<Note>**D** / D15</Note>
+
+D15 (representative of the vendor): wording in 3.12.
+
+<Note>**R** / 14 Oct 2026</Note>
+
+R (14 October 2026): "we can trigger a paywall on app launch, which we do for sales, or when someone taps our "nudge" banner that says they could get better experiences with PRO. We've purposefully ensured we're not sending events with the database unlocked." I: the last sentence agrees with the data for the app's own events (none in the 6 unlocks apart from `Nudge`); the SDK's lifecycle events `app_open` and `app_close` were sent on C while a database was unlocked (section 4, item 2).
+
+<Note>**R** / 16 Oct 2026</Note>
+
+R (16 October 2026), on `app_open` and `app_close` with a database unlocked: "We believe so, yes. […] It does not contain any database information, or that the database is opened […]".
+
+<Note>**I**</Note>
+
+`Nudge`, sent after a database is opened, is in Superwall's vocabulary a place where a paywall can appear; in the app's public code (1.65.0) it is called after a tap on the "Upgrade to Pro" banner on the database list (3.11), and a tap on the banner in T3 cannot be ruled out (authors' account, 10 October), so the observation most likely reflects a user action, not the unlock itself; the missing display event remains unexplained. The content of the lifecycle events agrees with the statement; the events reveal when the app is entered and left, not the state of the database.
+
+<div id="finding-10" class="anchor"></div>
+
+<div id="finding-7" class="anchor"></div>
+
+## 3.9 The App Store privacy label and Apple's definitions
+
+*The App Store label lists one data type; the traffic contains data matching three of Apple's other definitions.*
+
+<Note>**F**</Note>
+
+The label (D13, snapshots of 8, 9, 10 and 18 October 2026) contains one data type, "Purchases", in the category "Data Not Linked to You"; the subtype "Purchase History" and the purpose "Analytics" are visible in the snapshot of 10 October 2026 from the App Store app on macOS and in the archived HTML of the Polish page of 9 October (the web pages show only the type without expanding "See Details"). No other types or purposes.
+
+<ExhibitRef n={11} label="the label beside Apple's data types, and its history" />
+
+<Note>**D** / history of the label</Note>
+
+D (history of the label, Wayback Machine snapshots): 22 April 2025 "Data Not Collected" (the archived page may have been out of date); 4 September 2025 "Data Not Linked to You: Purchases"; from 8 January 2026 to 7 October 2026 the state described above. I: the label changed between 22 April and 4 September 2025; RevenueCat was added within that interval (1.60.39, 12 May 2025); after Superwall and crash reporting were added (1.64.0, 26 January 2026) there is no change in the snapshots; on 18 October 2026 the label was unchanged (authors' snapshots of the US and Polish listings).
+
+<Note>**D** / D19</Note>
+
+D19 (Apple, "App privacy details on the App Store"): "You need to identify all of the data you or your third-party partners collect, unless the data meets all of the criteria for optional disclosure", with the types Device ID ("other device-level ID"), Coarse Location ("with lower resolution than a latitude and longitude with three or more decimal places") and Product Interaction ("app launches, taps, clicks, scrolling information"). D20 (Superwall, "App Privacy Nutrition Labels"): the minimum for an app with Superwall is "Purchases" with the purposes "Analytics" and "App Functionality"; RevenueCat's guidance requires the same. Neither names Device ID (apart from advertising identifiers), Coarse Location or Product Interaction; RevenueCat's guidance makes Usage Data (which includes Product Interaction) conditional on the use of an analytics SDK; whether Superwall counts as one is a matter of interpretation.
+
+<Note>**R** / 14 and 16 Oct 2026</Note>
+
+R (14 October 2026): "We updated the app’s privacy labels on the app store". R (16 October 2026): "When we added these, we checked the guidance from the various providers to see what they reccomended to add."; "we updated these when we added RevenueCat to the app."
+
+<Note>**I**</Note>
+
+The traffic contains data that match Apple's definitions of Device ID (the IDFV to both services on every start), Coarse Location (city and region derived from the IP address) and Product Interaction (launch, session and paywall events), none of them declared; collection occurs on every start and without an option for the user, so the condition "infrequent cases […] optional for the user" is not met, while whether the remaining conditions of Apple's exemptions apply, and whether the data are in fact linked to identity on the services' side, the authors do not decide. The history of the label is consistent with the reply; the reply does not address the three data types in Apple's definitions.
+
+<div id="finding-6" class="anchor"></div>
+
+## 3.10 The options of both SDKs and the "most limited state"
+
+*Within what the app controls, no limiting option is used; most of the traffic has no switch in these SDK versions.*
+
+<Note>**F/D**</Note>
+
+Superwall: limiting options available and unused: `isExternalDataCollectionEnabled` (partial effect, 3.7), `paywalls.shouldPreload` (would remove paywall preloading and about 35 of the 41–73 events per start), `shouldBypassAppTransactionCheck` (would remove `$appTransactionId`; described in the SDK changelog as "useful in testing environments"); expanding options: none enabled; no switch in the SDK: `enrich` with location and demand score, `device_attributes`, IDFV, lifecycle events. RevenueCat: the limiting settings are the defaults; expanding settings enabled by the app: the AdServices token (3.4) and, on every first launch, one restore and two purchase syncs.
+
+<ExhibitRef n={12} label="the options of both SDKs, as the traffic shows them" />
+
+<Note>**I**</Note>
+
+Within what depends on the app, no limiting option is used and two expanding ones are enabled; most of the observed traffic, however, has no switch on the app's side in these SDK versions. Settings on the services' dashboards are beyond the reach of this method.
+
+## 3.11 The app's public code
+
+*The public code configures both SDKs with defaults, apart from the StoreKit version, and is incomplete.*
+
+<Note>**F**</Note>
+
+The vendor's repository (last commit 17 July 2026 labelled "1.65.0") has no tags, no Xcode project and no package version file; the class that initialises RevenueCat is absent. `SuperwallOptions()` with one change (`storeKitVersion = .storeKit1`); no `identify()` and no calls setting user attributes; the app registers three placements: `Onboarding`, `Settings` and `Nudge` (after a tap on the "Upgrade to Pro" banner on the database list); the App Tracking Transparency framework is absent.
+
+<Note>**R** / 16 Oct 2026</Note>
+
+R (16 October 2026): "This is slightly behind, but most code is visible. Only small commercially sensitive elements are omitted […]".
+
+<Note>**I**</Note>
+
+The triggers `database-unlock` and `retention-discount` from the configuration are not registered by the 1.65.0 code, so they cannot fire in it, and the configuration of both SDKs in the code is limited to the StoreKit version. The tested binary is 1.65.2; conclusions from the code concern the 1.65.0 state; the omitted files include the one that passes the RevenueCat API key and enables the AdServices token (3.4).
+
+## 3.12 Declarations and findings after the vendor's changes of October 2026
+
+<Note>**Full report, 3.12**</Note>
+
+The ledger at the head of this page sets the declarations of 8 October 2026 against the findings; this table adds, for each declaration, the state after the document changes (by 16 October 2026) and the reply of 16 October 2026.
+
+<div class="scroll" tabindex="0" role="region" aria-label="Declarations before and after the changes, scrolls horizontally">
+<table>
+<thead><tr><th scope="col">Declaration</th><th scope="col">Assessment</th><th scope="col">State at the time of the study (documents of 8 October 2026)</th><th scope="col">After the document changes (by 16 October 2026) and the reply of 16 October 2026</th></tr></thead>
+<tbody>
+<tr><td>D1 "does not use vendors or analytics providers"</td><td>differs from the wording</td><td>differs from the wording (3.1, 3.2)</td><td>the new version names RevenueCat and Superwall; the discrepancy no longer applies (3.1)</td></tr>
+<tr><td>D16 "The only addition is lifecycle events for the paywall itself"</td><td>differs from the wording</td><td>differs from the wording (3.2)</td><td>post as of 9 October 2026; the new policy describes a wider scope (3.2)</td></tr>
+<tr><td>D4–D8 list of connections</td><td>differs from the wording</td><td>did not cover RevenueCat, Superwall, Google Fonts, Stripe</td><td>the new version names RevenueCat, Superwall, Sentry and "third-party hosting and content services"; Google Fonts and Stripe are not named (3.1, 3.6)</td></tr>
+<tr><td>D1 "does not use or collect any data related to your geographic location"</td><td>open to interpretation</td><td>depends on how the location derived from the IP address is classified (3.5)</td><td>the new version: "may derive approximate location from your IP address"; the question of classification no longer arises (3.5)</td></tr>
+<tr><td>D16 "This is only in the free app"</td><td>open to interpretation</td><td>refers to the in-app-purchase variant, which includes paying subscribers; the flow on A with an active subscription is the same as on B and C (3.1, 3.2; "What agrees", item 3)</td><td>the new policy: "This integration can run even when you already have an active Pro subscription" (3.1)</td></tr>
+<tr><td>D16 "no further manually tracked events", "before any databases are opened"; D15 (interview) "nothing like this is allowed to be after the database is opened" (paywalls, purchase syncing)</td><td>open to interpretation</td><td>one observation, most likely triggered by the user (banner, 3.8); otherwise agrees ("What agrees", item 2)</td><td>R: lifecycle events with a database unlocked are covered by the assurance, without database data; agrees with the content of the events (3.8)</td></tr>
+<tr><td>D15 (interview) "we don't have any identifiers that we track"</td><td>open to interpretation</td><td>device and account identifiers are sent (3.3); whether the vendor reads them cannot be determined with this method</td><td>the new policy: "may process device identifiers […] does not make this information anonymous" (3.3)</td></tr>
+<tr><td>D15 (interview) "most limited state"</td><td>open to interpretation</td><td>the vendor's assessment; in the app's code no limiting option is set, three available ones are unused, two expanding ones are enabled; most of the traffic has no switch in these SDK versions (3.10, 3.11)</td><td>R: the user currently cannot turn the event collection off; the question about considering the restrictions was not answered (3.7)</td></tr>
+<tr><td>D15 (interview) "we haven't added analytics"</td><td>open to interpretation</td><td>depends on the definition; the App Store label itself declares the purpose "Analytics" (3.9); session and paywall events go to Superwall, as does <code>demandScore</code>, computed according to the documentation from the number of app opens and paywall views (3.2, 3.5)</td><td>the new policy: heading "Upgrade screens and related analytics", "measure their performance"; R: the events are used to report paywall conversions (3.2)</td></tr>
+<tr><td>D8 "None of these connections send any of your databases or personal identifying information"</td><td>open to interpretation</td><td>depends on how the IDFV, <code>appTransactionId</code> and the location derived from the IP address are classified (3.3, 3.5)</td><td>the new versions name device identifiers and the location derived from the IP address (3.3, 3.5)</td></tr>
+<tr><td>D9 "exact same information … as … Apple"</td><td>open to interpretation</td><td>depends on interpretation (3.3, 3.4)</td><td>release notes unchanged</td></tr>
+<tr><td>D13 label "Purchases / Purchase History", purpose "Analytics"</td><td>open to interpretation</td><td>does not contain the types that match Apple's definitions of Device ID, Coarse Location and Product Interaction (3.9)</td><td>unchanged since 8 January 2026, including after Superwall was added (Wayback up to 7 October 2026) and in the snapshots of 18 October 2026; the new policy describes data the label does not list (3.9)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div id="finding-12" class="anchor"></div>
+
+<div id="finding-13" class="anchor"></div>
+
+<div id="finding-14" class="anchor"></div>
+
+<div id="finding-15" class="anchor"></div>
+
+## 4. What agrees with the declarations
+
+<Note>**F / I / H** / full report, 4</Note>
+
+1. **Sentry.** Requests to `*.ingest.us.sentry.io` occur only in the four captures with Proxyman for iOS (A0, S02, S17, S18; in S17 and S18 the `release` field names the Proxyman for iOS bundle, F; for A0 and S02 this is an inference, I) and not in the captures without Proxyman (T1, T2). The Sentry entries are not in the published HAR files (out-of-scope hosts). DNS queries for `sentry.io` without any TLS connection (S01 1, S02 3, S11b 1) are of unestablished origin. Agrees with D11 and D16 within the scope examined (no crashes during the tests); on a fresh installation crash reporting is on by default (R, 16 October 2026; new policy).
+2. **Working with a database.** In the 6 database unlocks no event with a database-related name was sent; on C, between creating the database and locking it, only `app_close` and `app_open` went to Superwall. Exception: `Nudge`, 3.8.
+3. **Paywall rules** require no active entitlement; device A, with an active subscription, received no decision to display a paywall in any of its 11 starts with recorded content. The data flow to Superwall on A is the same as on B and C (3.1, 3.2) and, for a user with an active entitlement, serves no function visible to that user; H: default SDK behaviour independent of the subscription status. The vendor explains paywall preloading by a possible loss of entitlement while the app is running (R, 16 October 2026, 3.6).
+4. **Favicons** (S18): connections to `icons.duckduckgo.com` and to the hosts from the entries' addresses only after the option was switched on; agrees with D6.
+5. **Connectivity test** `duckduckgo.com`: on A, and in S01 on B, a DNS query when the app comes to the foreground, no content sent; agrees with D5.
+6. **No connections to HIBP or SimpleLogin** with the options off (not tested with them on).
+7. **No IDFA (Identifier for Advertisers)** in requests and no identifying cookies; according to the SDK code and the app's public code, the app does not ask for ATT consent at all (3.4).
+8. **App closed** (T1, 5 min): no DNS queries or connections to the RevenueCat, Superwall or paywall resource hosts.
+9. **Both providers were named publicly by the vendor** before the study: RevenueCat in the release notes for 1.60.39 (D9, 12 May 2025), Superwall in post D16 (26 January 2026), both in interview D15 (1 August 2026).
+10. **The App Store receipt** sent to RevenueCat matched the item "App Store Receipt" in article D4 as to the kind of data; the difference was the recipient.
+11. **No user identification and no custom attributes** in either SDK: an anonymous RevenueCat identifier, a Superwall alias, no `identify()` and no subscriber attributes in the traffic or in the public code.
+12. **The vendor's replies** agree with the traffic, the public code and the documents on the points marked R in 3.1–3.11; the reply of 14 October acknowledges that the privacy policy and the website articles were out of date.
+13. **The new versions of the privacy policy and the article** describe both providers, device identifiers, app-usage events, approximate location derived from the IP address, an estimate of purchase likelihood, Apple Ads attribution, operation with an active subscription and crash reporting on by default; they do not name Google Fonts, Stripe or `$appTransactionId`.
+
+
+
+
+
+## 5. Limits of this study
+
+<Note>**Full report, 5**</Note>
+
+- The HAR is not complete: the packet capture shows TLS connections on starts for which the HAR has no entries; claims of absence rest on the packet capture or are marked as such. Exports with a domain filter (A0, S02, S18) contain only selected hosts; no packet capture for A5, A8 and C8, so claims that something is absent in these runs rest on the HAR alone.
+- HTTP/2 coalescing in T2 (both host names sharing one connection) is a hypothesis, not confirmed by content; in T3 (with Proxyman) and T2 (without) the captures differ in the set of visible connections, so the presence of a proxy may change the app's behaviour or the capture.
+- Region of device B: a region code different from that of A and C, the same with and without the VPN; cause not established; no effect on the findings. Single observations: `Nudge` (1×), the paywall on C (1×), `POST …/redeem` (5×, a Superwall request on first launches and in S18).
+- Shifted timestamps in the published files prevent comparisons of times between files and with the correspondence.
+- Our own correction: in the first letter to the vendor (2 October) the authors wrongly attributed the Sentry traffic to the app; it came from Proxyman for iOS. Corrected on 8 October (section 6).
+- Sample: 3 devices, 24 starts, 6 unlocks, 4 test days (1, 3, 5 and 8 October); tests without the HIBP, SimpleLogin and sync options active; the content of the connections to `m.stripe.com`, `m.stripe.network`, favicons and Apple hosts was not decrypted.
+- The vendor's public code is two patch versions older than the tested binary and incomplete; every "not in the code" means "not in the public code of 1.65.0". Agreement of the repository with the binary was not checked.
+- What cannot be established from these data:
+  - whether the vendor reads the identifiers and the location in the services' dashboards;
+  - whether the vendor switched individual functions on deliberately (apart from the AdServices token);
+  - what the services do with the data on their side;
+  - whether the data of both services are combined;
+  - how Strongbox Pro and Zero (according to the vendor, without Superwall and RevenueCat, R, 16 October 2026; the public code contains a RevenueCat initialisation for the Pro bundle under a build flag, 3.11) and the macOS version behave;
+  - why, apart from paywall preloading and the lifecycle events (explained by the vendor, 3.6, 3.8), the device profile and `enrich` go to Superwall for a subscriber with an active entitlement.
+- The vendor's statements of purpose cannot be verified with this method; they are quoted in full in the full report, section 6.
+
+## 6. Correspondence with the vendor
+
+<Note>**Full report, 6**</Note>
+
+- **2 October 2026, 09:50 CEST (07:50 UTC):** the authors sent the vendor 19 questions in five groups ([Correspondence](/publications/strongbox-ios-network-traffic/correspondence/)). The questions are not numbered in the message; this report numbers them in order: A 1–7, B 8–9, C 10–12, D 13–17, E 18–19.
+- **5 October 2026, 17:36 CEST (15:36 UTC) and 19:41 CEST (17:41 UTC):** two messages from Alex @ Strongbox announcing a full reply and an update of the privacy policy, and asking where the report would be published. In between, at 19:22 CEST (17:22 UTC), the authors wrote that they would wait for a response until 8 October 2026.
+- **8 October 2026, 16:13 CEST (14:13 UTC):** the authors wrote that they would publish the report in the Strongbox community on Reddit.
+- **8 October 2026, 23:46 CEST (21:46 UTC):** the authors sent corrections (the Sentry traffic came from the authors' tool, questions 10 and 12 withdrawn; three devices; scope) and further observations, set the reply deadline at 15 October 2026, 23:59 CEST (21:59 UTC; written as "CET" in the message; the authors meant Polish time, which in October is CEST), and undertook to send the address of the publication before it appears.
+- **14 October 2026, 18:49 CEST (16:49 UTC):** the vendor's reply, signed "Alex", printed in full on the [Correspondence](/publications/strongbox-ios-network-traffic/correspondence/) page. The vendor replied in broad strokes rather than to the 19 questions individually and offered clarifications on request. Eleven questions were not addressed; they were re-sent on 14 October (next entry), and the state after the second reply is given under 16 October. Answered in part: the release notes for 1.60.39 (8; the purpose of the token is given, the wording "the exact same information" is not addressed), combining of data (9; the vendor speaks for itself, not for RevenueCat and Superwall), the completeness and last update of the article on connections (15; "Some articles on the website are outdated").
+- **14 October 2026, 20:29 CEST (18:29 UTC):** the authors re-sent the 11 unanswered questions (1, 3, 4, 6, 7, 11, 14, 16, 17, 18, 19; in 14, 17 and 19 without the references to the crash reporting provider, after the corrections of 8 October), with two questions about the reply (when the label was updated and what it contained before; which release note mentions Superwall) and one clarification (SDK lifecycle events sent with a database unlocked).
+- **16 October 2026, 12:37 CEST (10:37 UTC),** after the deadline of 15 October 2026, 23:59 CEST (21:59 UTC), set on 8 October, and before publication: the vendor's second reply, signed "Alex", with a short answer under each question, printed in full on the [Correspondence](/publications/strongbox-ios-network-traffic/correspondence/) page together with the questions it answers. Still not addressed: the countries data is transferred to (17), the macOS version (18; the answer covers Strongbox Pro and Zero), whether the available restrictions on event collection were considered (6, first part), the earlier content of the App Store label; on the data types in 3.9 (16) the answer is general; on "does not collect any of your data" (14) the answer ("We have updated the policy with clearer wording") does not say whether the data were within the scope of the statement. Not re-asked on 14 October and not answered: the legal basis (2, second part) and whether the list of connections was meant to be complete and when it was last updated (15).
+- After the questions were sent, the vendor changed the privacy policy ("Last Update: 15 October 2026") and rewrote the article "What Network Connections Can Strongbox Make?" (changed between 14 and 16 October 2026 according to the authors' account; accessed 16 October 2026). The sections above set the traffic against both versions.
+- **19 October 2026, 23:00 CEST (21:00 UTC):** the authors sent the vendor the address of this publication (message 10 in the correspondence file). The publication was online at that address from the same day, with access restricted to the vendor's e-mail domain; public access from 21 October 2026, 07:00 CEST (05:00 UTC).
+
+The whole thread, without the senders’ e-mail addresses, is printed message by message on the [Correspondence](/publications/strongbox-ios-network-traffic/correspondence/) page and is among the files on record (`correspondence/`).
+
+<ReplyTeaser {...props.teaser} />
+
+## Epilogue
+
+<Note>**Authors**</Note>
+
+*This epilogue describes the authors' opinions and impressions.*
+
+Despite the unpleasant origin of the whole matter, we are very glad about its outcome: the privacy policy and the documentation on network connections have been updated.
+
+On 13 March 2025 the Strongbox website announced that Strongbox had joined Applause (<a href="https://web.archive.org/web/20261016232547/https://strongboxsafe.com/strongbox-joins-applause/" rel="noopener noreferrer">announcement of 13 March 2025, Wayback Machine</a>; EP1: [text](/files/strongbox-ios-network-traffic/v1/sources/EP1_strongbox-joins-applause_strongboxsafe.com_wayback-20261016232547.txt), [PDF](/files/strongbox-ios-network-traffic/v1/sources/EP1_strongbox-joins-applause_strongboxsafe.com_wayback-20261016232547.pdf)). Until 15 October 2026 the privacy policy in force was the one dated 9 May 2024, although RevenueCat had been in the app since May 2025 and Superwall since January 2026 (3.1). A representative of the vendor wrote on 14 October 2026 ([Correspondence](/publications/strongbox-ios-network-traffic/correspondence/)): "First, the privacy policy update is simply a mistake on our end. We updated the app’s privacy labels on the app store, and made sure any changes were clearly communicated in our Launch posts & release notes, but we didn’t push an update to the policy." This is not fully consistent with what we found: Superwall was named in a launch post on Reddit (D16) and in an interview (D15), but in no release note, as the vendor confirmed on 16 October 2026 ([Correspondence](/publications/strongbox-ios-network-traffic/correspondence/)); and the App Store label did not change after Superwall was added (3.9). Even so, we have no grounds to attribute insincere intentions to the vendor. We are only human too, and only those who do nothing make no mistakes.
+
+We will keep using Strongbox, because in our opinion there is no better KeePass client for iOS in terms of features, but only the Strongbox Zero version (according to the vendor it does not include these SDKs, [Correspondence](/publications/strongbox-ios-network-traffic/correspondence/); we did not study this version), because our trust in the vendor has probably been lost irreversibly.
+
+In our opinion, the sequence we observed (a change made first, documentation and explanation following after users asked) resembles an earlier case at Applause. Bartender 5.0.52 (May 2024) added the Amplitude analytics before Applause had announced that it had acquired the app; after users raised concerns, Applause apologised in June 2024 for the missing announcement and removed Amplitude in the next version, about three weeks after it was added.<sup id="epilogue-ref-1"><a href="#epilogue-note-1" aria-label="Note 1">1</a></sup> On the other hand, according to the vendor (14 October 2026, [Correspondence](/publications/strongbox-ios-network-traffic/correspondence/)), Strongbox Pro also used RevenueCat at first, "but we heard the community and switched it out for just talking straight to Apple again." The authors did not test Strongbox Pro; the public code still contains a RevenueCat initialisation for the Pro bundle behind a build flag whose state cannot be determined (3.11).
+
+Terms and conditions are meant to be read and verified.
+
+<p id="epilogue-note-1" class="epilogue-note"><a href="#epilogue-ref-1" aria-label="Back to text">1</a>. Applause, "Let's Try This Again", Bartender blog, 10 June 2024: <a href="https://web.archive.org/web/20261016232701/https://www.macbartender.com/B5blog/Lets-Try-This-Again/" rel="noopener noreferrer">Wayback Machine</a>; EP2: [text](/files/strongbox-ios-network-traffic/v1/sources/EP2_lets-try-this-again_macbartender.com_wayback-20261016232701.txt), [PDF](/files/strongbox-ios-network-traffic/v1/sources/EP2_lets-try-this-again_macbartender.com_wayback-20261016232701.pdf). Bartender 5 update feed, release dates of 5.0.52 (14 May 2024) and 5.0.53 (6 June 2024): <a href="https://web.archive.org/web/20251116051042/https://www.macbartender.com/B2/updates/AppcastB5.xml" rel="noopener noreferrer">Wayback Machine</a>; EP6: [text](/files/strongbox-ios-network-traffic/v1/sources/EP6_bartender-5-update-feed_macbartender.com_wayback-20251116051042.txt), [PDF](/files/strongbox-ios-network-traffic/v1/sources/EP6_bartender-5-update-feed_macbartender.com_wayback-20251116051042.pdf). Release notes of 5.0.53: <a href="https://web.archive.org/web/20250614191649/https://macbartender.com/B2/updates/5-0-53/rnotes.html" rel="noopener noreferrer">Wayback Machine</a>; EP7: [text](/files/strongbox-ios-network-traffic/v1/sources/EP7_bartender-5.0.53-release-notes_macbartender.com_wayback-20250614191649.txt), [PDF](/files/strongbox-ios-network-traffic/v1/sources/EP7_bartender-5.0.53-release-notes_macbartender.com_wayback-20250614191649.pdf). Release notes of 5.0.52, archived 18 May 2024: EP7a: <a href="https://web.archive.org/web/20240518170255/https://macbartender.com/B2/updates/5-0-52/rnotes.html" rel="noopener noreferrer">Wayback Machine</a>, [text](/files/strongbox-ios-network-traffic/v1/sources/EP7a_bartender-5.0.52-release-notes_macbartender.com_wayback-20240518170255.txt). A. Engst, "Bartender Developer Explains and Apologizes for Quiet Acquisition", TidBITS, 5 June 2024: <a href="https://web.archive.org/web/20261016232732/https://tidbits.com/2024/06/05/bartender-developer-explains-and-apologizes-for-quiet-acquisition/" rel="noopener noreferrer">Wayback Machine</a>; EP3: [text](/files/strongbox-ios-network-traffic/v1/sources/EP3_bartender-quiet-acquisition_tidbits.com_wayback-20261016232732.txt), [PDF](/files/strongbox-ios-network-traffic/v1/sources/EP3_bartender-quiet-acquisition_tidbits.com_wayback-20261016232732.pdf). Descriptions of the sources: [`sources/README.md`](/files/strongbox-ios-network-traffic/v1/sources/README.md). All accessed 17 October 2026.</p>
+
+## 7. Licence and contact
+
+<Note>**Full report, 7**</Note>
+
+Text and data: CC BY 4.0. Scripts: MIT. The history of the report's versions is in `CHANGELOG.md` among the files on record.
+
+Contact: <a class="addr" href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>.

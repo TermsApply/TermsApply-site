@@ -17,10 +17,11 @@
 /archive/*.txt
   Content-Type: text/plain; charset=utf-8
 
-# Files on record (the pseudonymised captures and scripts of a file): served as downloads, byte for
-# byte, with a long cache; the evidence page prints each file's SHA-256 as served.
+# Files on record (the pseudonymised captures and scripts of a file): served byte for byte, with a
+# long cache; the evidence page prints each file's SHA-256 as served. No Content-Disposition here:
+# a rule matches the request path, not the file, so it would also turn the 404 page for a missing
+# file into a download. The links on the evidence page carry the `download` attribute instead.
 /files/*
-  Content-Disposition: attachment
   Cache-Control: public, max-age=2592000
   X-Robots-Tag: noindex
 

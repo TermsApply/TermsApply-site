@@ -42,7 +42,8 @@ const PATTERNS = [
   ['home path (Linux)', /\/ho[m]e\/[A-Za-z0-9._-]+/],
   ['home path (Windows)', /C:\\+Us[e]rs/i],
   ['co-author trailer', /Co-Auth[o]red-By/i],
-  ['generator line', /Gener[a]ted with/i],
+  // word boundary: "regenerated with" in the authors' files is not a generator line
+  ['generator line', /\bGener[a]ted with/i],
   ['assistant name', /\bCl[a]ude\b|\bcl[a]ude\.(?:ai|com)\b/],
   ['vendor name', /Anthr[o]pic/i],
   ['vendor name', /Open[A]I/i],
@@ -97,7 +98,7 @@ const SVG_BAD = [
   ['SVG editor namespace', /inkscape|sodipodi|xmlns:dc\b|xmlns:cc\b|xmlns:rdf\b/i],
   ['SVG comment naming a program', /<!--[^]*?(?:generator|created with|inkscape|illustrator|sketch|figma|adobe|affinity|corel)[^]*?-->/i],
 ];
-const PDF_BAD = [['PDF author or producer', /\/(?:Author|Producer|Creator)\s*\(/], ['PDF XMP metadata', /<x:xmpmeta/]];
+const PDF_BAD = [['PDF author or producer', /\/(?:Author|Producer|Creator)\s*\(\s*[^\s)]/], ['PDF XMP metadata', /<x:xmpmeta/]];
 const JPG_BAD = [['JPEG EXIF', /Exif\0\0/], ['JPEG XMP metadata', /http:\/\/ns\.adobe\.com\/xap/]];
 
 function scanFile(abs, label) {

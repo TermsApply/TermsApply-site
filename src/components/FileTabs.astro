@@ -1,38 +1,40 @@
 ---
 /**
  * FileTabs: the mono tab row under the file bar on every address of one file (round 4):
- * "Story / Evidence / Reply / History".
+ * "Report / Document changes / Correspondence / Evidence / Reply / History".
  * The current address carries aria-current="page" and an ink underline; a part the file does not
- * have is left out (no Evidence without an evidence file, no Reply without a `reply` in the
- * frontmatter). Plain links, no script: each tab is its own page.
+ * have is left out (no Document changes without `documents`, no Correspondence without
+ * `correspondence`, no Evidence without an evidence file, no Reply without a `reply` or when the
+ * Correspondence prints it). Plain links, no script: each tab is its own page. On a phone the row
+ * wraps; nothing scrolls sideways.
  *
  * After the tabs, a small mono link "How to read this file" to /how-to-read/ (block B): in the tab
  * row, right-aligned, from 48rem; on a phone on its own line under the row's hairline, right-aligned,
  * so the current tab's underline always sits on the hairline. It is not a tab: sentence case, ink-2.
  *
  * Props:
- *   collection  'investigations'
- *   slug        the file's slug
- *   current     'story' | 'evidence' | 'reply' | 'history'
- *   evidence    the file has an evidence page (default false)
- *   reply       the file has a reply page (default false)
- *   history     the file has a history page (default true)
+ *   collection      'investigations'
+ *   slug            the file's slug
+ *   current         'story' | 'documents' | 'correspondence' | 'evidence' | 'reply' | 'history'
+ *   parts           which parts the file has: filePartsOf() in src/lib/cases.ts
+ *   history         the file has a history page (default true)
  */
-import { fileHref, type FileCollection, type FilePart } from '../lib/cases';
+import { fileHref, type FileCollection, type FilePart, type filePartsOf } from '../lib/cases';
 
 interface Props {
   collection: FileCollection;
   slug: string;
   current: FilePart;
-  evidence?: boolean;
-  reply?: boolean;
+  parts: ReturnType<typeof filePartsOf>;
   history?: boolean;
 }
-const { collection, slug, current, evidence = false, reply = false, history = true } = Astro.props;
+const { collection, slug, current, parts, history = true } = Astro.props;
 const tabs: { part: FilePart; label: string }[] = [
-  { part: 'story', label: 'Story' },
-  ...(evidence ? [{ part: 'evidence' as const, label: 'Evidence' }] : []),
-  ...(reply ? [{ part: 'reply' as const, label: 'Reply' }] : []),
+  { part: 'story', label: 'Report' },
+  ...(parts.documents ? [{ part: 'documents' as const, label: 'Document changes' }] : []),
+  ...(parts.correspondence ? [{ part: 'correspondence' as const, label: 'Correspondence' }] : []),
+  ...(parts.evidence ? [{ part: 'evidence' as const, label: 'Evidence' }] : []),
+  ...(parts.reply ? [{ part: 'reply' as const, label: 'Reply' }] : []),
   ...(history ? [{ part: 'history' as const, label: 'History' }] : []),
 ];
 ---

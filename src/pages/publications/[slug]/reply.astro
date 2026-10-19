@@ -12,11 +12,12 @@ import Base from '../../../layouts/Base.astro';
 import FileHeader from '../../../components/FileHeader.astro';
 import FileTabs from '../../../components/FileTabs.astro';
 import CompanyReply from '../../../components/CompanyReply.astro';
-import { fileHref, fileRefOf, getEvidence, getInvestigations, replyOg, replyStatus } from '../../../lib/cases';
+import { fileHref, fileRefOf, getEvidence, getInvestigations, replyOg, replyStatus, filePartsOf, publishedOf, revOf, barRefOf } from '../../../lib/cases';
 import { long } from '../../../lib/format';
 
 export async function getStaticPaths() {
-  const entries = (await getInvestigations()).filter((e) => e.data.reply);
+  // A file with a correspondence prints the reply there, on its Correspondence page, and has no Reply page.
+  const entries = (await getInvestigations()).filter((e) => e.data.reply && e.data.correspondence.length === 0);
   return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
@@ -36,17 +37,17 @@ const description =
     ? `${name} declined to comment on file ${d.fileNo}. Its reply of ${long(reply.date)}${furtherText}, in full, and our note.`
     : `${name}’s reply to file ${d.fileNo}, received ${long(reply.date)}${furtherText}, printed in full, and our note on what it addresses.`;
 ---
-<Base title={`Reply / ${d.title}`} description={description} type="article" published={d.date} fileRef={fileRefOf(d, 'reply')} og={replyOg(reply, name, d.replyNote, d.title)}>
+<Base title={`Reply / ${d.title}`} description={description} type="article" published={publishedOf(d)} fileRef={fileRefOf(d, 'reply')} og={replyOg(reply, name, d.replyNote, d.title)}>
   <div class="wrap">
     <article aria-labelledby="part-title">
       <FileHeader
-        fileNo={d.fileNo}
-        rev={d.revised ?? d.date}
+        ref={barRefOf(d)}
+        rev={revOf(d)}
         side={`PUBLICATIONS / ${name.toUpperCase()}`}
         category={d.category}
         fields={[]}
       />
-      <FileTabs collection="investigations" slug={entry.id} current="reply" evidence={Boolean(evidence)} reply />
+      <FileTabs collection="investigations" slug={entry.id} current="reply" parts={filePartsOf(d, Boolean(evidence))} />
 
       <div class="art-head part-head">
         <p class="part-head__over"><a href={story}>{d.title}</a></p>
@@ -59,9 +60,9 @@ const description =
         serviceName={name}
         asked={d.companyAsked}
         note={d.replyNote}
-        status={status.kind}
+        status={status.kind === 'declined' ? 'declined' : 'replied'}
       />
-      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the story</span></a></p>
+      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the report</span></a></p>
     </article>
   </div>
 </Base>

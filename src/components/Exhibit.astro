@@ -45,6 +45,8 @@ interface Image {
 }
 interface Props {
   n: number | string;
+  /** The word before the number: "Exhibit" (default); "Figure" for a drawing that is not one of a file's exhibits (service profile). */
+  term?: string;
   caption: string;
   meta?: string;
   log?: string;
@@ -55,7 +57,7 @@ interface Props {
   redactions?: string;
   id?: string;
 }
-const { n, caption, meta, log, logLabel = 'Request log, scrolls horizontally', shot, image, eager = false, redactions, id = exhibitId(n) } = Astro.props;
+const { n, term = 'Exhibit', caption, meta, log, logLabel = 'Request log, scrolls horizontally', shot, image, eager = false, redactions, id = exhibitId(n) } = Astro.props;
 if (image && !image.alt.trim()) throw new Error(`Exhibit ${n}: an image needs alt text`);
 const capId = `${id}-cap`;
 
@@ -95,7 +97,7 @@ const lines = log ? log.replace(/^\n+|\s+$/g, '').split('\n').map(parseLine) : [
   {image && <img class="exhibit__img" src={image.src} alt={image.alt} width={image.width} height={image.height} loading={eager ? 'eager' : 'lazy'} decoding="async" />}
   <slot />
   <figcaption class="exhibit__cap" id={capId}>
-    <span class="t"><b>Exhibit {n}</b> / {caption}</span>
+    <span class="t"><b>{term} {n}</b> / {caption}</span>
     {meta && <span>{meta}</span>}
     {redactions && <span class="exhibit__red">Redactions: {redactions}</span>}
   </figcaption>

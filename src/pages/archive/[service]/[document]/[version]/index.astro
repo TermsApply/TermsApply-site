@@ -38,7 +38,8 @@ const fields: FileField[] = [
   { label: 'Document', value: p.document, sub: `${p.words.toLocaleString('en-GB')} words` },
   { label: 'Version', value: p.version, sub: p.effective ? ['effective ', p.effective] : 'effective date not stated' },
   { label: 'Retrieved', value: p.retrieved, sub: 'as retrieved on this date' },
-  { label: 'Source', value: p.sourceUrl ?? 'not recorded', sub: p.sourceUrl ? 'as text: this site links to no other host' : undefined },
+  ...(p.entry.data.textFrom ? [{ label: 'Text from', value: p.entry.data.textFrom } as FileField] : []),
+  { label: 'Source', value: p.sourceUrl ?? 'not recorded', sub: p.sourceUrl ? 'as text: this site links to no company’s site' : undefined },
   { label: 'Plain text', value: p.textFile, sub: `${p.bytes.length.toLocaleString('en-GB')} bytes, UTF-8, unchanged`, href: p.txtHref },
   { label: 'SHA-256', value: p.sha256, sub: 'of the plain-text file, checked at every build' },
 ];

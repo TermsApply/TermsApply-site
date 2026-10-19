@@ -1,0 +1,31 @@
+---
+/**
+ * InOneMinute: the ruled "In one minute" box at the head of a story, a short list of the main
+ * findings, each with the sections it rests on. Same frame as ForReaders (.box), set as .minute.
+ * Each item is our text through Inline (`backticked` names as code); a reference written as
+ * [3.1](#anchor) becomes a link to that place on the page. Nothing else is interpreted.
+ *
+ * Props: items: string[], title (default "In one minute"), id (default "in-one-minute")
+ */
+import Inline from './Inline.astro';
+interface Props {
+  items: string[];
+  title?: string;
+  id?: string;
+}
+const { items, title = 'In one minute', id = 'in-one-minute' } = Astro.props;
+// Split an item into plain parts and [label](#anchor) links; only in-page anchors are allowed.
+const parts = (text: string) =>
+  text.split(/(\[[^\]\n]+\]\(#[^)\s]+\))/).map((p) => {
+    const m = p.match(/^\[([^\]]+)\]\((#[^)]+)\)$/);
+    return m ? { label: m[1], href: m[2] } : { text: p };
+  });
+---
+<aside class="box minute" aria-labelledby={id}>
+  <h2 id={id} class="label">{title}</h2>
+  <ul>
+    {items.map((i) => (
+      <li>{parts(i).map((p) => ('href' in p ? <a href={p.href}>{p.label}</a> : <Inline text={p.text!} />))}</li>
+    ))}
+  </ul>
+</aside>

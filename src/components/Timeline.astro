@@ -26,8 +26,11 @@ const maxLines = Math.max(0, ...points.map((p) => p.lines?.length ?? 0));
 /* Wide: the axis runs left to right at y = AX; titles above, lines below, the span under them. */
 const W = 760;
 const AX = 60;
-const L = 40;
-const R = 700;
+// The first and last points are centred on their ticks: move them in far enough that their longest
+// title or line stays inside the drawing (Plex Mono advance = 0.6em; titles 13, lines 12).
+const half = (p?: Point) => (p ? Math.max(p.title.length * 13, ...(p.lines ?? []).map((t) => t.length * 12)) * 0.3 + 6 : 0);
+const L = Math.max(40, Math.ceil(half(points[0])));
+const R = Math.min(700, Math.floor(W - half(points[points.length - 1])));
 const step = points.length > 1 ? (R - L) / (points.length - 1) : 0;
 const px = (i: number) => +(L + i * step).toFixed(1);
 const linesBottom = AX + 22 + maxLines * 16;

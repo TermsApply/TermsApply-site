@@ -68,12 +68,16 @@ for (const e of inv) {
   if (prev) addVersion(prev[1], new Date(`${prev[2]}T00:00:00Z`));
   else if (e.data.policyPrev) addVersion(e.data.policyPrev.trim());
 }
-for (const p of archived) addVersion(p.version, p.effective);
+// Only the privacy policy's own versions count here: other archived documents of the service
+// (support articles, release notes) have versions of their own and are listed under "Policy
+// versions on file", not as policy versions.
+for (const p of archived.filter((x) => x.document.toLowerCase() === 'privacy policy')) addVersion(p.version, p.effective);
 const known = [...versions].sort(([a], [b]) => b.localeCompare(a, 'en', { numeric: true }));
 const [current, ...earlier] = known;
+// A version named by its own date ("2024-05-09") is printed once, as the date.
 const earlierPart: Part = earlier.flatMap(([v, d], i) => [
   ...(i > 0 ? ['; '] : []),
-  ...(d ? [`${v}, `, d] : [v]),
+  ...(d ? (v === iso(d) ? [d] : [`${v}, `, d]) : [v]),
 ]);
 
 const newestFile = files[0]?.date;
@@ -84,7 +88,7 @@ const fields: FileField[] = [
   { label: 'Service', value: s.name, sub: s.kind },
   { label: 'Platforms', value: s.platforms.join(', ') },
   current
-    ? { label: 'Policy', value: current[1] ? [`${current[0]}, eff. `, current[1]] : current[0], sub: 'newest version on file' }
+    ? { label: 'Policy', value: current[1] ? (current[0] === iso(current[1]) ? ['eff. ', current[1]] : [`${current[0]}, eff. `, current[1]]) : current[0], sub: 'newest version on file' }
     : { label: 'Policy', value: 'not yet read' },
   { label: 'Earlier versions', value: earlier.length ? earlierPart : 'none on file' },
   { label: 'Files', value: plural(files.length, 'file', 'files'), sub: newestFile ? ['newest ', newestFile] : undefined },
@@ -253,6 +257,7 @@ const og: OgInput = declared.length > 0
       <div class="svc-flow">
         <Exhibit
           n={1}
+          term="Figure"
           id="data-flow"
           caption={`where data from ${s.name} goes. Solid line: disclosed in the policy. Dashed line: not named in the policy.`}
           meta="drawn from the table above"

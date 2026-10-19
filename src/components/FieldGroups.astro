@@ -1,0 +1,33 @@
+---
+/**
+ * FieldGroups: names seen in an app's traffic, grouped, as ruled rows: the group in the left column
+ * (our words), the names on the right in mono on a tone of paper, as they appear in the traffic.
+ * For lists such as the fields of one event. Wraps at any width; no horizontal scroll.
+ *
+ * Props:
+ *   groups  [{ label, names: string[], note? }]; `note` is our words under the names
+ *   label   accessible name of the list
+ */
+import Inline from './Inline.astro';
+interface Group {
+  label: string;
+  names: string[];
+  note?: string;
+}
+interface Props {
+  groups: Group[];
+  label?: string;
+}
+const { groups, label } = Astro.props;
+---
+<dl class="fields" aria-label={label}>
+  {groups.map((g) => (
+    <div class="fields__row">
+      <dt>{g.label}</dt>
+      <dd>
+        <span class="fields__names">{g.names.map((n) => <code class="tick">{n}</code>)}</span>
+        {g.note && <span class="fields__note"><Inline text={g.note} /></span>}
+      </dd>
+    </div>
+  ))}
+</dl>

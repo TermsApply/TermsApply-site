@@ -1,4 +1,4 @@
-# Working notes for coding agents
+# Working notes for maintainers
 
 termsapply.fyi: a static publication site (Astro 7, MDX, no JavaScript sent to readers) that sets
 what privacy policies declare against what apps do. It holds publications and nothing else.
@@ -40,7 +40,7 @@ so that `dist/` is checked too.
 ```sh
 npm run check        # types and content schemas, then check:clean
 npm run build        # dist/, 9 pages while empty
-npm run check:links  # internal links, anchors, no external hosts, no <script>
+npm run check:links  # internal links, anchors, no external hosts (except web.archive.org links), no <script>
 npm run check:og     # share images
 npm run check:clean  # clean repository rule: repository files, dist/, commit history
 npm run check:render # screenshots at several widths; needs Playwright, see below
@@ -76,7 +76,13 @@ Local network preview: `npx astro preview --host 0.0.0.0 --port 4321`.
   ink, not red: "No" / "not listed", and a dashed line in the data-flow drawing.
 - **Company replies** are printed in full with no length limit. Further messages go in
   `reply.followUps` (`date`, `text`, optional `channel`, `from`), each printed with its date.
-- **Kept**: publication tabs Story / Evidence / Reply / History, service profiles, policy archive,
+- **A reply not yet received** is `companyReply: Awaiting` with `replyDue` (the deadline given to
+  the company). Messages that only acknowledge the questions go in `acknowledgements`: printed in
+  full in the "Company reply" block (ReplyPending), logged as acknowledgements, never called a
+  reply, no Reply tab. With `SITE.launched` the build refuses `Awaiting` past its deadline.
+- **Red on the seam only**: the asterisk on the seam of every pair is red, like the wordmark (decision of 19 Oct 2026; until then it was ink). Drawings of a file use `DataFlow neutral` and no red flows; "No" / "not listed" and the ledger stay ink. Red otherwise stays for the wordmark, the start page, the footer asterisk and link hover states.
+- **Kept**: publication tabs Report / Document changes / Correspondence / Evidence / Reply / History
+  (Document changes and Correspondence added 2026-10-16; a file with a correspondence has no Reply tab), service profiles, policy archive,
   corrections register, About, How to read, Legal. **Removed for good**: RSS, Decoded, Dictionary,
   Memory Hole, Tips, methodology.
 - **Byline** default "termsapply". The Legal "Revised" date is `LEGAL_REVISED` in
@@ -87,7 +93,7 @@ Local network preview: `npx astro preview --host 0.0.0.0 --port 4321`.
 
 ## Publishing
 
-Content goes only in `src/content/` (plus `public/exhibits/`, `public/files/`). The agent guide is
+Content goes only in `src/content/` (plus `public/exhibits/`, `public/files/`). The writing guide is
 `docs/PUBLISHING.md`; templates are in `docs/template/`. Quotes and company replies are verbatim;
 no scores; the build enforces most of it.
 

@@ -6,7 +6,10 @@
  * the policy history and revision log at ./history/. FileTabs links them.
  *
  * When the file has a reply, a "Company reply" block (ReplyTeaser) follows the body: its first words,
- * in mono, and a link to the Reply page. When the corrections register has entries for the file, the
+ * in mono, and a link to the Reply page. When it has none yet and is awaiting one (companyReply
+ * "Awaiting", with replyDue) or holds acknowledgements, the block is ReplyPending instead: the
+ * status, the deadline and every acknowledgement in full; the body can place it itself with
+ * <ReplyPending {...props.pending} />. When the corrections register has entries for the file, the
  * byline counts them and links to the revision log on the History page. Under the byline, the
  * Topics line (TopicLine) names the file's topics.
  *
@@ -23,13 +26,19 @@
  * In an .mdx body these components are available without imports:
  *   Note, Finding (= DeclaredObserved), DeclaredObserved, ExhibitRef, ForReaders, Diff,
  *   CategoryTag, Asterisk
- * and these props:  props.findings (frontmatter findings), props.service (service data).
+ *   (and ReplyPending, for <ReplyPending {...props.pending} />; ReplyTeaser, for
+ *   <ReplyTeaser {...props.teaser} />, when the file has a reply)
+ * and these props:  props.findings (frontmatter findings), props.service (service data),
+ *   props.pending (ReplyPending's props, when the file has no reply on file),
+ *   props.teaser (ReplyTeaser's props, when it has one).
  * Exhibits, the data flow and the technical appendix live in the evidence file; the story points at
  * them with <ExhibitRef n={1} />. The build fails if a story points at an exhibit the evidence
  * file does not have, or uses ExhibitRef with no evidence file at all.
  *
  * Fallbacks, so plain .md files still get the full layout: findings not referenced as
- * props.findings[n] are rendered after the body; if the body has no <ForReaders>, the findings'
+ * props.findings[n] are rendered after the body, unless the body places <FindingsLedger>, which
+ * already lists every pair (each row links to an anchor #finding-<n> the body places itself, or to
+ * #main for the head pair); if the body has no <ForReaders>, the findings'
  * `means` lines become the "What this means for you" box; a file with evidence whose body places no
  * <ExhibitRef> gets a short "Evidence on file" list instead. Related files come last.
  */
@@ -48,11 +57,9 @@ import CategoryTag from '../../../components/CategoryTag.astro';
 import Asterisk from '../../../components/Asterisk.astro';
 import CaseIndex from '../../../components/CaseIndex.astro';
 import ReplyTeaser from '../../../components/ReplyTeaser.astro';
+import ReplyPending from '../../../components/ReplyPending.astro';
 import TopicLine from '../../../components/TopicLine.astro';
-import {
-  correctionsFor, exhibitId, fileOgVerso, fileRefOf, exhibitRefsIn, exhibitsIn, fileHref, firstExhibit, getEvidence, getInvestigations,
-  investigationFields, resolveRelated,
-} from '../../../lib/cases';
+import { correctionsFor, exhibitId, fileOgVerso, fileRefOf, exhibitRefsIn, exhibitsIn, fileHref, firstExhibit, getEvidence, getInvestigations, investigationFields, replyStatus, resolveRelated, filePartsOf, publishedOf, revOf, barRefOf, assertPublishable } from '../../../lib/cases';
 import { iso, long, range, readingTime } from '../../../lib/format';
 
 export async function getStaticPaths() {
@@ -67,6 +74,8 @@ if (!service) throw new Error(`Unknown service "${d.service.id}" in ${entry.id}`
 
 const { Content } = await render(entry);
 const body = entry.body ?? '';
+/* A published file (no `draft`) may not carry placeholders. */
+assertPublishable(entry);
 const isMdx = entry.filePath?.endsWith('.mdx') ?? false;
 const minutes = d.readingTime ?? readingTime(body);
 
@@ -89,26 +98,41 @@ const findings = d.findings.map((f) => ({ ...f, evidenceHref: exhibitHref(f.evid
 const [headFinding] = findings;
 // Findings handed to the body: the head finding is flagged so <Finding> skips it.
 const bodyFindings = findings.map((f, i) => (i === 0 ? { ...f, inHead: true } : f));
-const unplaced = findings.filter((_, i) => i > 0 && !referenced.has(i));
+// A body with <FindingsLedger> already lists every pair: nothing is appended after it.
+const placesLedger = isMdx && /<FindingsLedger\b/.test(body);
+const unplaced = placesLedger ? [] : findings.filter((_, i) => i > 0 && !referenced.has(i));
 const pull = d.pull && headFinding?.quote.includes(d.pull) ? d.pull : undefined;
 const placesForReaders = isMdx && /<ForReaders\b/.test(body);
 const means = d.findings.map((f) => f.means).filter((m): m is string => Boolean(m));
 
 const related = await resolveRelated(d.related);
 const corrections = await correctionsFor('investigations', entry.id);
-const components = { Note, Finding: DeclaredObserved, DeclaredObserved, ExhibitRef, Diff, ForReaders, CategoryTag, Asterisk };
+const components = { Note, Finding: DeclaredObserved, DeclaredObserved, ExhibitRef, Diff, ForReaders, CategoryTag, Asterisk, ReplyPending, ReplyTeaser };
+
+/* No reply on file yet: the "Company reply" block says so, with the deadline and any acknowledgements. */
+const status = replyStatus(d, `investigations/${entry.id}`);
+const pending =
+  !d.reply && (status.kind === 'awaiting' || (status.kind === 'none' && d.acknowledgements.length > 0))
+    ? { status: status.kind, serviceName: service.data.name, asked: d.companyAsked, due: d.replyDue, messages: d.acknowledgements }
+    : undefined;
+const placesPending = isMdx && /<ReplyPending\b/.test(body);
+if (placesPending && !pending) throw new Error(`${entry.id}: <ReplyPending> in the body, but the file has a reply on file or nothing pending`);
+/* A reply on file: the body can place the teaser itself, e.g. in its correspondence section. */
+const teaser = d.reply ? { reply: d.reply, serviceName: service.data.name, href: fileHref('investigations', entry.id, d.correspondence.length ? 'correspondence' : 'reply') } : undefined;
+const placesTeaser = isMdx && /<ReplyTeaser\b/.test(body);
+if (placesTeaser && !teaser) throw new Error(`${entry.id}: <ReplyTeaser> in the body, but the file has no reply on file`);
 ---
-<Base title={d.title} description={d.dek} type="article" published={d.date} fileRef={fileRefOf(d)} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: d.title, rectoLabel: 'Observed' }}>
+<Base title={d.title} description={d.dek} type="article" published={publishedOf(d)} fileRef={fileRefOf(d)} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: d.title, rectoLabel: 'Observed' }}>
   <div class="wrap">
     <article aria-labelledby="art-title">
       <FileHeader
-        fileNo={d.fileNo}
-        rev={d.revised ?? d.date}
+        ref={barRefOf(d)}
+        rev={revOf(d)}
         side={`PUBLICATIONS / ${service.data.name.toUpperCase()}`}
         category={d.category}
         fields={[]}
       />
-      <FileTabs collection="investigations" slug={entry.id} current="story" evidence={Boolean(evidence)} reply={Boolean(d.reply)} />
+      <FileTabs collection="investigations" slug={entry.id} current="story" parts={filePartsOf(d, Boolean(evidence))} />
       {headFinding && (
         <DeclaredObserved
           finding={headFinding}
@@ -124,7 +148,7 @@ const components = { Note, Finding: DeclaredObserved, DeclaredObserved, ExhibitR
         <h1 id="art-title"><NoBreak text={d.title} /></h1>
         <p class="dek"><Inline text={d.dek} /></p>
         <p class="byline">
-          <strong>{d.byline}</strong>&nbsp;/ Published <time datetime={iso(d.date)}>{long(d.date)}</time>
+          <strong>{d.byline}</strong>&nbsp;/ {d.draft ? <>Draft {d.draft} of <time datetime={iso(d.date)}>{long(d.date)}</time>, not published</> : <>Published <time datetime={iso(d.date)}>{long(d.date)}</time></>}
           {d.revised && <>&nbsp;/ Revised <a href={`${fileHref('investigations', entry.id, 'history')}#revision-log`}><time datetime={iso(d.revised)}>{long(d.revised)}</time></a></>}
           {corrections.length > 0 && <>&nbsp;/ <a href={`${fileHref('investigations', entry.id, 'history')}#revision-log`}>{corrections.length === 1 ? '1 correction' : `${corrections.length} corrections`}</a></>}
           {'\u00a0'}/ Tested {range(d.testedFrom, d.testedTo)}&nbsp;/ {minutes}&nbsp;min&nbsp;read
@@ -134,9 +158,10 @@ const components = { Note, Finding: DeclaredObserved, DeclaredObserved, ExhibitR
       <FileHeader part="grid" fields={investigationFields(entry, service, 'article', { linkService: true })} />
 
       <div class="body">
-        <Content components={components} findings={bodyFindings} service={service.data} />
+        <Content components={components} findings={bodyFindings} service={service.data} pending={pending} teaser={teaser} />
         {unplaced.map((f) => <DeclaredObserved finding={f} declared={d.policyDate} observed={d.testedFrom} />)}
-        {d.reply && <ReplyTeaser reply={d.reply} serviceName={service.data.name} href={fileHref('investigations', entry.id, 'reply')} />}
+        {pending && !placesPending && <ReplyPending {...pending} />}
+        {teaser && !placesTeaser && <ReplyTeaser {...teaser} />}
         {evidence && refs.length === 0 && exhibits.length > 0 && (
           <section class="exh-list" aria-labelledby="exh-h">
             <h2 id="exh-h" class="label">Evidence on file</h2>

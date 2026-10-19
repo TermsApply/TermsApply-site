@@ -367,7 +367,7 @@ time { white-space: nowrap; }
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   background: var(--paper); padding: 0.35rem 0.6rem 0.35rem 0; line-height: 0;
 }
-.spread__mark .asterisk { display: block; }
+.spread__mark .asterisk { display: block; } /* red, as in the wordmark (decision of 19 Oct 2026, docs/MAINTENANCE.md) */
 .spread__labels { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.85rem; }
 .spread__labels .label:first-child { color: var(--ink); font-weight: 600; }
 .spread__labels .label a { color: var(--ink); }
@@ -606,10 +606,11 @@ ins {
   .body > .note { grid-column: 1; text-align: right; margin: 0; border-top: 1px solid var(--rule); padding-top: 0.4rem; align-self: start; }
   .body > .do, .body > .exhibit, .body > .related, .body > .appendix, .body > .table-wrap { grid-column: 2 / 4; }
   .body > .box { grid-column: 2; }
+  .body > .flow-fig { grid-column: 2 / 4; }
 }
 
 /* ---------- One file, four addresses (round 4) ----------
-   Tab row under the file bar: Story / Evidence / Reply / History.
+   Tab row under the file bar: Report / Document changes / Correspondence / Evidence / Reply / History.
    Mono structure, the current tab in ink with an ink underline sitting on the row's hairline. */
 .tabs { display: grid; grid-template-columns: minmax(0, 1fr); }
 .tabs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.75rem; border-bottom: 1px solid var(--rule); }
@@ -746,6 +747,19 @@ ins {
 .box li { margin-bottom: 0.55rem; }
 .box li::marker { content: "*  "; color: var(--red); font-family: var(--mono); font-weight: 600; }
 @media (min-width: 40rem) { .box { padding: 1.4rem 1.5rem 1.5rem; } }
+/* In one minute: the same frame, its heading set as a label, the list markers in ink. */
+.box.minute h2 { font-size: 0.75rem; margin: 0 0 0.75rem; }
+.box.minute li::marker { color: var(--ink); }
+
+/* A drawing placed in a story, with its caption in mono. */
+.body > .flow-fig { margin: 1.5rem 0 2rem; }
+.flow-fig figcaption { font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--ink-2); margin-top: 0.5rem; max-width: var(--measure); }
+
+/* Contents of a long story: mono, two columns on wide screens. */
+.body > .toc { font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 0.75rem 0; margin: 1.5rem 0 2rem; }
+.toc ol { list-style: none; margin: 0; padding: 0; }
+.toc li { margin: 0 0 0.3rem; break-inside: avoid; }
+@media (min-width: 40rem) { .toc ol { columns: 2; column-gap: 2rem; } }
 
 /* Policy history */
 /* Compact diffs inside Policy history: hairlines only, the section rule above is enough. */
@@ -1061,6 +1075,85 @@ ins {
 .channels .who .sub { margin-top: 0.25rem; }
 .channels .addr { font-size: 1em; }
 
+/* ---------- Document changes and Correspondence (16 Oct 2026) ----------
+   Two more parts of a file, each its own page under the tab row. Both print the company's words in
+   mono and ours in serif, like every pair on the site; nothing here is red. */
+.docs-intro, .docs-legend { max-width: var(--measure); }
+.docs-intro p { margin: 0 0 1rem; font-size: 1.0625rem; line-height: 1.55; }
+.docs-legend { border-top: 1px solid var(--rule); padding-top: 0.6rem; margin: 0 0 1rem; font-size: 0.9375rem; line-height: 1.55; color: var(--ink-2); }
+.docs-legend .label { margin: 0 0 0.35rem; }
+.docs-legend p { margin: 0; }
+/* Marks on this page are mechanical, not findings: added words underlined with a khaki rule, on a
+   light tint, so they read without colour, in print and in forced colours alike. The earlier
+   version carries no marks. */
+:is(.docv, .docs-legend) ins {
+  color: var(--ink); background: var(--paper-2) linear-gradient(var(--khaki-rule), var(--khaki-rule)) no-repeat 0 100% / 100% 2px;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+@media (forced-colors: active), print {
+  :is(.docv, .docs-legend) ins { text-decoration: underline; text-underline-offset: 0.22em; background: none; }
+}
+.docv { border-top: 1px solid var(--ink); padding-top: 0.6rem; margin-top: 2.5rem; }
+.docv__title { font-size: clamp(1.375rem, 2.6vw, 1.75rem); margin: 0 0 0.5rem; }
+.docv__where { margin: 0 0 1.25rem; max-width: var(--measure); color: var(--ink-2); }
+.docv__addr { font-family: var(--mono); font-size: 0.8125rem; overflow-wrap: anywhere; word-break: break-all; color: var(--ink); }
+.docv__cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; }
+@media screen and (min-width: 64rem) {
+  .docv__cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 2.5rem; }
+  .docv__ver--after { border-left: 1px solid var(--rule); padding-left: 2.5rem; margin-left: -1.25rem; }
+}
+.docv__vh { margin: 0 0 0.75rem; font-size: 1.125rem; line-height: 1.35; display: flex; flex-wrap: wrap; gap: 0.15rem 0.6rem; align-items: baseline; border-bottom: 1px solid var(--rule); padding-bottom: 0.5rem; }
+.docv__vlabel { font-family: var(--mono); font-size: 0.9375rem; font-weight: 600; }
+.docv__src { margin: 0 0 1.5rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.1rem 1rem; font-size: 0.875rem; line-height: 1.5; }
+.docv__src dt { margin-top: 0.4rem; }
+.docv__src dd { margin: 0; overflow-wrap: anywhere; }
+@media (min-width: 30rem) {
+  .docv__src { grid-template-columns: 8.5rem minmax(0, 1fr); }
+  .docv__src dt { margin-top: 0.15rem; }
+}
+.docv__text { font-family: var(--mono); font-size: 0.875rem; line-height: 1.65; color: var(--ink); overflow-wrap: anywhere; }
+.docv__text p { margin: 0 0 0.9em; }
+.docv__text h4 { font-family: var(--mono); font-size: 0.9375rem; font-weight: 600; line-height: 1.45; margin: 1.5em 0 0.5em; }
+.docv__text h4:first-child { margin-top: 0; }
+.docv__li { display: grid; grid-template-columns: 2.2ch minmax(0, 1fr); column-gap: 0.6ch; }
+.docv__li--1 { margin-left: 2.8ch; }
+.docv__li--2 { margin-left: 5.6ch; }
+.docv__li--3 { margin-left: 8.4ch; }
+.docv__li--4, .docv__li--5 { margin-left: 11.2ch; }
+.docv__mk { color: var(--ink-2); text-align: right; }
+@media (max-width: 30rem) {
+  .docv__li--2 { margin-left: 4ch; }
+  .docv__li--3, .docv__li--4, .docv__li--5 { margin-left: 6ch; }
+}
+
+/* The prologue's two phone screenshots: side by side, scaled down (never up), each a link to the file. */
+.body > .shots { max-width: var(--measure); margin: 0.5rem 0 1.75rem; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+.shots a { display: block; max-width: 16rem; }
+.shots img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); }
+.shots figcaption { grid-column: 1 / -1; font-size: 0.875rem; line-height: 1.5; color: var(--ink-2); overflow-wrap: anywhere; }
+.shots a::after { content: none !important; }
+
+/* Correspondence: one ruled entry per message, the date line in mono, then the text in full. */
+.corr-note { max-width: var(--measure); border-top: 1px solid var(--rule); padding-top: 0.6rem; margin: 0 0 1.5rem; }
+.corr-note .label { margin: 0 0 0.35rem; }
+.corr-note p { margin: 0; font-size: 1rem; line-height: 1.55; }
+.corr { list-style: none; margin: 0; padding: 0; max-width: 48rem; }
+.msg { border-top: 1px solid var(--ink); padding: 0.6rem 0 1.5rem; }
+.msg__head { margin: 0 0 0.9rem; font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.msg__head p { margin: 0; }
+.msg__when { color: var(--ink); font-weight: 600; }
+.msg__from b { color: var(--ink); font-weight: 600; }
+.msg__subj { overflow-wrap: anywhere; }
+.msg__text p { margin: 0 0 1em; overflow-wrap: anywhere; }
+.msg__text p:last-child { margin-bottom: 0; }
+.msg--theirs .msg__text { font-family: var(--mono); font-size: 0.875rem; line-height: 1.65; color: var(--ink); }
+.msg--ours .msg__text { font-family: var(--serif); font-size: 1rem; line-height: 1.6; color: var(--ink); }
+.msg__summary { margin: 0; font-size: 1rem; line-height: 1.55; }
+.msg__summary .label { display: block; margin-bottom: 0.35rem; }
+.msg__note { margin: 1rem 0 0; padding-top: 0.5rem; border-top: 1px dashed var(--rule); font-family: var(--serif); font-size: 0.9375rem; line-height: 1.55; color: var(--ink-2); max-width: var(--measure); }
+.msg__note .label { display: block; margin-bottom: 0.25rem; }
+.corr .pending { margin-top: 0; }
+
 /* ---------- Motion (CSS only; nothing moves for reduced-motion users) ----------
    Every resting state is the finished state, so browsers without support see it complete. Screen
    only (round 5): a PDF made straight after load must not catch a highlight or an asterisk midway. */
@@ -1131,7 +1224,10 @@ ins {
     color-scheme: light;
   }
   body { font-size: 10.5pt; line-height: 1.5; }
-  .notice, .nav, .skip, .tabs, .pager, .file-back { display: none; }
+  .notice, .nav, .skip, .tabs a.tabs__help, .pager, .file-back { display: none; }
+  /* The tab row prints as a plain line naming the parts of the file, the current one underlined. */
+  .tabs a::after { content: none !important; }
+  .msg__head, .docv__vh { break-inside: avoid; break-after: avoid; }
   .appendix .inner { display: block; }
   .appendix summary::after { content: none; }
   .masthead { border-bottom-width: 1px; }
@@ -1152,7 +1248,7 @@ ins {
     letter-spacing: 0; text-transform: none; color: var(--ink-2); overflow-wrap: anywhere;
   }
   a[href^="/"]::after { content: " (" var(--site-host) attr(href) ")"; }
-  a.wordmark::after, .spread__labels a::after { content: none; }
+  a.wordmark::after, .spread__labels a::after, a.docv__addr::after { content: none; } /* the address is the link text */
   /* Nothing splits across a sheet that should be read whole. Diagrams print; a lazy image prints
      once it has loaded (Exhibit `eager` for one that must always print). */
   .exhibit, .spread, figure, .do, .box, .diff, .cr, .reply, .file__bar, .file__grid, .means, .flog li { break-inside: avoid; }
@@ -1171,3 +1267,135 @@ ins {
 @media print {
   .appendix::details-content { content-visibility: visible; block-size: auto; overflow: visible; }
 }
+
+/* ---------- File additions (file 0001): ledger, pending block, field groups, bars,
+   file list. Same system: mono for their words and for structure, serif for ours, ink and rules on
+   paper, khaki and underline for the assessment words, no red. Each block is a direct child of
+   .body and sits in the text column; wide ones span the margin from 64rem. ---------- */
+.body > .ledger, .body > .pending, .body > .fields, .body > .filelist { margin-block: 1.5rem 2rem; }
+@media (min-width: 64rem) {
+  .body > .ledger, .body > .filelist { grid-column: 2 / 4; }
+}
+
+/* Ledger: every pair of the file, grouped by assessment. */
+.ledger { border-top: 1px solid var(--ink); padding-top: 0.6rem; }
+.ledger h2 { font-size: clamp(1.25rem, 2.4vw, 1.5rem); margin: 0 0 0.5rem; }
+.ledger__group { border-top: 1px solid var(--rule); padding-block: 0.75rem 0.5rem; }
+.ledger__flag { margin: 0 0 0.4rem; }
+.ledger__list { list-style: none; margin: 0; padding: 0; }
+.ledger__list li { display: grid; grid-template-columns: 4.75rem minmax(0, 1fr); gap: 0 0.75rem; padding-block: 0.4rem; }
+.ledger__code { font-family: var(--mono); font-size: 0.75rem; font-weight: 600; color: var(--ink); padding-top: 0.15rem; letter-spacing: 0.04em; }
+.ledger__said { font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5; color: var(--ink-2); }
+.ledger__said a { color: var(--ink); text-decoration-color: var(--rule); }
+.ledger__said a:hover { text-decoration-color: var(--red); }
+.ledger__src { display: block; font-size: 0.6875rem; color: var(--ink-2); margin-top: 0.1rem; }
+@media (min-width: 48rem) {
+  .ledger__group { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 0 1.5rem; }
+  .ledger__flag { padding-top: 0.45rem; }
+}
+
+/* Pending: a part of the file that is not yet available. */
+.pending { background: var(--paper-2); border-left: 3px double var(--ink-2); padding: 0.8rem 1rem 0.9rem; max-width: var(--measure); }
+.pending .label { color: var(--ink-2); }
+.pending__what { margin: 0.3rem 0 0; font-family: var(--mono); font-size: 0.875rem; color: var(--ink); }
+.pending__note { margin: 0.35rem 0 0; font-size: 0.9375rem; line-height: 1.5; color: var(--ink-2); }
+
+/* Field groups: names seen in the traffic, grouped. */
+.fields { margin: 0; border-bottom: 1px solid var(--rule); }
+.fields__row { border-top: 1px solid var(--rule); padding-block: 0.6rem 0.7rem; display: grid; gap: 0.3rem 1.25rem; }
+.fields dt { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); padding-top: 0.2rem; }
+.fields dd { margin: 0; }
+.fields__names { display: flex; flex-wrap: wrap; gap: 0.35rem 0.4rem; }
+.fields__names code { font-size: 0.8125rem; overflow-wrap: anywhere; }
+.fields__note { display: block; margin-top: 0.4rem; font-size: 0.875rem; line-height: 1.5; color: var(--ink-2); }
+@media (min-width: 40rem) { .fields__row { grid-template-columns: 10rem minmax(0, 1fr); } }
+.exhibit > .fields { margin: 0.9rem; }
+
+/* Bars: a few counts, compared at a glance. */
+.bars { list-style: none; margin: 0.9rem; padding: 0; display: grid; gap: 0.45rem; }
+.bars__row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) 3.5rem; gap: 0.75rem; align-items: center; }
+.bars__label { font-family: var(--mono); font-size: 0.75rem; line-height: 1.3; color: var(--ink); }
+.bars__sub { display: block; color: var(--ink-2); font-size: 0.6875rem; }
+.bars__track { display: block; height: 0.7rem; background: var(--paper-2); }
+.bars__bar { display: block; height: 100%; width: var(--w, 0); background: var(--ink); }
+.bars__n { font-family: var(--mono); font-size: 0.8125rem; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.bars__unit { font-weight: 400; color: var(--ink-2); font-size: 0.6875rem; }
+@media print { .bars__bar, .bars__track { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
+/* File list: the downloads, with the SHA-256 of each file as served. */
+.filelist { border-top: 1px solid var(--ink); padding-top: 0.6rem; }
+.filelist__sum { margin: 0 0 0.5rem; font-family: var(--mono); font-size: 0.8125rem; color: var(--ink-2); }
+.filelist__group { margin-top: 1rem; }
+.filelist__folder { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; align-items: baseline; font-size: 1rem; margin: 0 0 0.3rem; }
+.filelist__folder .label { color: var(--ink); font-weight: 600; }
+.filelist__what { font-family: var(--serif); font-weight: 400; font-size: 0.9375rem; color: var(--ink-2); }
+.filelist__t { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.filelist__t th, .filelist__t td { text-align: left; vertical-align: baseline; padding: 0.4rem 0.9rem 0.45rem 0; border-top: 1px solid var(--rule); }
+.filelist__t thead th { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); font-weight: 500; border-top-color: var(--ink-2); }
+.filelist__t .r { text-align: right; white-space: nowrap; }
+.filelist__t tbody th { font-family: var(--mono); font-size: 0.8125rem; font-weight: 500; overflow-wrap: anywhere; }
+.filelist__size { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-2); }
+.filelist__sha { font-family: var(--mono); font-size: 0.6875rem; color: var(--ink-2); overflow-wrap: anywhere; word-break: break-all; }
+.filelist__held th, .filelist__held td { color: var(--ink-2); }
+.filelist__why { display: block; font-family: var(--serif); font-size: 0.8125rem; font-weight: 400; font-style: italic; margin-top: 0.15rem; }
+@media (max-width: 47.99rem) {
+  .filelist__t thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .filelist__t, .filelist__t tbody, .filelist__t tr { display: block; }
+  .filelist__t tr { border-top: 1px solid var(--rule); padding-block: 0.45rem 0.5rem; }
+  .filelist__t th, .filelist__t td { display: block; border: 0; padding: 0; text-align: left; }
+  .filelist__t .r { text-align: left; }
+  .filelist__size::after { content: " bytes"; }
+  .filelist__held .filelist__size::after { content: none; }
+}
+@media (min-width: 48rem) { .filelist__sha { word-break: normal; } }
+@media (min-width: 64rem) { .filelist__t td.filelist__sha { white-space: nowrap; overflow-wrap: normal; } }
+
+/* Blockquotes of the vendor's words inside a story body: mono, recessed, as on the left page. */
+.body > blockquote { max-width: var(--measure); margin: 0 0 1.1em; padding: 0.75rem 1rem; background: var(--paper-2); font-family: var(--mono); font-size: 0.875rem; line-height: 1.6; color: var(--ink-2); }
+.body > blockquote p { margin: 0 0 0.5em; }
+.body > blockquote p:last-child { margin: 0; }
+.body > blockquote cite { display: block; font-style: normal; font-size: 0.75rem; margin-top: 0.4rem; }
+/* Anchors placed before body pairs, so the ledger can link to them. */
+.body > .anchor { height: 0; margin: 0; scroll-margin-top: 1rem; }
+/* Matrix: a compact run-by-host table inside an exhibit, in mono; "no" and "not visible" in ink-2. */
+.scroll table.matrix { font-family: var(--mono); font-size: 0.8125rem; min-width: 46rem; }
+.scroll table.matrix th { white-space: normal; vertical-align: bottom; font-size: 0.6875rem; letter-spacing: 0.04em; text-transform: none; }
+.scroll table.matrix td { color: var(--ink); padding-block: 0.35rem; }
+.scroll table.matrix td:first-child { font-weight: 600; }
+.scroll table.matrix th.r { text-align: right; }
+.scroll table.matrix .matrix__no { color: var(--ink-2); font-style: italic; }
+.exhibit > .scroll { margin: 0.9rem; }
+/* A table wider than its box says so: a soft shadow on the edge that has more to show, drawn with
+   backgrounds only (the two paper-coloured covers scroll with the content, the shadows stay), so
+   nothing runs and nothing moves. The matrix also keeps its first column in view. */
+.scroll {
+  background:
+    linear-gradient(to right, var(--paper) 30%, rgb(240 233 218 / 0)) left center / 2.5rem 100% no-repeat local,
+    linear-gradient(to left, var(--paper) 30%, rgb(240 233 218 / 0)) right center / 2.5rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(31 27 22 / 0.22), rgb(31 27 22 / 0)) left center / 0.9rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(31 27 22 / 0.22), rgb(31 27 22 / 0)) right center / 0.9rem 100% no-repeat scroll;
+}
+.scroll table.matrix td:first-child, .scroll table.matrix th:first-child { position: sticky; left: 0; background: var(--paper); z-index: 1; box-shadow: 1px 0 0 var(--rule); }
+.scroll table.matrix .matrix__sub { display: block; font-weight: 400; font-size: 0.6875rem; color: var(--ink-2); white-space: nowrap; }
+.scroll table.matrix th { min-width: 0; }
+@media print { .scroll { background: none; } }
+
+
+/* Reply pending (ReplyPending.astro): a file with no reply on file yet. The status in serif, the
+   acknowledgements in mono on the recessed paper, each with its source line. No red. */
+.reply-pending { border-top: 1px solid var(--ink); padding-top: 0.6rem; margin-block: 2.25rem 0.5rem; max-width: var(--measure); }
+.reply-pending h2 { margin: 0 0 0.6rem; }
+.reply-pending__status { margin: 0 0 0.9rem; }
+.reply-pending__sub { margin: 1rem 0 0.5rem; color: var(--ink-2); font-size: 0.75rem; }
+.reply-pending__msg { margin: 0 0 1rem; padding: 0.75rem 1rem; background: var(--paper-2); }
+.reply-pending__q { margin: 0; font-family: var(--mono); font-size: 0.875rem; line-height: 1.6; color: var(--ink-2); }
+.reply-pending__q p { margin: 0 0 0.5em; }
+.reply-pending__q p:last-child { margin: 0; }
+.reply-pending__src { margin: 0.5rem 0 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--ink-2); }
+.reply-pending__src cite { font-style: normal; }
+
+/* A wrapping cell in a scrolling table (long descriptions): the rest stay on one line. */
+.scroll td.w { white-space: normal; min-width: 12rem; }
+.scroll table.matrix th, .scroll table.matrix td { padding-inline: 0.5rem; }
+/* Source note under the epilogue: smaller, secondary ink, long file names break anywhere. */
+.epilogue-note { font-size: 0.875rem; line-height: 1.5; color: var(--ink-2); overflow-wrap: anywhere; }

@@ -1,0 +1,100 @@
+---
+/**
+ * DocumentVersions: one changed company document on the Document changes page. The h2 is the
+ * document's name; under it, where the company publishes it and when it changed (our words). Then
+ * the two versions, earlier first, each in full: a source list (the text file shown, the PDF copy
+ * and the Wayback Machine snapshot, its address printed in full as a link: web.archive.org is the
+ * only other host the site links to, see scripts/check-links.mjs) and the text itself, read from public/files/<slug>/<text> at build time, so the page shows
+ * exactly the file a reader can download. Both texts are the company's words, so both are mono.
+ *
+ * The differences are marked by src/lib/textdiff.ts, never by hand, in the later version only:
+ * <ins> (underlined) for words the earlier one does not contain, each mark also saying "Added:" to
+ * screen readers. The earlier version is printed as plain text, without marks (a rewritten
+ * document would otherwise be read out as almost entirely "removed"). Lines named in `headings` are set as h4, list items keep their marker
+ * and indent. From 64rem on screen the versions stand side by side; on a phone and in print one
+ * under the other.
+ *
+ * Props:
+ *   doc          one entry of the frontmatter `documents` (src/content.config.ts, changedDocument)
+ *   slug         the file's slug (its downloads are under /files/<slug>/)
+ *   index        1-based number of the document on the page, for ids
+ *   serviceName  the company
+ */
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import Inline from './Inline.astro';
+import { diffDocuments, type Side } from '../lib/textdiff';
+import { iso, long } from '../lib/format';
+
+interface Version {
+  label: string;
+  status: string;
+  text: string;
+  textFrom: string;
+  headings: string[];
+  pdf?: string;
+  pdfSaved?: Date;
+  snapshot?: { url: string; note?: string };
+}
+interface Props {
+  doc: { title: string; address: string; changed: string; versions: [Version, Version] };
+  slug: string;
+  index: number;
+  serviceName: string;
+}
+const { doc, slug, index, serviceName } = Astro.props;
+
+const base = join(process.cwd(), 'public', 'files', slug);
+const read = (rel: string) => {
+  const p = join(base, rel);
+  if (!existsSync(p)) throw new Error(`DocumentVersions: public/files/${slug}/${rel} does not exist`);
+  return readFileSync(p, 'utf8');
+};
+for (const v of doc.versions) if (v.pdf && !existsSync(join(base, v.pdf))) throw new Error(`DocumentVersions: public/files/${slug}/${v.pdf} does not exist`);
+const [early, late] = doc.versions;
+const diff = diffDocuments({ text: read(early.text), headings: early.headings }, { text: read(late.text), headings: late.headings });
+const href = (rel: string) => `/files/${slug}/${rel}`;
+const fileName = (rel: string) => rel.split('/').at(-1)!;
+/** "20261001190802" in a snapshot address (UTC): "1 Oct 2026, 21:08 CEST (19:08 UTC)", Central European
+    time first with UTC beside it, as on the Correspondence page. */
+const zone = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit', timeZoneName: 'short', hourCycle: 'h23' });
+const localDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Warsaw', year: 'numeric', month: '2-digit', day: '2-digit' });
+const snapshotAt = (url: string) => {
+  const m = url.match(/\/web\/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})\d{2}\//)!;
+  const t = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]));
+  return `${long(localDay.format(t))}, ${zone.format(t)} (${m[4]}:${m[5]} UTC)`;
+};
+const id = `doc-${index}`;
+const sides: { v: Version; side: Side; which: 'before' | 'after'; name: string }[] = [
+  { v: early, side: diff.before, which: 'before', name: 'Earlier version' },
+  { v: late, side: diff.after, which: 'after', name: 'Later version' },
+];
+---
+<section class="docv" id={id} aria-labelledby={`${id}-h`}>
+  <h2 id={`${id}-h`} class="docv__title">{serviceName}: {doc.title}</h2>
+  <p class="docv__where">Published at <code class="docv__addr">{doc.address}</code>. <Inline text={doc.changed} /></p>
+  <div class="docv__cols">
+    {sides.map(({ v, side, which, name }) => (
+      <section class:list={['docv__ver', `docv__ver--${which}`]} aria-labelledby={`${id}-${which}-h`}>
+        <h3 id={`${id}-${which}-h`} class="docv__vh"><span class="label">{name}</span> <span class="docv__vlabel"><Inline text={v.label} /></span></h3>
+        <dl class="docv__src">
+          <dt class="label">Status</dt><dd><Inline text={v.status} /></dd>
+          <dt class="label">Text shown</dt><dd><a href={href(v.text)} download>{fileName(v.text)}</a>; <Inline text={v.textFrom} /></dd>
+          {v.pdf && <><dt class="label">PDF copy</dt><dd><a href={href(v.pdf)} download>{fileName(v.pdf)}</a>{v.pdfSaved && <>, saved <time datetime={iso(v.pdfSaved)}>{long(v.pdfSaved)}</time></>}</dd></>}
+          {v.snapshot && <><dt class="label">Wayback Machine</dt><dd>snapshot of {snapshotAt(v.snapshot.url)}{v.snapshot.note && <>; <Inline text={v.snapshot.note} /></>}<br /><a class="docv__addr" href={v.snapshot.url} rel="noopener noreferrer">{v.snapshot.url}</a></dd></>}
+        </dl>
+        <div class="docv__text" lang="en">
+          {side.blocks.map((b) => {
+            const body = b.segs.map((s) =>
+              !s.changed ? s.text
+              : which === 'before' ? s.text
+              : <ins><span class="sr-only">Added: </span>{s.text}</ins>);
+            return b.kind === 'heading' ? <h4>{body}</h4>
+              : b.kind === 'item' ? <p class:list={['docv__li', `docv__li--${Math.min(b.level, 5)}`]}><span class="docv__mk">{b.marker}</span> {body}</p>
+              : <p>{body}</p>;
+          })}
+        </div>
+      </section>
+    ))}
+  </div>
+</section>

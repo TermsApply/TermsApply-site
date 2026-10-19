@@ -1,0 +1,25 @@
+---
+/**
+ * Pending: a block of the file that is not yet available, printed where it will go, so that its
+ * absence is visible and cannot be read as content: a mono label ("Not yet available" or the given
+ * one), what goes here, and an optional note (dates, who supplies it). On the recessed paper, ruled,
+ * never red: a missing part is not a discrepancy. The block-level sibling of Placeholder.astro.
+ *
+ * Props:
+ *   what   what goes here, in a few words ("The authors' prologue")
+ *   label  the mono label (default "Not yet available")
+ *   note   optional line under it, our words, with `backticks` for names
+ */
+import Inline from './Inline.astro';
+interface Props {
+  what: string;
+  label?: string;
+  note?: string;
+}
+const { what, label = 'Not yet available', note } = Astro.props;
+---
+<aside class="pending" aria-label={`${label}: ${what}`}>
+  <span class="label">{label}</span>
+  <p class="pending__what">{what}</p>
+  {note && <p class="pending__note"><Inline text={note} /></p>}
+</aside>

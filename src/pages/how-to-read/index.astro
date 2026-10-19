@@ -54,7 +54,7 @@ const log = `# composite example: three lines in the form of a capture log, from
     <section class="section" id="asterisk" aria-labelledby="asterisk-h">
       <SectionHead title="The asterisk" id="asterisk-h" />
       <div class="prose">
-        <p>The red asterisk between the two pages marks where they part: the policy says one thing, the app was seen to do another. Where the two pages agree, the gutter is empty.</p>
+        <p>The asterisk between the two pages, in ink, marks a pair that does not simply agree. The label above our page says how the two stand: “Departs from the wording”, where what the app was seen to do differs from what the document says, or “Open to interpretation”, where it depends on how the wording is read. Where the two pages agree (“Consistent”), the gutter is empty.</p>
       </div>
     </section>
 
@@ -75,14 +75,17 @@ const log = `# composite example: three lines in the form of a capture log, from
       </div>
       <div class="tabs tabs--example howto-ex" aria-label="Example of the tab row (not links)" role="img">
         <ul>
-          <li><span class="is-current">Story</span></li>
+          <li><span class="is-current">Report</span></li>
+          <li><span>Document changes</span></li>
+          <li><span>Correspondence</span></li>
           <li><span>Evidence</span></li>
-          <li><span>Reply</span></li>
           <li><span>History</span></li>
         </ul>
       </div>
       <dl class="howto-dl">
-        <dt class="label">Story</dt><dd>The finding, the article, and what it means for you.</dd>
+        <dt class="label">Report</dt><dd>The study, the findings and the evidence references. Its sections are numbered as in the report files on record (sections 3.1 to 3.12 are the observations).</dd>
+        <dt class="label">Document changes</dt><dd>When a company document changed while the file was prepared: each version in full, the words added in the later version underlined automatically. Only in files with such a change.</dd>
+        <dt class="label">Correspondence</dt><dd>Every message between us and the company about the file, both sides, in full and in the order sent (a message whose full text is not yet on record is given as a summary, labelled as such); the company's replies are printed here, so a file with this tab has no Reply tab.</dd>
         <dt class="label">Evidence</dt><dd>The exhibits, the data-flow drawing, the devices and days of the capture, and the technical appendix.</dd>
         <dt class="label">Reply</dt><dd>The company's reply, printed in full as received, facing our note. A file with no reply has no Reply tab; its status line says why.</dd>
         <dt class="label">History</dt><dd>The file's revision log, corrections included.</dd>
@@ -90,9 +93,9 @@ const log = `# composite example: three lines in the form of a capture log, from
     </section>
 
     <section class="section" id="file-number" aria-labelledby="file-number-h">
-      <SectionHead title="File number and REV" id="file-number-h" />
+      <SectionHead title="File number and revision" id="file-number-h" />
       <div class="prose">
-        <p>Every file opens with a bar like this one: its number and revision date on the left; the section and the service on the right.</p>
+        <p>Every file opens with a bar like this one: its number and revision date on the left (for example "FILE 0001 / REV 2026-10-19"); the section and the service on the right.</p>
       </div>
       <div class="howto-ex howto-bar">
         <FileHeader fileNo="0000" rev={new Date('2026-02-07T00:00:00Z')} side="PUBLICATIONS / COMPOSITE EXAMPLE" fields={[]} />

@@ -1,0 +1,111 @@
+---
+/**
+ * Investigation file, the correspondence: /publications/<slug>/correspondence/. Built only for
+ * investigations with `correspondence` in the frontmatter; such a file has no Reply page, because
+ * the company's messages are printed here. Same file bar and tab row as the story; the story's title
+ * as a serif over-line linking back; the h1 "Correspondence"; `replyNote` (our note on what the
+ * company's messages do and do not address), when there is one; then every message in the order
+ * sent, each in full (the description names any message given only as a summary): the date and
+ * time in Central European time with UTC beside it, who sent it, the channel and the subject, then
+ * the text. The company's words are mono, ours serif. A message's `note`, when there is one, follows
+ * its text as our remark, labelled and ruled off, outside the message. A message
+ * whose full text is not on record prints our `summary` of it, labelled as such. Last, when
+ * `correspondencePending` is set, the message still to come, as not yet available (Pending).
+ */
+import { getEntry } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import FileHeader from '../../../components/FileHeader.astro';
+import FileTabs from '../../../components/FileTabs.astro';
+import Inline from '../../../components/Inline.astro';
+import Pending from '../../../components/Pending.astro';
+import { fileHref, fileOgVerso, fileRefOf, filePartsOf, getEvidence, getInvestigations, replyParagraphs, publishedOf, revOf, barRefOf } from '../../../lib/cases';
+import { long } from '../../../lib/format';
+
+export async function getStaticPaths() {
+  const entries = (await getInvestigations()).filter((e) => e.data.correspondence.length > 0);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const service = await getEntry(d.service);
+if (!service) throw new Error(`Unknown service "${d.service.id}" in ${entry.id}`);
+const name = service.data.name;
+const story = fileHref('investigations', entry.id);
+const evidence = await getEvidence(entry.id);
+
+/* Messages must be written in the order sent (a bare date sorts as the start of its day). */
+d.correspondence.forEach((m, i, all) => {
+  if (i && m.sent.slice(0, 10) < all[i - 1].sent.slice(0, 10)) throw new Error(`${entry.id}: correspondence out of order at ${m.sent}`);
+});
+const zone = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit', timeZoneName: 'short', hourCycle: 'h23' });
+const local = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Warsaw', year: 'numeric', month: '2-digit', day: '2-digit' });
+/** "2 Oct 2026, 09:50 CEST (07:50 UTC)"; a bare date: "8 Oct 2026, time not on record". */
+const when = (sent: string) => {
+  if (sent.length === 10) return { text: `${long(sent)}, time not on record`, datetime: sent };
+  const t = new Date(sent.replace('Z', ':00Z'));
+  return { text: `${long(local.format(t))}, ${zone.format(t)} (${sent.slice(11, 16)} UTC)`, datetime: t.toISOString() };
+};
+const ours = d.correspondence.filter((m) => m.side === 'ours').length;
+const theirs = d.correspondence.length - ours;
+/* "each in full" holds only for messages with `text`; a summarised one is named as the exception. */
+const summarised = d.correspondence
+  .filter((m) => !m.text)
+  .map((m) => `${m.side === 'ours' ? 'the authors’' : `${name}’s`} message of ${long(m.sent.slice(0, 10))}`);
+const exceptions = summarised.length
+  ? ` except ${summarised.join(' and ')}, given as a summary until the full text is added`
+  : '';
+const description = `The correspondence between the authors and ${name} about file ${d.fileNo}, ${d.correspondence.length} messages (${ours} from the authors, ${theirs} from ${name}), in the order sent, each in full${exceptions}, without the senders’ e-mail addresses.`;
+---
+<Base title={`Correspondence / ${d.title}`} description={description} type="article" published={publishedOf(d)} fileRef={fileRefOf(d, 'correspondence')} og={{ ...fileOgVerso(d, { service: name, section: 'Publications' }), recto: d.title, rectoLabel: 'Correspondence' }}>
+  <div class="wrap">
+    <article aria-labelledby="part-title">
+      <FileHeader
+        ref={barRefOf(d)}
+        rev={revOf(d)}
+        side={`PUBLICATIONS / ${name.toUpperCase()}`}
+        category={d.category}
+        fields={[]}
+      />
+      <FileTabs collection="investigations" slug={entry.id} current="correspondence" parts={filePartsOf(d, Boolean(evidence))} />
+
+      <div class="art-head part-head">
+        <p class="part-head__over"><a href={story}>{d.title}</a></p>
+        <h1 id="part-title">Correspondence</h1>
+        <p class="dek">{description}</p>
+      </div>
+
+      {d.replyNote && (
+        <div class="corr-note">
+          <h2 class="label">Our note</h2>
+          <p><Inline text={d.replyNote} /></p>
+        </div>
+      )}
+
+      <ol class="corr" aria-label="Messages, in the order sent">
+        {d.correspondence.map((m, i) => {
+          const w = when(m.sent);
+          return (
+            <li class:list={['msg', `msg--${m.side}`]} id={`msg-${i + 1}`}>
+              <div class="msg__head">
+                <p><time class="msg__when" datetime={w.datetime}>{w.text}</time></p>
+                <p class="msg__from">From <b>{m.from}</b>&nbsp;/ by {m.channel}</p>
+                {m.subject && <p class="msg__subj">Subject: {m.subject}</p>}
+              </div>
+              {m.text ? (
+                <div class="msg__text" lang="en">
+                  {replyParagraphs(m.text).map((lines) => <p>{lines.map((l, k) => <>{k > 0 && <br />}{l}</>)}</p>)}
+                </div>
+              ) : (
+                <p class="msg__summary"><span class="label">Summary, not the message itself</span><Inline text={m.summary!} /></p>
+              )}
+              {m.note && <p class="msg__note"><span class="label">Authors’ note, not part of the message</span><Inline text={m.note} /></p>}
+            </li>
+          );
+        })}
+        {d.correspondencePending && <li><Pending what={d.correspondencePending} label="To be added" /></li>}
+      </ol>
+      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the report</span></a></p>
+    </article>
+  </div>
+</Base>

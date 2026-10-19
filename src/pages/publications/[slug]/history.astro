@@ -14,7 +14,7 @@ import Base from '../../../layouts/Base.astro';
 import FileHeader from '../../../components/FileHeader.astro';
 import FileTabs from '../../../components/FileTabs.astro';
 import RevisionLog from '../../../components/RevisionLog.astro';
-import { correctionsFor, fileHref, fileOgVerso, fileRefOf, getEvidence, getInvestigations, investigationLog } from '../../../lib/cases';
+import { correctionsFor, fileHref, fileOgVerso, fileRefOf, getEvidence, getInvestigations, investigationLog, filePartsOf, publishedOf, revOf, barRefOf } from '../../../lib/cases';
 
 export async function getStaticPaths() {
   const entries = await getInvestigations();
@@ -30,17 +30,17 @@ const evidence = await getEvidence(entry.id);
 const log = investigationLog(entry, service.data.name, await correctionsFor('investigations', entry.id));
 const description = `The revision log of file ${d.fileNo}: what happened, when, and every correction.`;
 ---
-<Base title={`History / ${d.title}`} description={description} type="article" published={d.date} fileRef={fileRefOf(d, 'history')} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: d.title, rectoLabel: 'History' }}>
+<Base title={`History / ${d.title}`} description={description} type="article" published={publishedOf(d)} fileRef={fileRefOf(d, 'history')} og={{ ...fileOgVerso(d, { service: service.data.name, section: 'Publications' }), recto: d.title, rectoLabel: 'History' }}>
   <div class="wrap">
     <article aria-labelledby="part-title">
       <FileHeader
-        fileNo={d.fileNo}
-        rev={d.revised ?? d.date}
+        ref={barRefOf(d)}
+        rev={revOf(d)}
         side={`PUBLICATIONS / ${service.data.name.toUpperCase()}`}
         category={d.category}
         fields={[]}
       />
-      <FileTabs collection="investigations" slug={entry.id} current="history" evidence={Boolean(evidence)} reply={Boolean(d.reply)} />
+      <FileTabs collection="investigations" slug={entry.id} current="history" parts={filePartsOf(d, Boolean(evidence))} />
 
       <div class="art-head part-head">
         <p class="part-head__over"><a href={story}>{d.title}</a></p>
@@ -51,7 +51,7 @@ const description = `The revision log of file ${d.fileNo}: what happened, when, 
       <div class="body">
         <RevisionLog lines={log} sub={`/ file ${d.fileNo}`} />
       </div>
-      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the story</span></a></p>
+      <p class="file-back"><a class="go" href={story}><span class="go__ar" aria-hidden="true">←{' '}</span><span class="go__w">Back to the report</span></a></p>
     </article>
   </div>
 </Base>

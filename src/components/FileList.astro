@@ -1,0 +1,80 @@
+---
+/**
+ * FileList: the files on record of one publication, read from public/files/<slug>/<version>/ at
+ * build time, each with its size and its SHA-256 computed from the bytes that are served, so the
+ * table can never disagree with the downloads. Grouped by folder, in path order; each group can
+ * carry a line of our words. Files withheld from this build (named, with their published checksum
+ * and the reason) are listed in the group they belong to and marked "not served".
+ *
+ * From 40rem a ruled table (file, bytes, SHA-256); below it each file is one ruled entry, the
+ * checksum on its own line, broken anywhere, so nothing scrolls at 400 px.
+ *
+ * Props:
+ *   slug      publication slug ("strongbox-ios-network-traffic")
+ *   version   folder under the slug ("v1")
+ *   groups    optional { "<folder>": "what it holds" } in our words; "" is the top folder
+ *   withheld  optional [{ path, sha256?, why }]: files that belong to the set but are not served
+ */
+import { createHash } from 'node:crypto';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import Inline from './Inline.astro';
+
+interface Withheld { path: string; sha256?: string; why: string }
+interface Props { slug: string; version: string; groups?: Record<string, string>; withheld?: Withheld[] }
+const { slug, version, groups = {}, withheld = [] } = Astro.props;
+
+const base = join(process.cwd(), 'public', 'files', slug, version);
+if (!existsSync(base)) throw new Error(`FileList: ${relative(process.cwd(), base)} does not exist`);
+const walk = (dir: string): string[] =>
+  readdirSync(dir).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).flatMap((f) => {
+    const p = join(dir, f);
+    if (f.startsWith('.')) return [];
+    return statSync(p).isDirectory() ? walk(p) : [p];
+  });
+const files = walk(base).map((abs) => {
+  const rel = relative(base, abs).split('\\').join('/');
+  const bytes = readFileSync(abs);
+  const folder = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '';
+  return { rel, name: rel.slice(folder ? folder.length + 1 : 0), folder, size: bytes.length, sha: createHash('sha256').update(bytes).digest('hex') };
+});
+const folders = [...new Set([...files.map((f) => f.folder), ...withheld.map((w) => (w.path.includes('/') ? w.path.slice(0, w.path.lastIndexOf('/')) : ''))])].sort((a, b) =>
+  a === '' ? -1 : b === '' ? 1 : a.localeCompare(b),
+);
+// Each path segment percent-encoded, except "+": it is legal in a path and means itself there, and
+// some static servers do not map "%2B" back to a file whose name contains "+".
+const seg = (s: string) => encodeURIComponent(s).replace(/%2B/gi, '+');
+const href = (rel: string) => `/files/${slug}/${version}/${rel.split('/').map(seg).join('/')}`;
+const total = files.reduce((n, f) => n + f.size, 0);
+---
+<div class="filelist">
+  <p class="filelist__sum">{files.length} files, {total.toLocaleString('en-GB')} bytes, served byte for byte at <code class="tick">/files/{slug}/{version}/</code></p>
+  {folders.map((folder) => {
+    const rows = files.filter((f) => f.folder === folder);
+    const held = withheld.filter((w) => (w.path.includes('/') ? w.path.slice(0, w.path.lastIndexOf('/')) : '') === folder);
+    return (
+      <section class="filelist__group" aria-label={folder ? `Folder ${folder}` : 'Top folder'}>
+        <h3 class="filelist__folder"><span class="label">{folder ? `${folder}/` : `${version}/`}</span>{groups[folder] && <span class="filelist__what"><Inline text={groups[folder]} /></span>}</h3>
+        <table class="filelist__t">
+          <thead><tr><th scope="col">File</th><th scope="col" class="r">Bytes</th><th scope="col">SHA-256</th></tr></thead>
+          <tbody>
+            {rows.map((f) => (
+              <tr>
+                <th scope="row"><a href={href(f.rel)} download>{f.name}</a></th>
+                <td class="r filelist__size">{f.size.toLocaleString('en-GB')}</td>
+                <td class="filelist__sha">{f.sha}</td>
+              </tr>
+            ))}
+            {held.map((w) => (
+              <tr class="filelist__held">
+                <th scope="row">{w.path.slice(folder ? folder.length + 1 : 0)}<span class="filelist__why">Not served in this build: {w.why}</span></th>
+                <td class="r filelist__size">not served</td>
+                <td class="filelist__sha">{w.sha256 ?? 'not on file'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    );
+  })}
+</div>

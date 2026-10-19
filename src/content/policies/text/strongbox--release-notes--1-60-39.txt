@@ -1,0 +1,10 @@
+We’ve added support for checking if your account has been breached with Have I Been Pwned. Head to your database audit to check if any of your accounts have been compromised.You can now allow for expired entries to show in search, and we fixed a small bug with an image aspect ratio in the preview view.
+This expands on our existing functionality to check for a pwned password by also checking for the account itself being included in a data breach. You can opt-in to this feature inside audit settings, where you'll also find a more detailed description of how it works.
+
+Purchases in the app are now processed using RevenueCat. This helps us run sales more often and process purchases more reliably. The exact same information is provided to RevenueCat as it would be directly to Apple, and no extra analytics or tracking is added as a result of this change.
+
+If you are enjoying the new version of Strongbox it would be great if you could leave a positive review for us in the App Store. It makes a huge difference to us as Indie developers. Thank you!
+
+If you're experiencing any problems or are not happy, just let us know (support@strongboxsafe.com) and we'll make it right.
+
+- The Strongbox Team
