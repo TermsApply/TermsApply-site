@@ -67,7 +67,7 @@ Local network preview: `npx astro preview --host 0.0.0.0 --port 4321`.
 - **Masthead**: wordmark, Publications, About.
 - **Start page**: "Terms and conditions / are meant to be read" in two lines with the red asterisk,
   filling the first screen; the footer is below the fold.
-- **Footer**: asterisk, "and verify.", our two-sentence privacy policy, "No analytics. No cookies.
+- **Footer**: asterisk, "and verified.", our two-sentence privacy policy, "No analytics. No cookies.
   Fonts served from this domain." The "Legal notice" link appears only once a publication exists.
 - **Category** (`surveillance` / `soma`) is optional. Without it nothing is printed: no label in
   the index row, the legend, the file bar or the fact grid.

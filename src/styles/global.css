@@ -535,7 +535,7 @@ ins {
 .footer { margin-top: 4.5rem; border-top: 3px double var(--ink); padding-block: 2rem 2.5rem; }
 .footer__pages { padding-bottom: 1.75rem; border-bottom: 1px solid var(--rule); }
 .footer__pages .spread__seam::before { display: block; }
-/* "and verify." is the footnote to the start page's sentence, under its asterisk: mono. The
+/* "and verified." is the footnote to the start page's sentence, under its asterisk: mono. The
    asterisk stands in the label row, its foot on the row's baseline. */
 .footer__ast { vertical-align: -0.2em; }
 .footer__sign {

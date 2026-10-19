@@ -11,7 +11,7 @@ import { SITE } from '../lib/site';
 const [first, second] = ['Terms and conditions', 'are meant to be read'];
 const statement = `${first} ${second}`;
 ---
-<Base description={SITE.description} fileRef="COVER" footerSign="and verify." og={{ verso: statement, versoLabel: SITE.name, plain: true }}>
+<Base description={SITE.description} fileRef="COVER" footerSign="and verified." og={{ verso: statement, versoLabel: SITE.name, plain: true }}>
   <div class="wrap">
     <section class="start" aria-label="termsapply">
       <h1><span class="start__line">{first}</span> <span class="start__line">{second}<Asterisk size="0.4em" class="ast-stop" /></span></h1>

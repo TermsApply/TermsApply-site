@@ -18,7 +18,7 @@ change, not a publishing step.
 
 **Footer** (`src/components/Footer.astro`, `src/lib/site.ts` PRIVACY_POLICY)
 
-- Left page: the red asterisk, then "for everyone." (on the start page: "and verify.").
+- Left page: the red asterisk, then "for everyone." (on the start page: "and verified.").
 - Right page, labelled "Our privacy policy" / "In full": "We set no cookies, run no analytics and
   keep no access logs; our host processes each request in order to deliver the page, and we do not
   read that data. If that ever changes, this paragraph changes first."
